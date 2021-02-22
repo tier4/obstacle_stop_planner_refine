@@ -15,6 +15,7 @@ jobs:
         run: |
           mkdir dependency_ws
           vcs import dependency_ws < build_depends.repos
+          vcs import dependency_ws < dependency_ws/autoware/AutowareArchitectureProposal.iv/build_depends.repos
 
       - name: Install missing dependencies
         run: |
