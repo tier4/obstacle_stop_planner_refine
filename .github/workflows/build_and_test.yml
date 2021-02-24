@@ -33,7 +33,8 @@ jobs:
           colcon build \
             --catkin-skip-building-tests \
             --packages-up-to obstacle_stop_planner_refine \
-            --event-handlers console_cohesion+
+            --event-handlers console_cohesion+ \
+            --cmake-args -DCMAKE_BUILD_TYPE=Debug
 
       - name: Run tests
         run: |
