@@ -54,10 +54,10 @@ jobs:
           git clone https://github.com/terryyin/lizard.git
           mkdir public
           python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -x"*test*" \
-            --CCN 20 --length 200　--arguments 6 \
+            --CCN 20 --length 200 --arguments 6 \
             --html > public/lizard_only_wo_test.html || true
           python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -x"*test*" \
-            --CCN 20 --length 200　--arguments 6
+            --CCN 20 --length 200 --arguments 6
 
       - name: Upload metrix
         uses: actions/upload-artifact@v2
