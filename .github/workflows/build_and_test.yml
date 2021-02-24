@@ -42,3 +42,8 @@ jobs:
             --packages-up-to obstacle_stop_planner_refine \
             --event-handlers console_cohesion+ \
             --return-code-on-test-failure
+
+      - name: Measure code metrix
+        run: |
+          git clone https://github.com/terryyin/lizard.git
+          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -x"*test*"
