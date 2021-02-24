@@ -56,14 +56,14 @@ jobs:
           git diff --name-only ${{ GITHUB_HEAD_REF }} ${{ GITHUB_BASE_REF }} | grep -E "*.hpp|*.cpp|*.py" > file_list.txt
           python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" -f file_list.txt \
             --CCN 20 --length 200 --arguments 6 \
-            --html > public/lizard_only_wo_test.html || true
+            --html > public/code-metrics.html || true
           python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" -f file_list.txt \
             --CCN 20 --length 200 --arguments 6 || true
 
       - name: Upload measurement result page
         uses: actions/upload-artifact@v2
         with:
-          name: lizard_only_wo_test
+          name: code-metrics
           path: public
 
       - name: Deploy measurement result page to gh-pages
