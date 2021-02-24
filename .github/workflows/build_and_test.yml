@@ -52,15 +52,22 @@ jobs:
       - name: Measure code metrix
         run: |
           git clone https://github.com/terryyin/lizard.git
-          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -x"*test*" > lizard_only_wo_test.txt || true
-          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -x"*test*" --xml > lizard_only_wo_test.xml || true
-          cat lizard_only_wo_test.txt
+          mkdir public
+          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -x"*test*" \
+            --CCN 20 --length 200　--arguments 6 \
+            --html > public/lizard_only_wo_test.html || true
+          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -x"*test*" \
+            --CCN 20 --length 200　--arguments 6
 
       - name: Upload metrix
         uses: actions/upload-artifact@v2
         with:
           name: lizard_only_wo_test
-          path: |
-            lizard_only_wo_test.txt
-            lizard_only_wo_test.xml
+          path: public
+
+      - name: Deploy metrix
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
 
