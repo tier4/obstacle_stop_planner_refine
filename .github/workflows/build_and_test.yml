@@ -43,13 +43,13 @@ jobs:
             --event-handlers console_cohesion+ \
             --return-code-on-test-failure
 
-  code-metrix:
+  code-metrics:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repo
         uses: actions/checkout@v2
 
-      - name: Measure code metrix
+      - name: Measure code metrics
         run: |
           git clone https://github.com/terryyin/lizard.git
           mkdir public
@@ -59,13 +59,13 @@ jobs:
           python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -x"*test*" \
             --CCN 20 --length 200 --arguments 6 || true
 
-      - name: Upload metrix
+      - name: Upload metrics
         uses: actions/upload-artifact@v2
         with:
           name: lizard_only_wo_test
           path: public
 
-      - name: Deploy metrix
+      - name: Deploy metrics
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
