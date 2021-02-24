@@ -1,0 +1,22 @@
+name: Deploy code metrics
+on:
+  pull_request:
+    branches:
+      - main
+    types: [closed]
+
+jobs:
+  deploy-code-metrics:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.merged == true }}
+      steps:
+      - name: Download measurement result
+        uses: actions/download-artifact@v2
+        with:
+          name: code-metrics
+
+      - name: Deploy measurement result page to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
