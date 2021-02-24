@@ -43,7 +43,21 @@ jobs:
             --event-handlers console_cohesion+ \
             --return-code-on-test-failure
 
+  code-metrix:
+    runs-on: ubuntu-latest
+    steps:
       - name: Measure code metrix
         run: |
           git clone https://github.com/terryyin/lizard.git
-          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -x"*test*"
+          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -x"*test*" > lizard_only_wo_test.txt || true
+          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -x"*test*" --xml > lizard_only_wo_test.xml || true
+          cat lizard_only_wo_test.txt
+
+      - name: Upload metrix
+        uses: actions/upload-artifact@v2
+        with:
+          name: lizard_only_wo_test
+          path: |
+            lizard_only_wo_test.txt
+            lizard_only_wo_test.xml
+
