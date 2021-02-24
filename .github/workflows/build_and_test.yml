@@ -53,10 +53,10 @@ jobs:
         run: |
           git clone https://github.com/terryyin/lizard.git
           mkdir public
-          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -x"*test*" \
+          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" \
             --CCN 20 --length 200 --arguments 6 \
             --html > public/lizard_only_wo_test.html || true
-          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -x"*test*" \
+          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" \
             --CCN 20 --length 200 --arguments 6 || true
 
       - name: Upload metrics
