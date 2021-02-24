@@ -20,7 +20,7 @@ jobs:
         run: |
           sudo apt-get update
           rosdep update
-          DEBIAN_FRONTEND=noninteractive rosdep install --from-paths obstacle_stop_planner_refine --ignore-src --rosdistro foxy -y
+          DEBIAN_FRONTEND=noninteractive rosdep install --from-paths obstacle_stop_planner_refine --ignore-src --rosdistro foxy -y --skip-keys=vehicle_info_util --skip-keys=autoware_planning_msgs --skip-keys=autoware_perception_msgs --skip-keys=autoware_debug_msgs
           sudo apt-get install -y \
             ros-foxy-tf2>=0.13.6-1focal.20201028.172335 \
             ros-foxy-tf2-geometry-msgs>=0.13.6-1focal.20201028.172335 \
