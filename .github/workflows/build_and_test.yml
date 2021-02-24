@@ -48,6 +48,8 @@ jobs:
     steps:
       - name: Check out repo
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Measure code metrics
         run: |
