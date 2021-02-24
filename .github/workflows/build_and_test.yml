@@ -55,7 +55,7 @@ jobs:
         run: |
           git clone https://github.com/terryyin/lizard.git
           mkdir public
-          git diff --name-only $GITHUB_HEAD_REF $GITHUB_BASE_REF | grep -E "*.hpp|*.cpp|*.py" > file_list.txt
+          git diff --name-only origin/$GITHUB_HEAD_REF..origin/$GITHUB_BASE_REF | grep -E "*.hpp|*.cpp|*.py" > file_list.txt
           python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" -f file_list.txt \
             --CCN 20 --length 200 --arguments 6 \
             --html > public/code-metrics.html || true
