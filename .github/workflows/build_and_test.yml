@@ -59,13 +59,13 @@ jobs:
           python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" \
             --CCN 20 --length 200 --arguments 6 || true
 
-      - name: Upload metrics
+      - name: Upload measurement result page
         uses: actions/upload-artifact@v2
         with:
           name: lizard_only_wo_test
           path: public
 
-      - name: Deploy metrics
+      - name: Deploy measurement result page to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
