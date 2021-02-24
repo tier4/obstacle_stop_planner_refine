@@ -46,6 +46,9 @@ jobs:
   code-metrix:
     runs-on: ubuntu-latest
     steps:
+      - name: Check out repo
+        uses: actions/checkout@v2
+
       - name: Measure code metrix
         run: |
           git clone https://github.com/terryyin/lizard.git
