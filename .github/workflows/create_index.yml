@@ -1,9 +1,14 @@
 name: Create index page
 
-on: page_build
+on:
+  pull_request:
+  push:
+    branches:
+      - main
 
 jobs:
   create-index-page:
+    needs: code-metrics
     runs-on: ubuntu-latest
     steps:
       - name: Check out repo
