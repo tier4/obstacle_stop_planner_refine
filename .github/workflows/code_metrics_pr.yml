@@ -61,6 +61,6 @@ jobs:
 
       - name: Commit file
         run: |
-          git add index.html
+          git add pr-check/index.html
           git commit -m "Add index.html"
           git push origin gh-pages
