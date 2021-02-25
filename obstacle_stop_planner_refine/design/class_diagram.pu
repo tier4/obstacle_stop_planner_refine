@@ -1,0 +1,7 @@
+@startuml
+
+Node <|-- ObstacleStopPlannerNode
+ObstacleStopPlannerNode *-- AdaptiveCruiseController
+ObstacleStopPlannerNode *-- ObstacleStopPlannerDebugNode
+
+@enduml
