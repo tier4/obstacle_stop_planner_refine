@@ -1,15 +1,13 @@
 name: Deploy code metrics
 on:
-  pull_request:
+  push:
     branches:
       - main
-    types: [closed]
 
 jobs:
   deploy-code-metrics:
     needs: code-metrics
     runs-on: ubuntu-latest
-    if: ${{ github.event.pull_request.merged == true }}
     steps:
       - name: Download measurement result
         uses: actions/download-artifact@v2
