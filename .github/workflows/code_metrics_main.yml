@@ -28,3 +28,31 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public
           keep_files: true
+
+  create-index-page:
+    needs: code-metrics
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v2
+        with:
+          ref: gh-pages
+
+      - name: Create index page
+        run: |
+          sudo apt-get update
+          sudo apt-get install tree
+          tree -H 'https://tier4.github.io/obstacle_stop_planner_refine' \
+            -L 2 --noreport --charset utf-8 -T 'Index of code metrics' \
+            -P "*.html" > index.html
+
+      - name: git setting
+        run: |
+          git config --local user.email "actions@example.com"
+          git config --local user.name "Github Actions"
+
+      - name: Commit file
+        run: |
+          git add index.html
+          git commit -m "Add index.html"
+          git push origin gh-pages
