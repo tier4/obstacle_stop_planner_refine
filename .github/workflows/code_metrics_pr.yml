@@ -1,0 +1,37 @@
+name: Deploy code metrics
+
+on: pull_request
+
+jobs:
+  code-metrics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Measure code metrics
+        run: |
+          git clone https://github.com/terryyin/lizard.git
+          mkdir -p public/pr-check
+          git diff origin/$GITHUB_HEAD_REF..origin/$GITHUB_BASE_REF \
+            --diff-filter=AM \
+            --name-only -- '*.hpp|*.cpp|*.py' > file_list.txt
+          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" -f file_list.txt \
+            --CCN 20 --length 200 --arguments 6 \
+            --html > public/pr-check/code-metrics.html || true
+          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" -f file_list.txt \
+            --CCN 20 --length 200 --arguments 6 || true
+
+      - name: Rename file
+        run: |
+          PULL_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          mv public/pr-check/code-metrics.html public/pr-check/$(PULL_NUMBER)-code-metrics.html
+
+      - name: Deploy measurement result page to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          keep_files: true

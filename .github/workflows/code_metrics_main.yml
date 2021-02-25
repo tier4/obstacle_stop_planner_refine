@@ -1,0 +1,30 @@
+name: Deploy code metrics
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  code-metrics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v2
+
+      - name: Measure code metrics
+        run: |
+          git clone https://github.com/terryyin/lizard.git
+          mkdir public
+          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" \
+            --CCN 20 --length 200 --arguments 6 \
+            --html > public/code-metrics.html || true
+          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" \
+            --CCN 20 --length 200 --arguments 6 || true
+
+      - name: Deploy measurement result page to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          keep_files: true
