@@ -88,29 +88,6 @@ double getDistanceFromTwoPoint(
   const double dist = std::hypot(dx, dy);
   return dist;
 }
-
-constexpr double normalizeRadian(
-  const double rad, const double min_rad = -boost::math::constants::pi<double>(),
-  const double max_rad = boost::math::constants::pi<double>())
-{
-  const auto value = std::fmod(rad, 2 * boost::math::constants::pi<double>());
-  if (min_rad < value && value <= max_rad) {
-    return value;
-  } else {
-    return value - std::copysign(2 * boost::math::constants::pi<double>(), value);
-  }
-}
-
-constexpr double sign(const double value)
-{
-  if (value > 0) {
-    return 1.0;
-  } else if (value < 0) {
-    return -1.0;
-  } else {
-    return 0.0;
-  }
-}
 }  // namespace
 
 namespace motion_planning
