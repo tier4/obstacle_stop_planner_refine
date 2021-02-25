@@ -1,4 +1,4 @@
-name: Deploy code metrics
+name: Measure code metrics for main
 
 on:
   push:

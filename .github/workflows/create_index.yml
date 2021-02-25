@@ -4,6 +4,8 @@ on:
     branches:
       - gh-pages
 
+jobs:
+  create-index-page:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repo
