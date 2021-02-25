@@ -31,6 +31,7 @@
 #include "boost/geometry/geometries/linestring.hpp"
 #include "boost/geometry/geometries/point_xy.hpp"
 #include "obstacle_stop_planner/node.hpp"
+#include "obstacle_stop_planner/util.hpp"
 #include "vehicle_info_util/vehicle_info.hpp"
 
 #define EIGEN_MPL2_ONLY
@@ -632,8 +633,8 @@ void ObstacleStopPlannerNode::insertSlowDownVelocity(
 double ObstacleStopPlannerNode::calcSlowDownTargetVel(const double lateral_deviation)
 {
   return min_slow_down_vel_ + (max_slow_down_vel_ - min_slow_down_vel_) *
-         std::max(lateral_deviation - vehicle_width_ / 2, 0.0) /
-         expand_slow_down_range_;
+    std::max(lateral_deviation - vehicle_width_ / 2, 0.0) /
+    expand_slow_down_range_;
 }
 
 void ObstacleStopPlannerNode::dynamicObjectCallback(
@@ -727,13 +728,9 @@ bool ObstacleStopPlannerNode::decimateTrajectory(
       next_length += step_length;
       continue;
     }
-    const double x = input_trajectory.points.at(i).pose.position.x -
-      input_trajectory.points.at(i + 1).pose.position.x;
-    const double y = input_trajectory.points.at(i).pose.position.y -
-      input_trajectory.points.at(i + 1).pose.position.y;
-    const double distance = std::sqrt(x * x + y * y);
-
-    trajectory_length_sum += distance;
+    trajectory_length_sum += std::hypot(
+      input_trajectory.points.at(i).pose.position.x - input_trajectory.points.at(i + 1).pose.position.x,
+      input_trajectory.points.at(i).pose.position.y - input_trajectory.points.at(i + 1).pose.position.y);
   }
   if (!input_trajectory.points.empty()) {
     output_trajectory.points.push_back(input_trajectory.points.back());
@@ -752,12 +749,12 @@ bool ObstacleStopPlannerNode::trimTrajectoryWithIndexFromSelfPose(
   size_t min_distance_index = 0;
   bool is_init = false;
   for (size_t i = 0; i < input_trajectory.points.size(); ++i) {
-    const double x = input_trajectory.points.at(i).pose.position.x - self_pose.position.x;
-    const double y = input_trajectory.points.at(i).pose.position.y - self_pose.position.y;
-    const double squared_distance = x * x + y * y;
-    if (!is_init || squared_distance < min_distance * min_distance) {
+    const double distance = std::hypot(
+      input_trajectory.points.at(i).pose.position.x - self_pose.position.x,
+      input_trajectory.points.at(i).pose.position.y - self_pose.position.y);
+    if (!is_init || distance < min_distance) {
       is_init = true;
-      min_distance = std::sqrt(squared_distance);
+      min_distance = distance;
       min_distance_index = i;
     }
   }
@@ -864,15 +861,7 @@ void ObstacleStopPlannerNode::createOneStepPolygon(
 bool ObstacleStopPlannerNode::convexHull(
   const std::vector<cv::Point2d> pointcloud, std::vector<cv::Point2d> & polygon_points)
 {
-  cv::Point2d centroid;
-  centroid.x = 0;
-  centroid.y = 0;
-  for (const auto & point : pointcloud) {
-    centroid.x += point.x;
-    centroid.y += point.y;
-  }
-  centroid.x = centroid.x / static_cast<double>(pointcloud.size());
-  centroid.y = centroid.y / static_cast<double>(pointcloud.size());
+  auto centroid = calcCentroid(pointcloud);
 
   std::vector<cv::Point> normalized_pointcloud;
   std::vector<cv::Point> normalized_polygon_points;
