@@ -15,10 +15,10 @@ jobs:
       - name: Measure code metrics
         run: |
           git clone https://github.com/terryyin/lizard.git
-          mkdir public
+          mkdir -p public/pr-check
           python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" \
             --CCN 20 --length 200 --arguments 6 \
-            --html > public/code-metrics.html || true
+            --html > public/pr-check/main-code-metrics.html || true
           python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" \
             --CCN 20 --length 200 --arguments 6 || true
 
@@ -42,6 +42,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install tree
+          cd pr-check
           tree -H 'https://tier4.github.io/obstacle_stop_planner_refine' \
             -L 2 --noreport --charset utf-8 -T 'Index of code metrics' \
             -P "*.html" > index.html
@@ -53,6 +54,6 @@ jobs:
 
       - name: Commit file
         run: |
-          git add index.html
+          git add pr-check/index.html
           git commit -m "Add index.html"
           git push origin gh-pages

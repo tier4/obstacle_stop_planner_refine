@@ -49,6 +49,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install tree
+          cd pr-check
           tree -H 'https://tier4.github.io/obstacle_stop_planner_refine' \
             -L 2 --noreport --charset utf-8 -T 'Index of code metrics' \
             -P "*.html" > index.html
