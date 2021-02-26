@@ -390,7 +390,7 @@ void ObstacleStopPlannerNode::pathCallback(
   if (is_collision) {
     acc_controller_->insertAdaptiveCruiseVelocity(
       decimate_trajectory, decimate_trajectory_collision_index, self_pose, nearest_collision_point,
-      nearest_collision_point_time, object_ptr_, current_velocity_ptr_, &need_to_stop, &output_msg);
+      nearest_collision_point_time, object_ptr_, current_velocity_ptr_, need_to_stop, output_msg);
   }
 
   /*
