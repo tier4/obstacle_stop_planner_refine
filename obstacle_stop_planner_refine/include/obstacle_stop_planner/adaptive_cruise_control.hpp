@@ -43,8 +43,8 @@ public:
     const rclcpp::Time nearest_collision_point_time,
     const autoware_perception_msgs::msg::DynamicObjectArray::ConstSharedPtr object_ptr,
     const geometry_msgs::msg::TwistStamped::ConstSharedPtr current_velocity_ptr,
-    bool * need_to_stop,
-    autoware_planning_msgs::msg::Trajectory * output_trajectory);
+    bool & need_to_stop,
+    autoware_planning_msgs::msg::Trajectory & output_trajectory);
 
 private:
   rclcpp::Publisher<autoware_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr pub_debug_;
@@ -200,7 +200,7 @@ private:
   void insertMaxVelocityToPath(
     const geometry_msgs::msg::Pose self_pose, const double current_vel, const double target_vel,
     const double dist_to_collision_point,
-    autoware_planning_msgs::msg::Trajectory * output_trajectory);
+    autoware_planning_msgs::msg::Trajectory & output_trajectory);
   void registerQueToVelocity(const double vel, const rclcpp::Time & vel_time);
 
   /* Debug */
