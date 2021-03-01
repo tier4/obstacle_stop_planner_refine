@@ -24,6 +24,8 @@ ament_auto_add_executable(obstacle_stop_planner_node
   src/main.cpp
   src/adaptive_cruise_control.cpp
   src/obstacle_point_cloud.cpp
+  src/point_helper.cpp
+  src/trajectory.cpp
 )
 
 target_include_directories(obstacle_stop_planner_node
@@ -40,6 +42,16 @@ target_link_libraries(obstacle_stop_planner_node
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+
+  # find_package(ament_cmake_gtest REQUIRED)
+
+  # file(GLOB_RECURSE test_files test/**/*.cpp)
+
+  # ament_add_gtest(test_obstacle_stop_planner test/test_obstacle_stop_planner.test ${test_files})
+
+  # target_link_libraries(test_obstacle_stop_planner
+  #   obstacle_stop_planner_node
+  # )
 endif()
 
 ament_auto_package(
