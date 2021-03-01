@@ -44,6 +44,10 @@ public:
     const geometry_msgs::msg::Pose self_pose,
     autoware_planning_msgs::msg::Trajectory & output_trajectory,
     size_t & index);
+  bool extendTrajectory(
+    const autoware_planning_msgs::msg::Trajectory & input_trajectory,
+    const double extend_distance,
+    autoware_planning_msgs::msg::Trajectory & output_trajectory);
 };
 }  // namespace motion_planning
 

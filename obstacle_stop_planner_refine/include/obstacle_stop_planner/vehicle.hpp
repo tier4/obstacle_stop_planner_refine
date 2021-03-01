@@ -67,6 +67,15 @@ public:
     return center_pose;
   }
 
+  double getSearchRadius()
+  {
+    if(enable_slow_down_) {
+      return slow_down_search_radius_;
+    } else {
+      return stop_search_radius_;
+    }
+  }
+
   double stop_margin_;
   double min_behavior_stop_margin_;
   double step_length_;

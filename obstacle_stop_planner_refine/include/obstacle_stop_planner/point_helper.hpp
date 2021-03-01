@@ -86,6 +86,9 @@ public:
     const autoware_planning_msgs::msg::Trajectory & base_path,
     autoware_planning_msgs::msg::Trajectory & output_path);
 
+  autoware_planning_msgs::msg::TrajectoryPoint getExtendTrajectoryPoint(
+    double extend_distance, const autoware_planning_msgs::msg::TrajectoryPoint & goal_point);
+
 private:
   std::shared_ptr<VehicleInfo> vehicle_info_;
 };
