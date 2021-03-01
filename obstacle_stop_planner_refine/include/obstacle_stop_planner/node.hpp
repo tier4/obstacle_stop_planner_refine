@@ -88,11 +88,11 @@ private:
     const autoware_debug_msgs::msg::Float32Stamped::ConstSharedPtr input_msg);
 
 private:
-  bool convexHull(
-    const std::vector<cv::Point2d> pointcloud, std::vector<cv::Point2d> & polygon_points);
-  void createOneStepPolygon(
+  std::vector<cv::Point2d> convexHull(
+    const std::vector<cv::Point2d> pointcloud);
+  std::vector<cv::Point2d> createOneStepPolygon(
     const geometry_msgs::msg::Pose base_step_pose, const geometry_msgs::msg::Pose next_step_pose,
-    std::vector<cv::Point2d> & polygon, const double expand_width = 0.0);
+    const double expand_width = 0.0);
   bool getSelfPose(
     const std_msgs::msg::Header & header, const tf2_ros::Buffer & tf_buffer,
     geometry_msgs::msg::Pose & self_pose);
