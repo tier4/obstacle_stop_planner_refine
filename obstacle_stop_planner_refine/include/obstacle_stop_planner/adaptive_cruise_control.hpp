@@ -174,10 +174,10 @@ private:
 
   double getMedianVel(const std::vector<geometry_msgs::msg::TwistStamped> vel_que);
   double lowpass_filter(const double current_value, const double prev_value, const double gain);
-  void calcDistanceToNearestPointOnPath(
+  double calcDistanceToNearestPointOnPath(
     const autoware_planning_msgs::msg::Trajectory & trajectory, const int nearest_point_idx,
     const geometry_msgs::msg::Pose & self_pose, const pcl::PointXYZ & nearest_collision_point,
-    const rclcpp::Time & nearest_collision_point_time, double * distance);
+    const rclcpp::Time & nearest_collision_point_time);
   double calcTrajYaw(
     const autoware_planning_msgs::msg::Trajectory & trajectory, const int collision_point_idx);
   bool estimatePointVelocityFromObject(

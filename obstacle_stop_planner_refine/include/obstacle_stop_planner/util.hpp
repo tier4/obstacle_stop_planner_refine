@@ -14,9 +14,16 @@
 #ifndef OBSTACLE_STOP_PLANNER__UTIL_HPP_
 #define OBSTACLE_STOP_PLANNER__UTIL_HPP_
 
+#include <string>
+
 #include "opencv2/core/core.hpp"
 #include "geometry_msgs/msg/point.hpp"
 #include "boost/geometry.hpp"
+#include "boost/format.hpp"
+#include "boost/assign/list_of.hpp"
+#include "tf2/utils.h"
+#include "diagnostic_msgs/msg/diagnostic_status.hpp"
+#include "diagnostic_msgs/msg/key_value.hpp"
 
 namespace bg = boost::geometry;
 using Point = bg::model::d2::point_xy<double>;
@@ -25,6 +32,38 @@ using Line = bg::model::linestring<Point>;
 
 namespace
 {
+double getYawFromGeometryMsgsQuaternion(const geometry_msgs::msg::Quaternion & quat)
+{
+  tf2::Quaternion tf2_quat(quat.x, quat.y, quat.z, quat.w);
+  double roll, pitch, yaw;
+  tf2::Matrix3x3(tf2_quat).getRPY(roll, pitch, yaw);
+
+  return yaw;
+}
+std::string jsonDumpsPose(const geometry_msgs::msg::Pose & pose)
+{
+  const std::string json_dumps_pose =
+    (boost::format(
+      R"({"position":{"x":%lf,"y":%lf,"z":%lf},"orientation":{"w":%lf,"x":%lf,"y":%lf,"z":%lf}})") %
+    pose.position.x % pose.position.y % pose.position.z % pose.orientation.w % pose.orientation.x %
+    pose.orientation.y % pose.orientation.z)
+    .str();
+  return json_dumps_pose;
+}
+diagnostic_msgs::msg::DiagnosticStatus makeStopReasonDiag(
+  const std::string stop_reason, const geometry_msgs::msg::Pose & stop_pose)
+{
+  diagnostic_msgs::msg::DiagnosticStatus stop_reason_diag;
+  diagnostic_msgs::msg::KeyValue stop_reason_diag_kv;
+  stop_reason_diag.level = diagnostic_msgs::msg::DiagnosticStatus::OK;
+  stop_reason_diag.name = "stop_reason";
+  stop_reason_diag.message = stop_reason;
+  stop_reason_diag_kv.key = "stop_pose";
+  stop_reason_diag_kv.value = jsonDumpsPose(stop_pose);
+  stop_reason_diag.values.push_back(stop_reason_diag_kv);
+  return stop_reason_diag;
+}
+
 cv::Point2d calcCentroid(const std::vector<cv::Point2d> pointcloud)
 {
   cv::Point2d centroid;
