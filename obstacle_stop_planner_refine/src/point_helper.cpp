@@ -96,7 +96,7 @@ StopPoint PointHelper::searchInsertPoint(
   const auto max_dist_stop_point =
     createTargetPoint(idx, vehicle_info_->stop_margin_, trajectory_vec, collision_point_vec, base_path);
   const auto min_dist_stop_point = createTargetPoint(
-    idx, vehicle_info_->stop_margin_, trajectory_vec, collision_point_vec, base_path);
+    idx, vehicle_info_->min_behavior_stop_margin_, trajectory_vec, collision_point_vec, base_path);
 
   // check if stop point is already inserted by behavior planner
   bool is_inserted_already_stop_point = false;
@@ -199,4 +199,25 @@ autoware_planning_msgs::msg::TrajectoryPoint PointHelper::insertSlowDownStartPoi
     output_path.points.begin() + slow_down_start_point.index, slow_down_start_trajectory_point);
   return slow_down_start_trajectory_point;
 }
+
+autoware_planning_msgs::msg::TrajectoryPoint PointHelper::getExtendTrajectoryPoint(
+  const double extend_distance, const autoware_planning_msgs::msg::TrajectoryPoint & goal_point)
+{
+  tf2::Transform map2goal;
+  tf2::fromMsg(goal_point.pose, map2goal);
+  tf2::Transform local_extend_point;
+  local_extend_point.setOrigin(tf2::Vector3(extend_distance, 0.0, 0.0));
+  tf2::Quaternion q;
+  q.setRPY(0, 0, 0);
+  local_extend_point.setRotation(q);
+  const auto map2extend_point = map2goal * local_extend_point;
+  geometry_msgs::msg::Pose extend_pose;
+  tf2::toMsg(map2extend_point, extend_pose);
+  autoware_planning_msgs::msg::TrajectoryPoint extend_trajectory_point;
+  extend_trajectory_point.pose = extend_pose;
+  extend_trajectory_point.twist = goal_point.twist;
+  extend_trajectory_point.accel = goal_point.accel;
+  return extend_trajectory_point;
+}
+
 }  // namespace motion_planning

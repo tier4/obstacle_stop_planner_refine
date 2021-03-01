@@ -99,15 +99,8 @@ private:
   void insertSlowDownVelocity(
     const size_t slow_down_start_point_idx, const double slow_down_target_vel, double slow_down_vel,
     autoware_planning_msgs::msg::Trajectory & output_path);
-
   double calcSlowDownTargetVel(const double lateral_deviation);
-  bool extendTrajectory(
-    const autoware_planning_msgs::msg::Trajectory & input_trajectory,
-    const double extend_distance,
-    autoware_planning_msgs::msg::Trajectory & output_trajectory);
 
-  autoware_planning_msgs::msg::TrajectoryPoint getExtendTrajectoryPoint(
-    double extend_distance, const autoware_planning_msgs::msg::TrajectoryPoint & goal_point);
 };
 }  // namespace motion_planning
 

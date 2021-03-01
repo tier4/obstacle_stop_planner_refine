@@ -33,6 +33,7 @@
 #include "obstacle_stop_planner/node.hpp"
 #include "obstacle_stop_planner/util.hpp"
 #include "obstacle_stop_planner/point_helper.hpp"
+#include "obstacle_stop_planner/polygon.hpp"
 
 #define EIGEN_MPL2_ONLY
 #include "eigen3/Eigen/Core"
@@ -111,7 +112,7 @@ void ObstacleStopPlannerNode::pathCallback(
    * extend trajectory to consider obstacles after the goal
    */
   autoware_planning_msgs::msg::Trajectory extended_trajectory;
-  extendTrajectory(*input_msg, vehicle_info_.extend_distance_, extended_trajectory);
+  trajectory_.extendTrajectory(*input_msg, vehicle_info_.extend_distance_, extended_trajectory);
 
   const autoware_planning_msgs::msg::Trajectory base_path = *input_msg;
   autoware_planning_msgs::msg::Trajectory output_msg = *input_msg;
@@ -143,7 +144,7 @@ void ObstacleStopPlannerNode::pathCallback(
     new pcl::PointCloud<pcl::PointXYZ>);
 
   // search obstacle candidate pointcloud to reduce calculation cost
-  const double search_radius = vehicle_info_.enable_slow_down_ ? vehicle_info_.slow_down_search_radius_ : vehicle_info_.stop_search_radius_;
+  const double search_radius = vehicle_info_.getSearchRadius();
   obstacle_pointcloud_.SetSearchRadius(search_radius);
 
   obstacle_pointcloud_.SearchCandidateObstacle(tf_buffer_, trajectory);
@@ -185,13 +186,7 @@ void ObstacleStopPlannerNode::pathCallback(
     debug_ptr_->pushPolygon(
       one_step_move_vehicle_polygon, trajectory.points.at(i).pose.position.z, PolygonType::Vehicle);
     // convert boost polygon
-    Polygon boost_one_step_move_vehicle_polygon;
-    for (const auto & point : one_step_move_vehicle_polygon) {
-      boost_one_step_move_vehicle_polygon.outer().push_back(bg::make<Point>(point.x, point.y));
-    }
-    boost_one_step_move_vehicle_polygon.outer().push_back(
-      bg::make<Point>(
-        one_step_move_vehicle_polygon.front().x, one_step_move_vehicle_polygon.front().y));
+    auto boost_one_step_move_vehicle_polygon = ConvertToBoostPolygon(one_step_move_vehicle_polygon);
 
     std::vector<cv::Point2d> one_step_move_slow_down_range_polygon;
     Polygon boost_one_step_move_slow_down_range_polygon;
@@ -206,14 +201,7 @@ void ObstacleStopPlannerNode::pathCallback(
         one_step_move_slow_down_range_polygon, trajectory.points.at(i).pose.position.z,
         PolygonType::SlowDownRange);
       // convert boost polygon
-      for (const auto & point : one_step_move_slow_down_range_polygon) {
-        boost_one_step_move_slow_down_range_polygon.outer().push_back(
-          bg::make<Point>(point.x, point.y));
-      }
-      boost_one_step_move_slow_down_range_polygon.outer().push_back(
-        bg::make<Point>(
-          one_step_move_slow_down_range_polygon.front().x,
-          one_step_move_slow_down_range_polygon.front().y));
+      boost_one_step_move_slow_down_range_polygon = ConvertToBoostPolygon(one_step_move_slow_down_range_polygon);
     }
 
     // check within polygon
@@ -419,47 +407,6 @@ void ObstacleStopPlannerNode::currentVelocityCallback(
   const geometry_msgs::msg::TwistStamped::ConstSharedPtr input_msg)
 {
   current_velocity_ptr_ = input_msg;
-}
-
-autoware_planning_msgs::msg::TrajectoryPoint ObstacleStopPlannerNode::getExtendTrajectoryPoint(
-  const double extend_distance, const autoware_planning_msgs::msg::TrajectoryPoint & goal_point)
-{
-  tf2::Transform map2goal;
-  tf2::fromMsg(goal_point.pose, map2goal);
-  tf2::Transform local_extend_point;
-  local_extend_point.setOrigin(tf2::Vector3(extend_distance, 0.0, 0.0));
-  tf2::Quaternion q;
-  q.setRPY(0, 0, 0);
-  local_extend_point.setRotation(q);
-  const auto map2extend_point = map2goal * local_extend_point;
-  geometry_msgs::msg::Pose extend_pose;
-  tf2::toMsg(map2extend_point, extend_pose);
-  autoware_planning_msgs::msg::TrajectoryPoint extend_trajectory_point;
-  extend_trajectory_point.pose = extend_pose;
-  extend_trajectory_point.twist = goal_point.twist;
-  extend_trajectory_point.accel = goal_point.accel;
-  return extend_trajectory_point;
-}
-
-bool ObstacleStopPlannerNode::extendTrajectory(
-  const autoware_planning_msgs::msg::Trajectory & input_trajectory,
-  const double extend_distance,
-  autoware_planning_msgs::msg::Trajectory & output_trajectory)
-{
-  output_trajectory = input_trajectory;
-  const auto goal_point = input_trajectory.points.back();
-  double interpolation_distance = 0.1;
-
-  double extend_sum = 0.0;
-  while (extend_sum <= (extend_distance - interpolation_distance)) {
-    const auto extend_trajectory_point = getExtendTrajectoryPoint(extend_sum, goal_point);
-    output_trajectory.points.push_back(extend_trajectory_point);
-    extend_sum += interpolation_distance;
-  }
-  const auto extend_trajectory_point = getExtendTrajectoryPoint(extend_distance, goal_point);
-  output_trajectory.points.push_back(extend_trajectory_point);
-
-  return true;
 }
 
 void ObstacleStopPlannerNode::createOneStepPolygon(

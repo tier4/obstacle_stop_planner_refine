@@ -103,4 +103,27 @@ bool Trajectory::trimTrajectoryFromSelfPose(
   return trimTrajectoryWithIndexFromSelfPose(
     output_trajectory, self_pose, output_trajectory, index);
 }
+
+bool Trajectory::extendTrajectory(
+  const autoware_planning_msgs::msg::Trajectory & input_trajectory,
+  const double extend_distance,
+  autoware_planning_msgs::msg::Trajectory & output_trajectory)
+{
+  output_trajectory = input_trajectory;
+  const auto goal_point = input_trajectory.points.back();
+  double interpolation_distance = 0.1;
+  PointHelper point_helper;
+
+  double extend_sum = 0.0;
+  while (extend_sum <= (extend_distance - interpolation_distance)) {
+    const auto extend_trajectory_point = point_helper.getExtendTrajectoryPoint(extend_sum, goal_point);
+    output_trajectory.points.push_back(extend_trajectory_point);
+    extend_sum += interpolation_distance;
+  }
+  const auto extend_trajectory_point = point_helper.getExtendTrajectoryPoint(extend_distance, goal_point);
+  output_trajectory.points.push_back(extend_trajectory_point);
+
+  return true;
+}
+
 }  // namespace motion_planning
