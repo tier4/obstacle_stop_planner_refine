@@ -84,6 +84,6 @@ public:
 private:
 };
 
-}
+}  // namespace motion_planning
 
 #endif  // OBSTACLE_STOP_PLANNER__VEHICLE_HPP_

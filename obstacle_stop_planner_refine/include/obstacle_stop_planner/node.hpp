@@ -41,22 +41,10 @@
 #include "obstacle_stop_planner/debug_marker.hpp"
 #include "obstacle_stop_planner/obstacle_point_cloud.hpp"
 #include "obstacle_stop_planner/vehicle.hpp"
+#include "obstacle_stop_planner/trajectory.hpp"
 
 namespace motion_planning
 {
-struct StopPoint
-{
-  size_t index;
-  Eigen::Vector2d point;
-};
-
-struct SlowDownPoint
-{
-  size_t index;
-  Eigen::Vector2d point;
-  double velocity;
-};
-
 class ObstacleStopPlannerNode : public rclcpp::Node
 {
 public:
@@ -83,6 +71,7 @@ private:
   // ObstacleStopPlanner impl_;
   ObstaclePointCloud obstacle_pointcloud_;
   VehicleInfo vehicle_info_;
+  Trajectory trajectory_;
 
   /*
    * Parameter
@@ -103,68 +92,12 @@ private:
 private:
   bool convexHull(
     const std::vector<cv::Point2d> pointcloud, std::vector<cv::Point2d> & polygon_points);
-  bool decimateTrajectory(
-    const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
-    autoware_planning_msgs::msg::Trajectory & output_trajectory);
-  bool decimateTrajectory(
-    const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
-    autoware_planning_msgs::msg::Trajectory & output_trajectory,
-    std::map<size_t /* decimate */, size_t /* origin */> & index_map);
-  bool trimTrajectoryFromSelfPose(
-    const autoware_planning_msgs::msg::Trajectory & input_trajectory,
-    const geometry_msgs::msg::Pose self_pose,
-    autoware_planning_msgs::msg::Trajectory & output_trajectory);
-  bool trimTrajectoryWithIndexFromSelfPose(
-    const autoware_planning_msgs::msg::Trajectory & input_trajectory,
-    const geometry_msgs::msg::Pose self_pose,
-    autoware_planning_msgs::msg::Trajectory & output_trajectory,
-    size_t & index);
-  bool searchPointcloudNearTrajectory(
-    const autoware_planning_msgs::msg::Trajectory & trajectory, const double radius,
-    const pcl::PointCloud<pcl::PointXYZ>::Ptr input_pointcloud_ptr,
-    pcl::PointCloud<pcl::PointXYZ>::Ptr output_pointcloud_ptr);
   void createOneStepPolygon(
     const geometry_msgs::msg::Pose base_step_pose, const geometry_msgs::msg::Pose next_step_pose,
     std::vector<cv::Point2d> & polygon, const double expand_width = 0.0);
   bool getSelfPose(
     const std_msgs::msg::Header & header, const tf2_ros::Buffer & tf_buffer,
     geometry_msgs::msg::Pose & self_pose);
-  bool getBackwardPointFromBasePoint(
-    const Eigen::Vector2d & line_point1, const Eigen::Vector2d & line_point2,
-    const Eigen::Vector2d & base_point, const double backward_length,
-    Eigen::Vector2d & output_point);
-  void getNearestPoint(
-    const pcl::PointCloud<pcl::PointXYZ> & pointcloud, const geometry_msgs::msg::Pose & base_pose,
-    pcl::PointXYZ * nearest_collision_point, rclcpp::Time * nearest_collision_point_time);
-  void getLateralNearestPoint(
-    const pcl::PointCloud<pcl::PointXYZ> & pointcloud, const geometry_msgs::msg::Pose & base_pose,
-    pcl::PointXYZ * lateral_nearest_point, double * deviation);
-  geometry_msgs::msg::Pose getVehicleCenterFromBase(const geometry_msgs::msg::Pose & base_pose);
-
-  void insertStopPoint(
-    const StopPoint & stop_point, const autoware_planning_msgs::msg::Trajectory & base_path,
-    autoware_planning_msgs::msg::Trajectory & output_path,
-    diagnostic_msgs::msg::DiagnosticStatus & stop_reason_diag);
-
-  StopPoint searchInsertPoint(
-    const int idx, const autoware_planning_msgs::msg::Trajectory & base_path,
-    const Eigen::Vector2d & trajectory_vec, const Eigen::Vector2d & collision_point_vec);
-
-  StopPoint createTargetPoint(
-    const int idx, const double margin, const Eigen::Vector2d & trajectory_vec,
-    const Eigen::Vector2d & collision_point_vec,
-    const autoware_planning_msgs::msg::Trajectory & base_path);
-
-  SlowDownPoint createSlowDownStartPoint(
-    const int idx, const double margin, const double slow_down_target_vel,
-    const Eigen::Vector2d & trajectory_vec, const Eigen::Vector2d & slow_down_point_vec,
-    const autoware_planning_msgs::msg::Trajectory & base_path);
-
-  void insertSlowDownStartPoint(
-    const SlowDownPoint & slow_down_start_point,
-    const autoware_planning_msgs::msg::Trajectory & base_path,
-    autoware_planning_msgs::msg::Trajectory & output_path);
-
   void insertSlowDownVelocity(
     const size_t slow_down_start_point_idx, const double slow_down_target_vel, double slow_down_vel,
     autoware_planning_msgs::msg::Trajectory & output_path);
