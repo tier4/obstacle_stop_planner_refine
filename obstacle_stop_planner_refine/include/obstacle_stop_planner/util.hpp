@@ -32,7 +32,7 @@ using Line = bg::model::linestring<Point>;
 
 namespace
 {
-double getYawFromGeometryMsgsQuaternion(const geometry_msgs::msg::Quaternion & quat)
+inline double getYawFromGeometryMsgsQuaternion(const geometry_msgs::msg::Quaternion & quat)
 {
   tf2::Quaternion tf2_quat(quat.x, quat.y, quat.z, quat.w);
   double roll, pitch, yaw;
@@ -40,7 +40,8 @@ double getYawFromGeometryMsgsQuaternion(const geometry_msgs::msg::Quaternion & q
 
   return yaw;
 }
-std::string jsonDumpsPose(const geometry_msgs::msg::Pose & pose)
+
+inline std::string jsonDumpsPose(const geometry_msgs::msg::Pose & pose)
 {
   const std::string json_dumps_pose =
     (boost::format(
@@ -50,7 +51,8 @@ std::string jsonDumpsPose(const geometry_msgs::msg::Pose & pose)
     .str();
   return json_dumps_pose;
 }
-diagnostic_msgs::msg::DiagnosticStatus makeStopReasonDiag(
+
+inline diagnostic_msgs::msg::DiagnosticStatus makeStopReasonDiag(
   const std::string stop_reason, const geometry_msgs::msg::Pose & stop_pose)
 {
   diagnostic_msgs::msg::DiagnosticStatus stop_reason_diag;
@@ -64,7 +66,7 @@ diagnostic_msgs::msg::DiagnosticStatus makeStopReasonDiag(
   return stop_reason_diag;
 }
 
-cv::Point2d calcCentroid(const std::vector<cv::Point2d> pointcloud)
+inline cv::Point2d calcCentroid(const std::vector<cv::Point2d> pointcloud)
 {
   cv::Point2d centroid;
   centroid.x = 0;
@@ -79,13 +81,13 @@ cv::Point2d calcCentroid(const std::vector<cv::Point2d> pointcloud)
   return centroid;
 }
 
-Point convertPointRosToBoost(const geometry_msgs::msg::Point &point)
+inline Point convertPointRosToBoost(const geometry_msgs::msg::Point &point)
 {
   const Point point2d(point.x, point.y);
   return point2d;
 }
 
-geometry_msgs::msg::Vector3 rpyFromQuat(const geometry_msgs::msg::Quaternion &q)
+inline geometry_msgs::msg::Vector3 rpyFromQuat(const geometry_msgs::msg::Quaternion &q)
 {
   tf2::Quaternion quat(q.x, q.y, q.z, q.w);
   tf2::Matrix3x3 mat(quat);
@@ -98,7 +100,7 @@ geometry_msgs::msg::Vector3 rpyFromQuat(const geometry_msgs::msg::Quaternion &q)
   return rpy;
 }
 
-Polygon getPolygon(const geometry_msgs::msg::Pose &pose, const geometry_msgs::msg::Vector3 &size,
+inline Polygon getPolygon(const geometry_msgs::msg::Pose &pose, const geometry_msgs::msg::Vector3 &size,
                    const double center_offset, const double l_margin = 0.0, const double w_margin = 0.0)
 {
   Polygon obj_poly;
@@ -122,7 +124,7 @@ Polygon getPolygon(const geometry_msgs::msg::Pose &pose, const geometry_msgs::ms
   return translate_obj_poly;
 }
 
-double getDistanceFromTwoPoint(const geometry_msgs::msg::Point &point1, const geometry_msgs::msg::Point &point2)
+inline double getDistanceFromTwoPoint(const geometry_msgs::msg::Point &point1, const geometry_msgs::msg::Point &point2)
 {
   const double dx = point1.x - point2.x;
   const double dy = point1.y - point2.y;
