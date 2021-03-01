@@ -180,9 +180,8 @@ void ObstacleStopPlannerNode::pathCallback(
     /*
      * create one step polygon for vehicle
      */
-    std::vector<cv::Point2d> one_step_move_vehicle_polygon;
-    createOneStepPolygon(
-      trajectory.points.at(i).pose, trajectory.points.at(i + 1).pose, one_step_move_vehicle_polygon,
+    std::vector<cv::Point2d> one_step_move_vehicle_polygon = createOneStepPolygon(
+      trajectory.points.at(i).pose, trajectory.points.at(i + 1).pose,
       vehicle_info_.expand_stop_range_);
     debug_ptr_->pushPolygon(
       one_step_move_vehicle_polygon, trajectory.points.at(i).pose.position.z, PolygonType::Vehicle);
@@ -195,9 +194,9 @@ void ObstacleStopPlannerNode::pathCallback(
       /*
       * create one step polygon for slow_down range
       */
-      createOneStepPolygon(
+      one_step_move_slow_down_range_polygon = createOneStepPolygon(
         trajectory.points.at(i).pose, trajectory.points.at(i + 1).pose,
-        one_step_move_slow_down_range_polygon, vehicle_info_.expand_slow_down_range_);
+        vehicle_info_.expand_slow_down_range_);
       debug_ptr_->pushPolygon(
         one_step_move_slow_down_range_polygon, trajectory.points.at(i).pose.position.z,
         PolygonType::SlowDownRange);
@@ -410,9 +409,9 @@ void ObstacleStopPlannerNode::currentVelocityCallback(
   current_velocity_ptr_ = input_msg;
 }
 
-void ObstacleStopPlannerNode::createOneStepPolygon(
+std::vector<cv::Point2d> ObstacleStopPlannerNode::createOneStepPolygon(
   const geometry_msgs::msg::Pose base_step_pose, const geometry_msgs::msg::Pose next_step_pose,
-  std::vector<cv::Point2d> & polygon, const double expand_width)
+  const double expand_width)
 {
   std::vector<cv::Point2d> one_step_move_vehicle_corner_points;
   // start step
@@ -471,11 +470,11 @@ void ObstacleStopPlannerNode::createOneStepPolygon(
         next_step_pose.position.y + std::sin(yaw) * (-vehicle_info_.rear_overhang_m_) +
         std::cos(yaw) * (vehicle_info_.vehicle_width_m_ / 2.0 + expand_width)));
   }
-  convexHull(one_step_move_vehicle_corner_points, polygon);
+  return convexHull(one_step_move_vehicle_corner_points);
 }
 
-bool ObstacleStopPlannerNode::convexHull(
-  const std::vector<cv::Point2d> pointcloud, std::vector<cv::Point2d> & polygon_points)
+std::vector<cv::Point2d> ObstacleStopPlannerNode::convexHull(
+  const std::vector<cv::Point2d> pointcloud)
 {
   auto centroid = calcCentroid(pointcloud);
 
@@ -488,13 +487,14 @@ bool ObstacleStopPlannerNode::convexHull(
   }
   cv::convexHull(normalized_pointcloud, normalized_polygon_points);
 
+  std::vector<cv::Point2d> polygon_points{normalized_polygon_points.size()};
   for (size_t i = 0; i < normalized_polygon_points.size(); ++i) {
     cv::Point2d polygon_point;
     polygon_point.x = (normalized_polygon_points.at(i).x / 1000.0 + centroid.x);
     polygon_point.y = (normalized_polygon_points.at(i).y / 1000.0 + centroid.y);
-    polygon_points.push_back(polygon_point);
+    polygon_points.emplace_back(polygon_point);
   }
-  return true;
+  return polygon_points;
 }
 
 bool ObstacleStopPlannerNode::getSelfPose(
