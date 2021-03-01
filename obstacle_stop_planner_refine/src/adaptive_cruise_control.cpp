@@ -114,15 +114,14 @@ void AdaptiveCruiseController::insertAdaptiveCruiseVelocity(
   debug_values_.data.resize(num_debug_values_, 0.0);
 
   const double current_velocity = current_velocity_ptr->twist.linear.x;
-  double col_point_distance;
   double point_velocity;
   bool success_estm_vel = false;
   /*
   * calc distance to collision point
   */
-  calcDistanceToNearestPointOnPath(
+  double col_point_distance = calcDistanceToNearestPointOnPath(
     trajectory, nearest_collision_point_idx, self_pose, nearest_collision_point,
-    nearest_collision_point_time, &col_point_distance);
+    nearest_collision_point_time);
 
   /*
   * calc yaw of trajectory at collision point
@@ -181,17 +180,17 @@ void AdaptiveCruiseController::insertAdaptiveCruiseVelocity(
   need_to_stop = false;
 }
 
-void AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
+double AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
   const autoware_planning_msgs::msg::Trajectory & trajectory, const int nearest_point_idx,
   const geometry_msgs::msg::Pose & self_pose, const pcl::PointXYZ & nearest_collision_point,
-  const rclcpp::Time & nearest_collision_point_time, double * distance)
+  const rclcpp::Time & nearest_collision_point_time)
 {
+  double distance;
   if (trajectory.points.size() == 0) {
     RCLCPP_DEBUG_THROTTLE(
       node_->get_logger(), *node_->get_clock(), std::chrono::milliseconds(1000).count(),
       "input path is too short(size=0)");
-    *distance = 0;
-    return;
+    return 0;
   }
 
   // get self polygon
@@ -206,9 +205,9 @@ void AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
 
   if (nearest_point_idx <= 2) {
     // if too nearest collision point, return direct distance
-    *distance = boost::geometry::distance(self_poly, nearest_point2d);
-    debug_values_.data.at(DBGVAL::FORWARD_OBJ_DISTANCE) = *distance;
-    return;
+    distance = boost::geometry::distance(self_poly, nearest_point2d);
+    debug_values_.data.at(DBGVAL::FORWARD_OBJ_DISTANCE) = distance;
+    return distance;
   }
 
   /* get total distance to collision point */
@@ -239,8 +238,9 @@ void AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
     dist_to_point += prev_target_velocity_ * delay_time;
   }
 
-  *distance = std::max(0.0, dist_to_point);
-  debug_values_.data.at(DBGVAL::FORWARD_OBJ_DISTANCE) = *distance;
+  distance = std::max(0.0, dist_to_point);
+  debug_values_.data.at(DBGVAL::FORWARD_OBJ_DISTANCE) = distance;
+  return distance;
 }
 
 double AdaptiveCruiseController::calcTrajYaw(

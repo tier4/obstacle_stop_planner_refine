@@ -38,6 +38,8 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "obstacle_stop_planner/adaptive_cruise_control.hpp"
 #include "obstacle_stop_planner/debug_marker.hpp"
+#include "obstacle_stop_planner/obstacle_point_cloud.hpp"
+#include "obstacle_stop_planner/vehicle.hpp"
 
 namespace motion_planning
 {
@@ -76,31 +78,18 @@ private:
   std::shared_ptr<ObstacleStopPlannerDebugNode> debug_ptr_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
+  // ObstacleStopPlanner impl_;
+  ObstaclePointCloud obstacle_pointcloud_;
+  VehicleInfo vehicle_info_;
 
   /*
    * Parameter
    */
   std::unique_ptr<motion_planning::AdaptiveCruiseController> acc_controller_;
-  sensor_msgs::msg::PointCloud2::SharedPtr obstacle_ros_pointcloud_ptr_;
   geometry_msgs::msg::TwistStamped::ConstSharedPtr current_velocity_ptr_;
   autoware_perception_msgs::msg::DynamicObjectArray::ConstSharedPtr object_ptr_;
-  double wheel_base_, front_overhang_, rear_overhang_, left_overhang_, right_overhang_,
-    vehicle_width_, vehicle_length_;
-  double stop_margin_;
-  double slow_down_margin_;
-  double min_behavior_stop_margin_;
   rclcpp::Time prev_col_point_time_;
   pcl::PointXYZ prev_col_point_;
-  double expand_slow_down_range_;
-  double expand_stop_range_;
-  double max_slow_down_vel_;
-  double min_slow_down_vel_;
-  double max_deceleration_;
-  bool enable_slow_down_;
-  double extend_distance_;
-  double step_length_;
-  double stop_search_radius_;
-  double slow_down_search_radius_;
   void obstaclePointcloudCallback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr input_msg);
   void pathCallback(const autoware_planning_msgs::msg::Trajectory::ConstSharedPtr input_msg);
   void dynamicObjectCallback(

@@ -23,6 +23,7 @@ ament_auto_add_executable(obstacle_stop_planner_node
   src/node.cpp
   src/main.cpp
   src/adaptive_cruise_control.cpp
+  src/obstacle_point_cloud.cpp
 )
 
 target_include_directories(obstacle_stop_planner_node
