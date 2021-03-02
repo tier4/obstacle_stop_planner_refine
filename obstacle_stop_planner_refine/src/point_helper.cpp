@@ -154,8 +154,7 @@ SlowDownPoint PointHelper::createSlowDownStartPoint(
   const autoware_planning_msgs::msg::Trajectory & base_path,
   const double current_velocity_x)
 {
-  double length_sum = 0.0;
-  length_sum += trajectory_vec.normalized().dot(slow_down_point_vec);
+  double length_sum = trajectory_vec.normalized().dot(slow_down_point_vec);
   Eigen::Vector2d line_start_point, line_end_point;
   {
     line_start_point << base_path.points.at(0).pose.position.x,
