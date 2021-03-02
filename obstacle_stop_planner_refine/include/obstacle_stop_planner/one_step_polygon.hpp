@@ -39,8 +39,8 @@ public:
   void Create(
     const geometry_msgs::msg::Pose base_step_pose, const geometry_msgs::msg::Pose next_step_pose,
     const double expand_width);
-  Polygon GetBoostPolygon() {return boost_polygon_;}
-  std::vector<cv::Point2d> GetPolygon() {return polygon_;}
+  Polygon GetBoostPolygon() const {return boost_polygon_;}
+  std::vector<cv::Point2d> GetPolygon() const {return polygon_;}
   void SetVehicleInfo(VehicleInfo vehicle_info) {vehicle_info_ = std::make_shared<VehicleInfo>(vehicle_info);}
 
 private:
