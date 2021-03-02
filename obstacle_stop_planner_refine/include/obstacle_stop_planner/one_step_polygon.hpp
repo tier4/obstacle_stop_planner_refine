@@ -23,13 +23,14 @@
 #include "boost/geometry.hpp"
 #include "boost/geometry/geometries/linestring.hpp"
 #include "boost/geometry/geometries/point_xy.hpp"
+// #include "boost/geometry"
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "geometry_msgs/msg/pose.hpp"
-#include "obstacle_stop_planner/util.hpp"
 #include "obstacle_stop_planner/vehicle.hpp"
-
+#include "autoware_utils/autoware_utils.hpp"
+#include "obstacle_stop_planner/util/create_vehicle_footprint.hpp"
 
 namespace motion_planning {
 
@@ -40,11 +41,11 @@ public:
     const geometry_msgs::msg::Pose base_step_pose, const geometry_msgs::msg::Pose next_step_pose,
     const double expand_width);
   Polygon GetBoostPolygon() const {return boost_polygon_;}
-  std::vector<cv::Point2d> GetPolygon() const {return polygon_;}
+  autoware_utils::Polygon2d GetPolygon() const {return polygon_;}
   void SetVehicleInfo(VehicleInfo vehicle_info) {vehicle_info_ = std::make_shared<VehicleInfo>(vehicle_info);}
 
 private:
-  std::vector<cv::Point2d> polygon_;
+  autoware_utils::Polygon2d polygon_;
   Polygon boost_polygon_;
   std::shared_ptr<VehicleInfo> vehicle_info_;
 
@@ -69,65 +70,90 @@ inline void OneStepPolygon::Create(
   const geometry_msgs::msg::Pose base_step_pose, const geometry_msgs::msg::Pose next_step_pose,
   const double expand_width)
 {
-  std::vector<cv::Point2d> one_step_move_vehicle_corner_points;
+  autoware_utils::Polygon2d one_step_move_vehicle_corner_points;
+  const auto footprint = createVehicleFootprint(*vehicle_info_, expand_width);
+
   // start step
   {
     double yaw = getYawFromGeometryMsgsQuaternion(base_step_pose.orientation);
-    one_step_move_vehicle_corner_points.push_back(
-      cv::Point2d(
-        base_step_pose.position.x + std::cos(yaw) * (vehicle_info_->wheel_base_m_ + vehicle_info_->front_overhang_m_) -
-        std::sin(yaw) * (vehicle_info_->vehicle_width_m_ / 2.0 + expand_width),
-        base_step_pose.position.y + std::sin(yaw) * (vehicle_info_->wheel_base_m_ + vehicle_info_->front_overhang_m_) +
-        std::cos(yaw) * (vehicle_info_->vehicle_width_m_ / 2.0 + expand_width)));
-    one_step_move_vehicle_corner_points.push_back(
-      cv::Point2d(
-        base_step_pose.position.x + std::cos(yaw) * (vehicle_info_->wheel_base_m_ + vehicle_info_->front_overhang_m_) -
-        std::sin(yaw) * (-vehicle_info_->vehicle_width_m_ / 2.0 - expand_width),
-        base_step_pose.position.y + std::sin(yaw) * (vehicle_info_->wheel_base_m_ + vehicle_info_->front_overhang_m_) +
-        std::cos(yaw) * (-vehicle_info_->vehicle_width_m_ / 2.0 - expand_width)));
-    one_step_move_vehicle_corner_points.push_back(
-      cv::Point2d(
-        base_step_pose.position.x + std::cos(yaw) * (-vehicle_info_->rear_overhang_m_) -
-        std::sin(yaw) * (-vehicle_info_->vehicle_width_m_ / 2.0 - expand_width),
-        base_step_pose.position.y + std::sin(yaw) * (-vehicle_info_->rear_overhang_m_) +
-        std::cos(yaw) * (-vehicle_info_->vehicle_width_m_ / 2.0 - expand_width)));
-    one_step_move_vehicle_corner_points.push_back(
-      cv::Point2d(
-        base_step_pose.position.x + std::cos(yaw) * (-vehicle_info_->rear_overhang_m_) -
-        std::sin(yaw) * (vehicle_info_->vehicle_width_m_ / 2.0 + expand_width),
-        base_step_pose.position.y + std::sin(yaw) * (-vehicle_info_->rear_overhang_m_) +
-        std::cos(yaw) * (vehicle_info_->vehicle_width_m_ / 2.0 + expand_width)));
+
+    bg::strategy::transform::rotate_transformer<bg::radian, double, 2, 2> rotate(yaw);
+    autoware_utils::LinearRing2d transformed_footprint;
+    bg::transform(footprint, transformed_footprint, rotate);
+
+    bg::strategy::transform::translate_transformer<double, 2, 2> translate(base_step_pose.position.x, base_step_pose.position.y);
+    bg::transform(transformed_footprint, transformed_footprint, translate);
+    one_step_move_vehicle_corner_points.outer() = transformed_footprint;
+
+    // one_step_move_vehicle_corner_points.push_back(
+    //   cv::Point2d(
+    //     base_step_pose.position.x + std::cos(yaw) * (vehicle_info_->wheel_base_m_ + vehicle_info_->front_overhang_m_) -
+    //     std::sin(yaw) * (vehicle_info_->vehicle_width_m_ / 2.0 + expand_width),
+    //     base_step_pose.position.y + std::sin(yaw) * (vehicle_info_->wheel_base_m_ + vehicle_info_->front_overhang_m_) +
+    //     std::cos(yaw) * (vehicle_info_->vehicle_width_m_ / 2.0 + expand_width)));
+
+    // one_step_move_vehicle_corner_points.push_back(
+    //   cv::Point2d(
+    //     base_step_pose.position.x + std::cos(yaw) * (vehicle_info_->wheel_base_m_ + vehicle_info_->front_overhang_m_) -
+    //     std::sin(yaw) * (-vehicle_info_->vehicle_width_m_ / 2.0 - expand_width),
+    //     base_step_pose.position.y + std::sin(yaw) * (vehicle_info_->wheel_base_m_ + vehicle_info_->front_overhang_m_) +
+    //     std::cos(yaw) * (-vehicle_info_->vehicle_width_m_ / 2.0 - expand_width)));
+    // one_step_move_vehicle_corner_points.push_back(
+    //   cv::Point2d(
+    //     base_step_pose.position.x + std::cos(yaw) * (-vehicle_info_->rear_overhang_m_) -
+    //     std::sin(yaw) * (-vehicle_info_->vehicle_width_m_ / 2.0 - expand_width),
+    //     base_step_pose.position.y + std::sin(yaw) * (-vehicle_info_->rear_overhang_m_) +
+    //     std::cos(yaw) * (-vehicle_info_->vehicle_width_m_ / 2.0 - expand_width)));
+    // one_step_move_vehicle_corner_points.push_back(
+    //   cv::Point2d(
+    //     base_step_pose.position.x + std::cos(yaw) * (-vehicle_info_->rear_overhang_m_) -
+    //     std::sin(yaw) * (vehicle_info_->vehicle_width_m_ / 2.0 + expand_width),
+    //     base_step_pose.position.y + std::sin(yaw) * (-vehicle_info_->rear_overhang_m_) +
+    //     std::cos(yaw) * (vehicle_info_->vehicle_width_m_ / 2.0 + expand_width)));
   }
   // next step
   {
     double yaw = getYawFromGeometryMsgsQuaternion(next_step_pose.orientation);
-    one_step_move_vehicle_corner_points.push_back(
-      cv::Point2d(
-        next_step_pose.position.x + std::cos(yaw) * (vehicle_info_->wheel_base_m_ + vehicle_info_->front_overhang_m_) -
-        std::sin(yaw) * (vehicle_info_->vehicle_width_m_ / 2.0 + expand_width),
-        next_step_pose.position.y + std::sin(yaw) * (vehicle_info_->wheel_base_m_ + vehicle_info_->front_overhang_m_) +
-        std::cos(yaw) * (vehicle_info_->vehicle_width_m_ / 2.0 + expand_width)));
-    one_step_move_vehicle_corner_points.push_back(
-      cv::Point2d(
-        next_step_pose.position.x + std::cos(yaw) * (vehicle_info_->wheel_base_m_ + vehicle_info_->front_overhang_m_) -
-        std::sin(yaw) * (-vehicle_info_->vehicle_width_m_ / 2.0 - expand_width),
-        next_step_pose.position.y + std::sin(yaw) * (vehicle_info_->wheel_base_m_ + vehicle_info_->front_overhang_m_) +
-        std::cos(yaw) * (-vehicle_info_->vehicle_width_m_ / 2.0 - expand_width)));
-    one_step_move_vehicle_corner_points.push_back(
-      cv::Point2d(
-        next_step_pose.position.x + std::cos(yaw) * (-vehicle_info_->rear_overhang_m_) -
-        std::sin(yaw) * (-vehicle_info_->vehicle_width_m_ / 2.0 - expand_width),
-        next_step_pose.position.y + std::sin(yaw) * (-vehicle_info_->rear_overhang_m_) +
-        std::cos(yaw) * (-vehicle_info_->vehicle_width_m_ / 2.0 - expand_width)));
-    one_step_move_vehicle_corner_points.push_back(
-      cv::Point2d(
-        next_step_pose.position.x + std::cos(yaw) * (-vehicle_info_->rear_overhang_m_) -
-        std::sin(yaw) * (vehicle_info_->vehicle_width_m_ / 2.0 + expand_width),
-        next_step_pose.position.y + std::sin(yaw) * (-vehicle_info_->rear_overhang_m_) +
-        std::cos(yaw) * (vehicle_info_->vehicle_width_m_ / 2.0 + expand_width)));
+    bg::strategy::transform::rotate_transformer<bg::radian, double, 2, 2> rotate(yaw);
+    autoware_utils::LinearRing2d transformed_footprint;
+    bg::transform(footprint, transformed_footprint, rotate);
+
+    bg::strategy::transform::translate_transformer<double, 2, 2> translate(base_step_pose.position.x, base_step_pose.position.y);
+    bg::transform(transformed_footprint, transformed_footprint, translate);
+    for (const auto& item : transformed_footprint) {
+      one_step_move_vehicle_corner_points.outer().emplace_back(item);
+    }
+
+
+    // one_step_move_vehicle_corner_points.push_back(
+    //   cv::Point2d(
+    //     next_step_pose.position.x + std::cos(yaw) * (vehicle_info_->wheel_base_m_ + vehicle_info_->front_overhang_m_) -
+    //     std::sin(yaw) * (vehicle_info_->vehicle_width_m_ / 2.0 + expand_width),
+    //     next_step_pose.position.y + std::sin(yaw) * (vehicle_info_->wheel_base_m_ + vehicle_info_->front_overhang_m_) +
+    //     std::cos(yaw) * (vehicle_info_->vehicle_width_m_ / 2.0 + expand_width)));
+    // one_step_move_vehicle_corner_points.push_back(
+    //   cv::Point2d(
+    //     next_step_pose.position.x + std::cos(yaw) * (vehicle_info_->wheel_base_m_ + vehicle_info_->front_overhang_m_) -
+    //     std::sin(yaw) * (-vehicle_info_->vehicle_width_m_ / 2.0 - expand_width),
+    //     next_step_pose.position.y + std::sin(yaw) * (vehicle_info_->wheel_base_m_ + vehicle_info_->front_overhang_m_) +
+    //     std::cos(yaw) * (-vehicle_info_->vehicle_width_m_ / 2.0 - expand_width)));
+    // one_step_move_vehicle_corner_points.push_back(
+    //   cv::Point2d(
+    //     next_step_pose.position.x + std::cos(yaw) * (-vehicle_info_->rear_overhang_m_) -
+    //     std::sin(yaw) * (-vehicle_info_->vehicle_width_m_ / 2.0 - expand_width),
+    //     next_step_pose.position.y + std::sin(yaw) * (-vehicle_info_->rear_overhang_m_) +
+    //     std::cos(yaw) * (-vehicle_info_->vehicle_width_m_ / 2.0 - expand_width)));
+    // one_step_move_vehicle_corner_points.push_back(
+    //   cv::Point2d(
+    //     next_step_pose.position.x + std::cos(yaw) * (-vehicle_info_->rear_overhang_m_) -
+    //     std::sin(yaw) * (vehicle_info_->vehicle_width_m_ / 2.0 + expand_width),
+    //     next_step_pose.position.y + std::sin(yaw) * (-vehicle_info_->rear_overhang_m_) +
+    //     std::cos(yaw) * (vehicle_info_->vehicle_width_m_ / 2.0 + expand_width)));
   }
-  polygon_ = convexHull(one_step_move_vehicle_corner_points);
-  boost_polygon_ = ConvertToBoostPolygon(polygon_);
+
+  bg::convex_hull(one_step_move_vehicle_corner_points, polygon_);
+  // polygon_ = convexHull(one_step_move_vehicle_corner_points);
+  // boost_polygon_ = ConvertToBoostPolygon(polygon_);
 }
 
 inline std::vector<cv::Point2d> OneStepPolygon::convexHull(

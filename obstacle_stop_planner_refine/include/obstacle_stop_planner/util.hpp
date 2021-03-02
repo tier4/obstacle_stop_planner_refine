@@ -27,7 +27,7 @@
 
 namespace bg = boost::geometry;
 using Point = bg::model::d2::point_xy<double>;
-using Polygon = bg::model::polygon<Point, false>;
+using Polygon = bg::model::polygon<Point, false>;  // clockwise = false
 using Line = bg::model::linestring<Point>;
 
 namespace

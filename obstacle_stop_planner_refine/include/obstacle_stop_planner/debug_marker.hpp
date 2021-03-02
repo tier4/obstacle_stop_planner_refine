@@ -28,6 +28,7 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
+#include "autoware_utils/autoware_utils.hpp"
 #define EIGEN_MPL2_ONLY
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/Geometry"
@@ -45,8 +46,8 @@ public:
   explicit ObstacleStopPlannerDebugNode(rclcpp::Node * node, const double base_link2front);
   ~ObstacleStopPlannerDebugNode() {}
   bool pushPolygon(
-    const std::vector<cv::Point2d> & polygon, const double z, const PolygonType & type);
-  bool pushPolygon(const std::vector<Eigen::Vector3d> & polygon, const PolygonType & type);
+    const autoware_utils::Polygon2d & polygon, const double z, const PolygonType & type);
+  bool pushPolygon(const autoware_utils::Polygon3d & polygon, const PolygonType & type);
   bool pushPose(const geometry_msgs::msg::Pose & pose, const PoseType & type);
   bool pushObstaclePoint(const geometry_msgs::msg::Point & obstacle_point, const PointType & type);
   bool pushObstaclePoint(const pcl::PointXYZ & obstacle_point, const PointType & type);
@@ -66,10 +67,10 @@ private:
   std::shared_ptr<geometry_msgs::msg::Pose> slow_down_end_pose_ptr_;
   std::shared_ptr<geometry_msgs::msg::Point> stop_obstacle_point_ptr_;
   std::shared_ptr<geometry_msgs::msg::Point> slow_down_obstacle_point_ptr_;
-  std::vector<std::vector<Eigen::Vector3d>> vehicle_polygons_;
-  std::vector<std::vector<Eigen::Vector3d>> slow_down_range_polygons_;
-  std::vector<std::vector<Eigen::Vector3d>> collision_polygons_;
-  std::vector<std::vector<Eigen::Vector3d>> slow_down_polygons_;
+  std::vector<autoware_utils::Polygon3d> vehicle_polygons_;
+  std::vector<autoware_utils::Polygon3d> slow_down_range_polygons_;
+  std::vector<autoware_utils::Polygon3d> collision_polygons_;
+  std::vector<autoware_utils::Polygon3d> slow_down_polygons_;
 };
 
 }  // namespace motion_planning
