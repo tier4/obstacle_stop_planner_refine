@@ -17,10 +17,7 @@
 
 #include "obstacle_stop_planner/debug_marker.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
-
-// namespace {
-// convertPose2Transform
-// }
+#include "autoware_utils/autoware_utils.hpp"
 
 namespace motion_planning
 {
@@ -34,32 +31,30 @@ ObstacleStopPlannerDebugNode::ObstacleStopPlannerDebugNode(
 }
 
 bool ObstacleStopPlannerDebugNode::pushPolygon(
-  const std::vector<cv::Point2d> & polygon, const double z, const PolygonType & type)
+  const autoware_utils::Polygon2d & polygon, const double z, const PolygonType & type)
 {
-  std::vector<Eigen::Vector3d> eigen_polygon;
-  for (const auto & point : polygon) {
-    Eigen::Vector3d eigen_point;
-    eigen_point << point.x, point.y, z;
-    eigen_polygon.push_back(eigen_point);
+  autoware_utils::Polygon3d polygon3d;
+  for (const auto & point : polygon.outer()) {
+    polygon3d.outer().emplace_back(point.to_3d(z));
   }
-  return pushPolygon(eigen_polygon, type);
+  return pushPolygon(polygon3d, type);
 }
 
 bool ObstacleStopPlannerDebugNode::pushPolygon(
-  const std::vector<Eigen::Vector3d> & polygon, const PolygonType & type)
+  const autoware_utils::Polygon3d & polygon, const PolygonType & type)
 {
   switch (type) {
     case PolygonType::Vehicle:
-      if (!polygon.empty()) {vehicle_polygons_.push_back(polygon);}
+      if (!polygon.outer().empty()) {vehicle_polygons_.emplace_back(polygon);}
       return true;
     case PolygonType::Collision:
-      if (!polygon.empty()) {collision_polygons_.push_back(polygon);}
+      if (!polygon.outer().empty()) {collision_polygons_.emplace_back(polygon);}
       return true;
     case PolygonType::SlowDownRange:
-      if (!polygon.empty()) {slow_down_range_polygons_.push_back(polygon);}
+      if (!polygon.outer().empty()) {slow_down_range_polygons_.emplace_back(polygon);}
       return true;
     case PolygonType::SlowDown:
-      if (!polygon.empty()) {slow_down_polygons_.push_back(polygon);}
+      if (!polygon.outer().empty()) {slow_down_polygons_.emplace_back(polygon);}
       return true;
     default:
       return false;
@@ -164,26 +159,16 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
     marker.color.g = 1.0;
     marker.color.b = 0.0;
     for (size_t i = 0; i < vehicle_polygons_.size(); ++i) {
-      for (size_t j = 0; j < vehicle_polygons_.at(i).size(); ++j) {
+      for (size_t j = 0; j < vehicle_polygons_.at(i).outer().size(); ++j) {
         {
-          geometry_msgs::msg::Point point;
-          point.x = vehicle_polygons_.at(i).at(j).x();
-          point.y = vehicle_polygons_.at(i).at(j).y();
-          point.z = vehicle_polygons_.at(i).at(j).z();
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(vehicle_polygons_.at(i).outer().at(j));
           marker.points.push_back(point);
         }
-        if (j + 1 == vehicle_polygons_.at(i).size()) {
-          geometry_msgs::msg::Point point;
-          point.x = vehicle_polygons_.at(i).at(0).x();
-          point.y = vehicle_polygons_.at(i).at(0).y();
-          point.z = vehicle_polygons_.at(i).at(0).z();
+        if (j + 1 == vehicle_polygons_.at(i).outer().size()) {
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(vehicle_polygons_.at(i).outer().at(0));
           marker.points.push_back(point);
-
         } else {
-          geometry_msgs::msg::Point point;
-          point.x = vehicle_polygons_.at(i).at(j + 1).x();
-          point.y = vehicle_polygons_.at(i).at(j + 1).y();
-          point.z = vehicle_polygons_.at(i).at(j + 1).z();
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(vehicle_polygons_.at(i).outer().at(j + 1));
           marker.points.push_back(point);
         }
       }
@@ -215,26 +200,17 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
     marker.color.g = 0.0;
     marker.color.b = 0.0;
     for (size_t i = 0; i < collision_polygons_.size(); ++i) {
-      for (size_t j = 0; j < collision_polygons_.at(i).size(); ++j) {
+      for (size_t j = 0; j < collision_polygons_.at(i).outer().size(); ++j) {
         {
-          geometry_msgs::msg::Point point;
-          point.x = collision_polygons_.at(i).at(j).x();
-          point.y = collision_polygons_.at(i).at(j).y();
-          point.z = collision_polygons_.at(i).at(j).z();
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(collision_polygons_.at(i).outer().at(j));
           marker.points.push_back(point);
         }
-        if (j + 1 == collision_polygons_.at(i).size()) {
-          geometry_msgs::msg::Point point;
-          point.x = collision_polygons_.at(i).at(0).x();
-          point.y = collision_polygons_.at(i).at(0).y();
-          point.z = collision_polygons_.at(i).at(0).z();
+        if (j + 1 == collision_polygons_.at(i).outer().size()) {
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(collision_polygons_.at(i).outer().at(0));
           marker.points.push_back(point);
 
         } else {
-          geometry_msgs::msg::Point point;
-          point.x = collision_polygons_.at(i).at(j + 1).x();
-          point.y = collision_polygons_.at(i).at(j + 1).y();
-          point.z = collision_polygons_.at(i).at(j + 1).z();
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(collision_polygons_.at(i).outer().at(j + 1));
           marker.points.push_back(point);
         }
       }
@@ -266,26 +242,17 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
     marker.color.g = 1.0;
     marker.color.b = 0.0;
     for (size_t i = 0; i < slow_down_range_polygons_.size(); ++i) {
-      for (size_t j = 0; j < slow_down_range_polygons_.at(i).size(); ++j) {
+      for (size_t j = 0; j < slow_down_range_polygons_.at(i).outer().size(); ++j) {
         {
-          geometry_msgs::msg::Point point;
-          point.x = slow_down_range_polygons_.at(i).at(j).x();
-          point.y = slow_down_range_polygons_.at(i).at(j).y();
-          point.z = slow_down_range_polygons_.at(i).at(j).z();
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(slow_down_range_polygons_.at(i).outer().at(j));
           marker.points.push_back(point);
         }
-        if (j + 1 == slow_down_range_polygons_.at(i).size()) {
-          geometry_msgs::msg::Point point;
-          point.x = slow_down_range_polygons_.at(i).at(0).x();
-          point.y = slow_down_range_polygons_.at(i).at(0).y();
-          point.z = slow_down_range_polygons_.at(i).at(0).z();
+        if (j + 1 == slow_down_range_polygons_.at(i).outer().size()) {
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(slow_down_range_polygons_.at(i).outer().at(0));
           marker.points.push_back(point);
 
         } else {
-          geometry_msgs::msg::Point point;
-          point.x = slow_down_range_polygons_.at(i).at(j + 1).x();
-          point.y = slow_down_range_polygons_.at(i).at(j + 1).y();
-          point.z = slow_down_range_polygons_.at(i).at(j + 1).z();
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(slow_down_range_polygons_.at(i).outer().at(j + 1));
           marker.points.push_back(point);
         }
       }
@@ -317,26 +284,17 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
     marker.color.g = 1.0;
     marker.color.b = 0.0;
     for (size_t i = 0; i < slow_down_polygons_.size(); ++i) {
-      for (size_t j = 0; j < slow_down_polygons_.at(i).size(); ++j) {
+      for (size_t j = 0; j < slow_down_polygons_.at(i).outer().size(); ++j) {
         {
-          geometry_msgs::msg::Point point;
-          point.x = slow_down_polygons_.at(i).at(j).x();
-          point.y = slow_down_polygons_.at(i).at(j).y();
-          point.z = slow_down_polygons_.at(i).at(j).z();
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(slow_down_polygons_.at(i).outer().at(j));
           marker.points.push_back(point);
         }
-        if (j + 1 == slow_down_polygons_.at(i).size()) {
-          geometry_msgs::msg::Point point;
-          point.x = slow_down_polygons_.at(i).at(0).x();
-          point.y = slow_down_polygons_.at(i).at(0).y();
-          point.z = slow_down_polygons_.at(i).at(0).z();
+        if (j + 1 == slow_down_polygons_.at(i).outer().size()) {
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(slow_down_polygons_.at(i).outer().at(0));
           marker.points.push_back(point);
 
         } else {
-          geometry_msgs::msg::Point point;
-          point.x = slow_down_polygons_.at(i).at(j + 1).x();
-          point.y = slow_down_polygons_.at(i).at(j + 1).y();
-          point.z = slow_down_polygons_.at(i).at(j + 1).z();
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(slow_down_polygons_.at(i).outer().at(j + 1));
           marker.points.push_back(point);
         }
       }
