@@ -19,7 +19,7 @@ namespace motion_planning
 {
 bool PointHelper::getBackwardPointFromBasePoint(
   const Eigen::Vector2d & line_point1, const Eigen::Vector2d & line_point2,
-  const Eigen::Vector2d & base_point, const double backward_length, Eigen::Vector2d & output_point)
+  const Eigen::Vector2d & base_point, const double backward_length, Eigen::Vector2d & output_point) const
 {
   Eigen::Vector2d line_vec = line_point2 - line_point1;
   Eigen::Vector2d backward_vec = backward_length * line_vec.normalized();
@@ -29,7 +29,7 @@ bool PointHelper::getBackwardPointFromBasePoint(
 
 void PointHelper::getNearestPoint(
   const pcl::PointCloud<pcl::PointXYZ> & pointcloud, const geometry_msgs::msg::Pose & base_pose,
-  pcl::PointXYZ * nearest_collision_point, rclcpp::Time * nearest_collision_point_time)
+  pcl::PointXYZ * nearest_collision_point, rclcpp::Time * nearest_collision_point_time) const
 {
   double min_norm = 0.0;
   bool is_init = false;
@@ -53,7 +53,7 @@ void PointHelper::getNearestPoint(
 
 void PointHelper::getLateralNearestPoint(
   const pcl::PointCloud<pcl::PointXYZ> & pointcloud, const geometry_msgs::msg::Pose & base_pose,
-  pcl::PointXYZ * lateral_nearest_point, double * deviation)
+  pcl::PointXYZ * lateral_nearest_point, double * deviation) const
 {
   double min_norm = std::numeric_limits<double>::max();
   const double yaw = getYawFromGeometryMsgsQuaternion(base_pose.orientation);
@@ -75,7 +75,7 @@ void PointHelper::getLateralNearestPoint(
 
 autoware_planning_msgs::msg::TrajectoryPoint PointHelper::insertStopPoint(
   const StopPoint & stop_point, const autoware_planning_msgs::msg::Trajectory & base_path,
-  autoware_planning_msgs::msg::Trajectory & output_path)
+  autoware_planning_msgs::msg::Trajectory & output_path) const
 {
   autoware_planning_msgs::msg::TrajectoryPoint stop_trajectory_point =
     base_path.points.at(std::max(static_cast<int>(stop_point.index) - 1, 0));
@@ -91,7 +91,7 @@ autoware_planning_msgs::msg::TrajectoryPoint PointHelper::insertStopPoint(
 
 StopPoint PointHelper::searchInsertPoint(
   const int idx, const autoware_planning_msgs::msg::Trajectory & base_path,
-  const Eigen::Vector2d & trajectory_vec, const Eigen::Vector2d & collision_point_vec)
+  const Eigen::Vector2d & trajectory_vec, const Eigen::Vector2d & collision_point_vec) const
 {
   const auto max_dist_stop_point =
     createTargetPoint(idx, vehicle_info_->stop_margin_, trajectory_vec, collision_point_vec, base_path);
@@ -118,7 +118,7 @@ StopPoint PointHelper::searchInsertPoint(
 StopPoint PointHelper::createTargetPoint(
   const int idx, const double margin, const Eigen::Vector2d & trajectory_vec,
   const Eigen::Vector2d & collision_point_vec,
-  const autoware_planning_msgs::msg::Trajectory & base_path)
+  const autoware_planning_msgs::msg::Trajectory & base_path) const
 {
   double length_sum = 0.0;
   length_sum += trajectory_vec.normalized().dot(collision_point_vec);
@@ -152,7 +152,7 @@ SlowDownPoint PointHelper::createSlowDownStartPoint(
   const int idx, const double margin, const double slow_down_target_vel,
   const Eigen::Vector2d & trajectory_vec, const Eigen::Vector2d & slow_down_point_vec,
   const autoware_planning_msgs::msg::Trajectory & base_path,
-  const double current_velocity_x)
+  const double current_velocity_x) const
 {
   double length_sum = 0.0;
   length_sum += trajectory_vec.normalized().dot(slow_down_point_vec);
@@ -190,7 +190,7 @@ SlowDownPoint PointHelper::createSlowDownStartPoint(
 autoware_planning_msgs::msg::TrajectoryPoint PointHelper::insertSlowDownStartPoint(
   const SlowDownPoint & slow_down_start_point,
   const autoware_planning_msgs::msg::Trajectory & base_path,
-  autoware_planning_msgs::msg::Trajectory & output_path)
+  autoware_planning_msgs::msg::Trajectory & output_path) const
 {
   autoware_planning_msgs::msg::TrajectoryPoint slow_down_start_trajectory_point =
     base_path.points.at(std::max(static_cast<int>(slow_down_start_point.index) - 1, 0));
@@ -210,7 +210,7 @@ autoware_planning_msgs::msg::TrajectoryPoint PointHelper::insertSlowDownStartPoi
 }
 
 autoware_planning_msgs::msg::TrajectoryPoint PointHelper::getExtendTrajectoryPoint(
-  const double extend_distance, const autoware_planning_msgs::msg::TrajectoryPoint & goal_point)
+  const double extend_distance, const autoware_planning_msgs::msg::TrajectoryPoint & goal_point) const
 {
   tf2::Transform map2goal;
   tf2::fromMsg(goal_point.pose, map2goal);

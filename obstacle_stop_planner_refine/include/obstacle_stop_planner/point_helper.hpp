@@ -54,40 +54,40 @@ public:
   bool getBackwardPointFromBasePoint(
     const Eigen::Vector2d & line_point1, const Eigen::Vector2d & line_point2,
     const Eigen::Vector2d & base_point, const double backward_length,
-    Eigen::Vector2d & output_point);
+    Eigen::Vector2d & output_point) const;
   void getNearestPoint(
     const pcl::PointCloud<pcl::PointXYZ> & pointcloud, const geometry_msgs::msg::Pose & base_pose,
-    pcl::PointXYZ * nearest_collision_point, rclcpp::Time * nearest_collision_point_time);
+    pcl::PointXYZ * nearest_collision_point, rclcpp::Time * nearest_collision_point_time) const;
   void getLateralNearestPoint(
     const pcl::PointCloud<pcl::PointXYZ> & pointcloud, const geometry_msgs::msg::Pose & base_pose,
-    pcl::PointXYZ * lateral_nearest_point, double * deviation);
+    pcl::PointXYZ * lateral_nearest_point, double * deviation) const;
 
   autoware_planning_msgs::msg::TrajectoryPoint insertStopPoint(
     const StopPoint & stop_point, const autoware_planning_msgs::msg::Trajectory & base_path,
-    autoware_planning_msgs::msg::Trajectory & output_path);
+    autoware_planning_msgs::msg::Trajectory & output_path) const;
 
   StopPoint searchInsertPoint(
     const int idx, const autoware_planning_msgs::msg::Trajectory & base_path,
-    const Eigen::Vector2d & trajectory_vec, const Eigen::Vector2d & collision_point_vec);
+    const Eigen::Vector2d & trajectory_vec, const Eigen::Vector2d & collision_point_vec) const;
 
   StopPoint createTargetPoint(
     const int idx, const double margin, const Eigen::Vector2d & trajectory_vec,
     const Eigen::Vector2d & collision_point_vec,
-    const autoware_planning_msgs::msg::Trajectory & base_path);
+    const autoware_planning_msgs::msg::Trajectory & base_path) const;
 
   SlowDownPoint createSlowDownStartPoint(
     const int idx, const double margin, const double slow_down_target_vel,
     const Eigen::Vector2d & trajectory_vec, const Eigen::Vector2d & slow_down_point_vec,
     const autoware_planning_msgs::msg::Trajectory & base_path,
-    const double current_velocity_x);
+    const double current_velocity_x) const;
 
   autoware_planning_msgs::msg::TrajectoryPoint insertSlowDownStartPoint(
     const SlowDownPoint & slow_down_start_point,
     const autoware_planning_msgs::msg::Trajectory & base_path,
-    autoware_planning_msgs::msg::Trajectory & output_path);
+    autoware_planning_msgs::msg::Trajectory & output_path) const;
 
   autoware_planning_msgs::msg::TrajectoryPoint getExtendTrajectoryPoint(
-    double extend_distance, const autoware_planning_msgs::msg::TrajectoryPoint & goal_point);
+    double extend_distance, const autoware_planning_msgs::msg::TrajectoryPoint & goal_point) const;
 
 private:
   std::shared_ptr<VehicleInfo> vehicle_info_;

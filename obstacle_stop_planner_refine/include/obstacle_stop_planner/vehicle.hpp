@@ -54,7 +54,7 @@ public:
     }
 
   geometry_msgs::msg::Pose getVehicleCenterFromBase(
-  const geometry_msgs::msg::Pose & base_pose)
+  const geometry_msgs::msg::Pose & base_pose) const
   {
     geometry_msgs::msg::Pose center_pose;
     const double yaw = getYawFromGeometryMsgsQuaternion(base_pose.orientation);
@@ -67,7 +67,7 @@ public:
     return center_pose;
   }
 
-  double getSearchRadius()
+  double getSearchRadius() const
   {
     if(enable_slow_down_) {
       return slow_down_search_radius_;
