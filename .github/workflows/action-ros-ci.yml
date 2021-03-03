@@ -5,15 +5,11 @@ on: [push, pull_request]
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    container: ros:foxy
 
     steps:
       - name: Check out repo
         uses: actions/checkout@v2
-
-      - name: setup-ros
-        uses: ros-tooling/setup-ros@v0.1
-        with:
-          required-ros-distributions: foxy
 
       - name: action-ros-ci
         uses: ros-tooling/action-ros-ci@v0.1
