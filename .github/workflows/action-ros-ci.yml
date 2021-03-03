@@ -16,6 +16,6 @@ jobs:
       - name: action-ros-ci
         uses: ros-tooling/action-ros-ci@v0.1
         with:
-          name: obstacle_stop_planner_refine
+          package-name: obstacle_stop_planner_refine
           target-ros2-distro: foxy
           vcs-repo-file-url: build_depends.repos
