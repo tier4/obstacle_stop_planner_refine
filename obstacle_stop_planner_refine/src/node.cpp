@@ -202,7 +202,7 @@ void ObstacleStopPlannerNode::pathCallback(
     pcl::PointCloud<pcl::PointXYZ>::Ptr collision_pointcloud_ptr(
       new pcl::PointCloud<pcl::PointXYZ>);
     collision_pointcloud_ptr->header = obstacle_candidate_pointcloud_ptr->header;
-    getSlowDownPointcloud(is_slow_down, vehicle_info_.enable_slow_down_, obstacle_candidate_pointcloud_ptr, prev_center_point,next_center_point, vehicle_info_.slow_down_search_radius_, move_slow_down_range_polygon.GetBoostPolygon(), slow_down_pointcloud_ptr, candidate_slow_down);
+    getSlowDownPointcloud(is_slow_down, vehicle_info_.enable_slow_down_, obstacle_candidate_pointcloud_ptr, prev_center_point,next_center_point, vehicle_info_.slow_down_search_radius_, move_slow_down_range_polygon.GetPolygon(), slow_down_pointcloud_ptr, candidate_slow_down);
 
     getCollisionPointcloud(slow_down_pointcloud_ptr, prev_center_point, next_center_point, vehicle_info_.stop_search_radius_, move_vehicle_polygon, trajectory.points.at(i), collision_pointcloud_ptr, is_collision);
 
@@ -271,7 +271,7 @@ void ObstacleStopPlannerNode::getCollisionPointcloud(const pcl::PointCloud<pcl::
       bg::distance(prev_center_point, point) < search_radius ||
       bg::distance(next_center_point, point) < search_radius)
     {
-      if (bg::within(point, one_step_polygon.GetBoostPolygon())) {
+      if (bg::within(point, one_step_polygon.GetPolygon())) {
         collision_pointcloud->push_back(slow_down_pointcloud->at(j));
         is_collision = true;
         debug_ptr_->pushPolygon(
@@ -283,7 +283,7 @@ void ObstacleStopPlannerNode::getCollisionPointcloud(const pcl::PointCloud<pcl::
 }
 
 // slow down
-void ObstacleStopPlannerNode::getSlowDownPointcloud(const bool is_slow_down, const bool enable_slow_down, const pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_candidate_pointcloud, const Point& prev_center_point, const Point& next_center_point, const double search_radius, const Polygon& boost_polygon, pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud, bool& candidate_slow_down)
+void ObstacleStopPlannerNode::getSlowDownPointcloud(const bool is_slow_down, const bool enable_slow_down, const pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_candidate_pointcloud, const Point& prev_center_point, const Point& next_center_point, const double search_radius, const autoware_utils::Polygon2d& boost_polygon, pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud, bool& candidate_slow_down)
 {
   if (!is_slow_down && enable_slow_down) {
     for (size_t j = 0; j < obstacle_candidate_pointcloud->size(); ++j) {
