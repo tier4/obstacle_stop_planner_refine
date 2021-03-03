@@ -10,8 +10,10 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v2
 
-      - name: action-ros-ci
+      - name: setup-ros
         uses: ros-tooling/setup-ros@v0.1
+
+      - name: action-ros-ci
         uses: ros-tooling/action-ros-ros@v0.1
         with:
           name: obstacle_stop_planner_refine
