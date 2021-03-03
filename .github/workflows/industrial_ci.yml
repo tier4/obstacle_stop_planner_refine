@@ -7,8 +7,8 @@ jobs:
     strategy:
       matrix:
         env:
-          - {ROS_DISTRO: foxy, ROS_REPO: testing, ROSDEP_SKIP_KEYS: vehicle_info_util autoware_planning_msgs autoware_perception_msgs autoware_debug_msgs}
-          - {ROS_DISTRO: foxy, ROS_REPO: main, ROSDEP_SKIP_KEYS: vehicle_info_util autoware_planning_msgs autoware_perception_msgs autoware_debug_msgs}
+          - {ROS_DISTRO: foxy, ROS_REPO: testing, ROSDEP_SKIP_KEYS: "vehicle_info_util autoware_planning_msgs autoware_perception_msgs autoware_debug_msgs"}
+          - {ROS_DISTRO: foxy, ROS_REPO: main, ROSDEP_SKIP_KEYS: "vehicle_info_util autoware_planning_msgs autoware_perception_msgs autoware_debug_msgs"}
     env:
       - CCACHE_DIR: /github/home/.ccache # Directory for ccache (and how we enable ccache in industrial_ci)
 
