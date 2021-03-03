@@ -1,15 +1,20 @@
-name: Build and test(actions-ros on osrf/ros:foxy-desktop)
+name: Build and test(actions-ros + setup-ros on ubuntu:focal)
 
 on: [push, pull_request]
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    container: osrf/ros:foxy-desktop
+    container: ubuntu:focal
 
     steps:
       - name: Check out repo
         uses: actions/checkout@v2
+
+      - name: setup ROS environment
+        uses: ros-tooling/setup-ros@v0.1
+        with:
+          required-ros-distributions: foxy
 
       - name: action-ros-ci
         uses: ros-tooling/action-ros-ci@v0.1
