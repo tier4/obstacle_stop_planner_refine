@@ -1,0 +1,19 @@
+name: Build and test
+
+on: [push, pull_request]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v2
+
+      - name: action-ros-ci
+        uses: ros-tooling/setup-ros@v0.1
+        uses: ros-tooling/action-ros-ros@v0.1
+        with:
+          name: obstacle_stop_planner_refine
+          target-ros2-distro: foxy
+          vcs-repo-file-url: build_depends.repos
