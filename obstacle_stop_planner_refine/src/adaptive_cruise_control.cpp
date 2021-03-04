@@ -560,7 +560,7 @@ void AdaptiveCruiseController::registerQueToVelocity(
 }
 
 double AdaptiveCruiseController::getMedianVel(
-  const std::vector<geometry_msgs::msg::TwistStamped>& vel_que)
+  const std::vector<geometry_msgs::msg::TwistStamped> & vel_que)
 {
   if (vel_que.size() == 0) {
     RCLCPP_WARN_STREAM(node_->get_logger(), "size of vel que is 0. Something has wrong.");

@@ -32,31 +32,12 @@
 namespace obstacle_stop_planner
 {
 
-class OneStepPolygon
-{
-public:
-  OneStepPolygon(const VehicleInfo & vehicle_info)
-  {
-    vehicle_info_ = std::make_shared<VehicleInfo>(vehicle_info);
-  }
-  OneStepPolygon(std::shared_ptr<VehicleInfo> & vehicle_info) {vehicle_info_ = vehicle_info;}
-
-  void create(
-    const geometry_msgs::msg::Pose & base_step_pose, const geometry_msgs::msg::Pose & next_step_pose,
-    const double expand_width);
-  autoware_utils::Polygon2d getPolygon() const {return polygon_;}
-
-private:
-  autoware_utils::Polygon2d polygon_;
-  std::shared_ptr<VehicleInfo> vehicle_info_;
-};
-
-inline void OneStepPolygon::create(
+autoware_utils::Polygon2d createOneStepPolygon(
   const geometry_msgs::msg::Pose & base_step_pose, const geometry_msgs::msg::Pose & next_step_pose,
-  const double expand_width)
+  const double expand_width, const VehicleInfo & vehicle_info)
 {
   autoware_utils::Polygon2d one_step_move_vehicle_corner_points;
-  const auto footprint = createVehicleFootprint(*vehicle_info_, 0.0, expand_width);
+  const auto footprint = createVehicleFootprint(vehicle_info, 0.0, expand_width);
 
   // start step
   {
@@ -86,7 +67,9 @@ inline void OneStepPolygon::create(
     }
   }
 
-  bg::convex_hull(one_step_move_vehicle_corner_points, polygon_);
+  autoware_utils::Polygon2d polygon;
+  bg::convex_hull(one_step_move_vehicle_corner_points, polygon);
+  return polygon;
 }
 
 }  // namespace obstacle_stop_planner
