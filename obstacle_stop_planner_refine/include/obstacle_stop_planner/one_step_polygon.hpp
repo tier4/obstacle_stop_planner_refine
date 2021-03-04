@@ -15,6 +15,7 @@
 #ifndef OBSTACLE_STOP_PLANNER__ONE_STEP_POLYGON_HPP_
 #define OBSTACLE_STOP_PLANNER__ONE_STEP_POLYGON_HPP_
 
+#include <algorithm>
 #include <vector>
 #include <memory>
 #include "boost/assert.hpp"
