@@ -28,7 +28,7 @@
 #include "autoware_utils/autoware_utils.hpp"
 #include "obstacle_stop_planner/util/create_vehicle_footprint.hpp"
 
-namespace motion_planning {
+namespace obstacle_stop_planner {
 
 class OneStepPolygon
 {
@@ -80,6 +80,6 @@ inline void OneStepPolygon::Create(
   bg::convex_hull(one_step_move_vehicle_corner_points, polygon_);
 }
 
-}  // namespace motion_planning
+}  // namespace obstacle_stop_planner
 
 #endif  // OBSTACLE_STOP_PLANNER__ONE_STEP_POLYGON_HPP_

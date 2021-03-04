@@ -21,7 +21,7 @@
 #include "geometry_msgs/msg/pose.hpp"
 #include "obstacle_stop_planner/util.hpp"
 
-namespace motion_planning {
+namespace obstacle_stop_planner {
 
 class VehicleInfo : public vehicle_info_util::VehicleInfo
 {
@@ -93,6 +93,6 @@ public:
 private:
 };
 
-}  // namespace motion_planning
+}  // namespace obstacle_stop_planner
 
 #endif  // OBSTACLE_STOP_PLANNER__VEHICLE_HPP_

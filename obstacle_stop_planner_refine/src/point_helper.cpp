@@ -15,7 +15,7 @@
 #include "obstacle_stop_planner/point_helper.hpp"
 #include "pcl_conversions/pcl_conversions.h"
 
-namespace motion_planning
+namespace obstacle_stop_planner
 {
 bool PointHelper::getBackwardPointFromBasePoint(
   const Eigen::Vector2d & line_point1, const Eigen::Vector2d & line_point2,
@@ -229,4 +229,4 @@ autoware_planning_msgs::msg::TrajectoryPoint PointHelper::getExtendTrajectoryPoi
   return extend_trajectory_point;
 }
 
-}  // namespace motion_planning
+}  // namespace obstacle_stop_planner
