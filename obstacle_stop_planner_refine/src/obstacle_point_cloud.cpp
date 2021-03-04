@@ -25,7 +25,7 @@ ObstaclePointCloud::ObstaclePointCloud(rclcpp::Logger logger)
 {
 }
 
-void ObstaclePointCloud::setPointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg)
+void ObstaclePointCloud::updatePointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg)
 {
   obstacle_ros_pointcloud_ptr_ = std::make_shared<sensor_msgs::msg::PointCloud2>();
   pcl::VoxelGrid<pcl::PointXYZ> filter;
@@ -46,23 +46,15 @@ void ObstaclePointCloud::setPointCloud(const sensor_msgs::msg::PointCloud2::Cons
   obstacle_ros_pointcloud_ptr_->header = msg->header;
 }
 
-void ObstaclePointCloud::setSearchRadius(const double value)
-{
-  search_radius_ = value;
-}
-
-void ObstaclePointCloud::setVehicleInfo(const VehicleInfo & vehicle_info)
-{
-  vehicle_info_ = std::make_shared<VehicleInfo>(vehicle_info);
-}
-
 bool ObstaclePointCloud::isDataReceived()
 {
   return obstacle_ros_pointcloud_ptr_ != nullptr ? true : false;
 }
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr ObstaclePointCloud::searchCandidateObstacle(
-  const tf2_ros::Buffer & tf_buffer, const autoware_planning_msgs::msg::Trajectory & trajectory)
+  const tf2_ros::Buffer & tf_buffer,
+  const autoware_planning_msgs::msg::Trajectory & trajectory,
+  const VehicleInfo & vehicle_info)
 {
   pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_candidate_pointcloud_ptr(
     new pcl::PointCloud<pcl::PointXYZ>);
@@ -96,6 +88,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr ObstaclePointCloud::searchCandidateObstacle(
   // search obstacle candidate pointcloud to reduce calculation cost
   searchPointcloudNearTrajectory(
     trajectory, transformed_obstacle_pointcloud_ptr,
+    vehicle_info,
     obstacle_candidate_pointcloud_ptr);
   obstacle_candidate_pointcloud_ptr->header = transformed_obstacle_pointcloud_ptr->header;
   return obstacle_candidate_pointcloud_ptr;
@@ -104,11 +97,12 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr ObstaclePointCloud::searchCandidateObstacle(
 bool ObstaclePointCloud::searchPointcloudNearTrajectory(
   const autoware_planning_msgs::msg::Trajectory & trajectory,
   const pcl::PointCloud<pcl::PointXYZ>::Ptr input_pointcloud_ptr,
+  const VehicleInfo & vehicle_info,
   pcl::PointCloud<pcl::PointXYZ>::Ptr output_pointcloud_ptr)
 {
-  const double squared_radius = search_radius_ * search_radius_;
+  const double squared_radius = vehicle_info.getSearchRadius() * vehicle_info.getSearchRadius();
   for (const auto & trajectory_point : trajectory.points) {
-    const auto center_pose = vehicle_info_->getVehicleCenterFromBase(trajectory_point.pose);
+    const auto center_pose = vehicle_info.getVehicleCenterFromBase(trajectory_point.pose);
     for (const auto & point : input_pointcloud_ptr->points) {
       const double x = center_pose.position.x - point.x;
       const double y = center_pose.position.y - point.y;
