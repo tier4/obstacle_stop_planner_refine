@@ -161,14 +161,20 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
     for (size_t i = 0; i < vehicle_polygons_.size(); ++i) {
       for (size_t j = 0; j < vehicle_polygons_.at(i).outer().size(); ++j) {
         {
-          geometry_msgs::msg::Point point = autoware_utils::toMsg(vehicle_polygons_.at(i).outer().at(j));
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(
+            vehicle_polygons_.at(i).outer().at(
+              j));
           marker.points.push_back(point);
         }
         if (j + 1 == vehicle_polygons_.at(i).outer().size()) {
-          geometry_msgs::msg::Point point = autoware_utils::toMsg(vehicle_polygons_.at(i).outer().at(0));
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(
+            vehicle_polygons_.at(i).outer().at(
+              0));
           marker.points.push_back(point);
         } else {
-          geometry_msgs::msg::Point point = autoware_utils::toMsg(vehicle_polygons_.at(i).outer().at(j + 1));
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(
+            vehicle_polygons_.at(i).outer().at(
+              j + 1));
           marker.points.push_back(point);
         }
       }
@@ -202,15 +208,21 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
     for (size_t i = 0; i < collision_polygons_.size(); ++i) {
       for (size_t j = 0; j < collision_polygons_.at(i).outer().size(); ++j) {
         {
-          geometry_msgs::msg::Point point = autoware_utils::toMsg(collision_polygons_.at(i).outer().at(j));
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(
+            collision_polygons_.at(
+              i).outer().at(j));
           marker.points.push_back(point);
         }
         if (j + 1 == collision_polygons_.at(i).outer().size()) {
-          geometry_msgs::msg::Point point = autoware_utils::toMsg(collision_polygons_.at(i).outer().at(0));
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(
+            collision_polygons_.at(
+              i).outer().at(0));
           marker.points.push_back(point);
 
         } else {
-          geometry_msgs::msg::Point point = autoware_utils::toMsg(collision_polygons_.at(i).outer().at(j + 1));
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(
+            collision_polygons_.at(
+              i).outer().at(j + 1));
           marker.points.push_back(point);
         }
       }
@@ -244,15 +256,21 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
     for (size_t i = 0; i < slow_down_range_polygons_.size(); ++i) {
       for (size_t j = 0; j < slow_down_range_polygons_.at(i).outer().size(); ++j) {
         {
-          geometry_msgs::msg::Point point = autoware_utils::toMsg(slow_down_range_polygons_.at(i).outer().at(j));
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(
+            slow_down_range_polygons_.at(
+              i).outer().at(j));
           marker.points.push_back(point);
         }
         if (j + 1 == slow_down_range_polygons_.at(i).outer().size()) {
-          geometry_msgs::msg::Point point = autoware_utils::toMsg(slow_down_range_polygons_.at(i).outer().at(0));
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(
+            slow_down_range_polygons_.at(
+              i).outer().at(0));
           marker.points.push_back(point);
 
         } else {
-          geometry_msgs::msg::Point point = autoware_utils::toMsg(slow_down_range_polygons_.at(i).outer().at(j + 1));
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(
+            slow_down_range_polygons_.at(
+              i).outer().at(j + 1));
           marker.points.push_back(point);
         }
       }
@@ -286,15 +304,21 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
     for (size_t i = 0; i < slow_down_polygons_.size(); ++i) {
       for (size_t j = 0; j < slow_down_polygons_.at(i).outer().size(); ++j) {
         {
-          geometry_msgs::msg::Point point = autoware_utils::toMsg(slow_down_polygons_.at(i).outer().at(j));
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(
+            slow_down_polygons_.at(
+              i).outer().at(j));
           marker.points.push_back(point);
         }
         if (j + 1 == slow_down_polygons_.at(i).outer().size()) {
-          geometry_msgs::msg::Point point = autoware_utils::toMsg(slow_down_polygons_.at(i).outer().at(0));
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(
+            slow_down_polygons_.at(
+              i).outer().at(0));
           marker.points.push_back(point);
 
         } else {
-          geometry_msgs::msg::Point point = autoware_utils::toMsg(slow_down_polygons_.at(i).outer().at(j + 1));
+          geometry_msgs::msg::Point point = autoware_utils::toMsg(
+            slow_down_polygons_.at(
+              i).outer().at(j + 1));
           marker.points.push_back(point);
         }
       }

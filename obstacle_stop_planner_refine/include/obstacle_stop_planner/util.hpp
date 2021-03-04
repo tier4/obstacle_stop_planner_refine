@@ -71,8 +71,7 @@ inline cv::Point2d calcCentroid(const std::vector<cv::Point2d> pointcloud)
   cv::Point2d centroid;
   centroid.x = 0;
   centroid.y = 0;
-  for (const auto &point : pointcloud)
-  {
+  for (const auto & point : pointcloud) {
     centroid.x += point.x;
     centroid.y += point.y;
   }
@@ -81,13 +80,13 @@ inline cv::Point2d calcCentroid(const std::vector<cv::Point2d> pointcloud)
   return centroid;
 }
 
-inline Point convertPointRosToBoost(const geometry_msgs::msg::Point &point)
+inline Point convertPointRosToBoost(const geometry_msgs::msg::Point & point)
 {
   const Point point2d(point.x, point.y);
   return point2d;
 }
 
-inline geometry_msgs::msg::Vector3 rpyFromQuat(const geometry_msgs::msg::Quaternion &q)
+inline geometry_msgs::msg::Vector3 rpyFromQuat(const geometry_msgs::msg::Quaternion & q)
 {
   tf2::Quaternion quat(q.x, q.y, q.z, q.w);
   tf2::Matrix3x3 mat(quat);
@@ -100,8 +99,9 @@ inline geometry_msgs::msg::Vector3 rpyFromQuat(const geometry_msgs::msg::Quatern
   return rpy;
 }
 
-inline Polygon getPolygon(const geometry_msgs::msg::Pose &pose, const geometry_msgs::msg::Vector3 &size,
-                   const double center_offset, const double l_margin = 0.0, const double w_margin = 0.0)
+inline Polygon getPolygon(
+  const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::Vector3 & size,
+  const double center_offset, const double l_margin = 0.0, const double w_margin = 0.0)
 {
   Polygon obj_poly;
   geometry_msgs::msg::Vector3 obj_rpy = rpyFromQuat(pose.orientation);
@@ -109,8 +109,9 @@ inline Polygon getPolygon(const geometry_msgs::msg::Pose &pose, const geometry_m
   double l = size.x * std::cos(obj_rpy.y) + l_margin;
   double w = size.y * std::cos(obj_rpy.x) + w_margin;
   double co = center_offset;
-  bg::exterior_ring(obj_poly) = boost::assign::list_of<Point>(l / 2.0 + co, w / 2.0)(-l / 2.0 + co, w / 2.0)(
-      -l / 2.0 + co, -w / 2.0)(l / 2.0 + co, -w / 2.0)(l / 2.0 + co, w / 2.0);
+  bg::exterior_ring(obj_poly) =
+    boost::assign::list_of<Point>(l / 2.0 + co, w / 2.0)(-l / 2.0 + co, w / 2.0)(
+    -l / 2.0 + co, -w / 2.0)(l / 2.0 + co, -w / 2.0)(l / 2.0 + co, w / 2.0);
 
   // rotate polygon
   bg::strategy::transform::rotate_transformer<bg::radian, double, 2, 2> rotate(-obj_rpy.z);  // original:clockwise
@@ -118,13 +119,16 @@ inline Polygon getPolygon(const geometry_msgs::msg::Pose &pose, const geometry_m
   Polygon rotate_obj_poly;
   bg::transform(obj_poly, rotate_obj_poly, rotate);
   // translate polygon
-  bg::strategy::transform::translate_transformer<double, 2, 2> translate(pose.position.x, pose.position.y);
+  bg::strategy::transform::translate_transformer<double, 2, 2> translate(pose.position.x,
+    pose.position.y);
   Polygon translate_obj_poly;
   bg::transform(rotate_obj_poly, translate_obj_poly, translate);
   return translate_obj_poly;
 }
 
-inline double getDistanceFromTwoPoint(const geometry_msgs::msg::Point &point1, const geometry_msgs::msg::Point &point2)
+inline double getDistanceFromTwoPoint(
+  const geometry_msgs::msg::Point & point1,
+  const geometry_msgs::msg::Point & point2)
 {
   const double dx = point1.x - point2.x;
   const double dy = point1.y - point2.y;

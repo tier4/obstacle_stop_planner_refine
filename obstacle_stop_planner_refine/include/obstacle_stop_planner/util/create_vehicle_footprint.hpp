@@ -19,7 +19,8 @@
 #include <vehicle_info_util/vehicle_info.hpp>
 
 inline autoware_utils::LinearRing2d createVehicleFootprint(
-  const vehicle_info_util::VehicleInfo & vehicle_info, const double top_margin = 0.0, const double side_margin = 0.0)
+  const vehicle_info_util::VehicleInfo & vehicle_info, const double top_margin = 0.0,
+  const double side_margin = 0.0)
 {
   using autoware_utils::LinearRing2d;
   using autoware_utils::Point2d;

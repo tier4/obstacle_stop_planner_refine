@@ -60,7 +60,8 @@ bool ObstaclePointCloud::isDataReceived()
   return obstacle_ros_pointcloud_ptr_ != nullptr ? true : false;
 }
 
-pcl::PointCloud<pcl::PointXYZ>::Ptr ObstaclePointCloud::searchCandidateObstacle(const tf2_ros::Buffer & tf_buffer, const autoware_planning_msgs::msg::Trajectory & trajectory)
+pcl::PointCloud<pcl::PointXYZ>::Ptr ObstaclePointCloud::searchCandidateObstacle(
+  const tf2_ros::Buffer & tf_buffer, const autoware_planning_msgs::msg::Trajectory & trajectory)
 {
   pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_candidate_pointcloud_ptr(
     new pcl::PointCloud<pcl::PointXYZ>);

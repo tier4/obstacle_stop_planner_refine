@@ -17,15 +17,19 @@
 namespace obstacle_stop_planner
 {
 bool Trajectory::decimateTrajectory(
-  const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length, const VehicleInfo & vehicle_info,
+  const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
+  const VehicleInfo & vehicle_info,
   autoware_planning_msgs::msg::Trajectory & output_trajectory)
 {
   std::map<size_t /* decimate */, size_t /* origin */> index_map;
-  return decimateTrajectory(input_trajectory, step_length, vehicle_info, output_trajectory, index_map);
+  return decimateTrajectory(
+    input_trajectory, step_length, vehicle_info, output_trajectory,
+    index_map);
 }
 
 bool Trajectory::decimateTrajectory(
-  const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length, const VehicleInfo & vehicle_info,
+  const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
+  const VehicleInfo & vehicle_info,
   autoware_planning_msgs::msg::Trajectory & output_trajectory,
   std::map<size_t /* decimate */, size_t /* origin */> & index_map)
 {
@@ -35,7 +39,7 @@ bool Trajectory::decimateTrajectory(
   const double epsilon = 0.001;
   Eigen::Vector2d point1, point2;
   PointHelper point_helper;
-  point_helper.SetVehicleInfo(vehicle_info);
+  point_helper.setVehicleInfo(vehicle_info);
 
   for (int i = 0; i < static_cast<int>(input_trajectory.points.size()) - 1; ++i) {
     if (next_length <= trajectory_length_sum + epsilon) {
@@ -57,8 +61,10 @@ bool Trajectory::decimateTrajectory(
       continue;
     }
     trajectory_length_sum += std::hypot(
-      input_trajectory.points.at(i).pose.position.x - input_trajectory.points.at(i + 1).pose.position.x,
-      input_trajectory.points.at(i).pose.position.y - input_trajectory.points.at(i + 1).pose.position.y);
+      input_trajectory.points.at(i).pose.position.x - input_trajectory.points.at(
+        i + 1).pose.position.x,
+      input_trajectory.points.at(i).pose.position.y - input_trajectory.points.at(
+        i + 1).pose.position.y);
   }
   if (!input_trajectory.points.empty()) {
     output_trajectory.points.push_back(input_trajectory.points.back());
@@ -116,11 +122,15 @@ bool Trajectory::extendTrajectory(
 
   double extend_sum = 0.0;
   while (extend_sum <= (extend_distance - interpolation_distance)) {
-    const auto extend_trajectory_point = point_helper.getExtendTrajectoryPoint(extend_sum, goal_point);
+    const auto extend_trajectory_point = point_helper.getExtendTrajectoryPoint(
+      extend_sum,
+      goal_point);
     output_trajectory.points.push_back(extend_trajectory_point);
     extend_sum += interpolation_distance;
   }
-  const auto extend_trajectory_point = point_helper.getExtendTrajectoryPoint(extend_distance, goal_point);
+  const auto extend_trajectory_point = point_helper.getExtendTrajectoryPoint(
+    extend_distance,
+    goal_point);
   output_trajectory.points.push_back(extend_trajectory_point);
 
   return true;

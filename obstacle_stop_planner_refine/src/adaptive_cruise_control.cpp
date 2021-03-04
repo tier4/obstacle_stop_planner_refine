@@ -133,12 +133,12 @@ void AdaptiveCruiseController::insertAdaptiveCruiseVelocity(
   */
   if (param_.use_pcl_to_est_vel) {
     success_estm_vel = estimatePointVelocityFromPcl(
-        traj_yaw, nearest_collision_point, nearest_collision_point_time, &point_velocity);
+      traj_yaw, nearest_collision_point, nearest_collision_point_time, &point_velocity);
   }
 
   if (param_.use_object_to_est_vel) {
     success_estm_vel = estimatePointVelocityFromObject(
-        object_ptr, traj_yaw, nearest_collision_point, &point_velocity);
+      object_ptr, traj_yaw, nearest_collision_point, &point_velocity);
   }
 
   if (param_.use_rough_est_vel && !success_estm_vel) {

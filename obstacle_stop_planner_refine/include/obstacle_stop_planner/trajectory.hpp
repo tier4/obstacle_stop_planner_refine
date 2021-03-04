@@ -23,16 +23,19 @@
 #include "obstacle_stop_planner/vehicle.hpp"
 #include "obstacle_stop_planner/point_helper.hpp"
 
-namespace obstacle_stop_planner {
+namespace obstacle_stop_planner
+{
 
 class Trajectory
 {
 public:
   bool decimateTrajectory(
-    const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length, const VehicleInfo & vehicle_info,
+    const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
+    const VehicleInfo & vehicle_info,
     autoware_planning_msgs::msg::Trajectory & output_trajectory);
   bool decimateTrajectory(
-    const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length, const VehicleInfo & vehicle_info,
+    const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
+    const VehicleInfo & vehicle_info,
     autoware_planning_msgs::msg::Trajectory & output_trajectory,
     std::map<size_t /* decimate */, size_t /* origin */> & index_map);
   bool trimTrajectoryFromSelfPose(
