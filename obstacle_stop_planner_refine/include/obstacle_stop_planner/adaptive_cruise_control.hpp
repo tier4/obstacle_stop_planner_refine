@@ -172,7 +172,7 @@ private:
   };
   Param param_;
 
-  double getMedianVel(const std::vector<geometry_msgs::msg::TwistStamped> vel_que);
+  double getMedianVel(const std::vector<geometry_msgs::msg::TwistStamped> & vel_que);
   double lowpass_filter(const double current_value, const double prev_value, const double gain);
   double calcDistanceToNearestPointOnPath(
     const autoware_planning_msgs::msg::Trajectory & trajectory, const int nearest_point_idx,
@@ -198,7 +198,7 @@ private:
     const double current_vel, const double current_dist, const double obj_vel);
 
   void insertMaxVelocityToPath(
-    const geometry_msgs::msg::Pose self_pose, const double current_vel, const double target_vel,
+    const geometry_msgs::msg::Pose & self_pose, const double current_vel, const double target_vel,
     const double dist_to_collision_point,
     autoware_planning_msgs::msg::Trajectory & output_trajectory);
   void registerQueToVelocity(const double vel, const rclcpp::Time & vel_time);
