@@ -36,7 +36,8 @@
 # :type NO_TARGET_LINK_LIBRARIES: option
 # :param ARGN: the list of source files
 # :type ARGN: list of strings
-# :param RUNNER: the path to the test runner script (default: see ament_add_test).
+# :param RUNNER: the path to the test runner script
+#   (default: see ament_add_test).
 # :type RUNNER: string
 # :param TIMEOUT: the test timeout in seconds,
 #   default defined by ``ament_add_test()``

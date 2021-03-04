@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <map>
+#include <utility>
 #include "obstacle_stop_planner/trajectory.hpp"
 
 namespace obstacle_stop_planner

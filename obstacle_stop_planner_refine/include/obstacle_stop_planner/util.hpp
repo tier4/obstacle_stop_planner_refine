@@ -14,7 +14,9 @@
 #ifndef OBSTACLE_STOP_PLANNER__UTIL_HPP_
 #define OBSTACLE_STOP_PLANNER__UTIL_HPP_
 
+#include <algorithm>
 #include <string>
+#include <vector>
 
 #include "opencv2/core/core.hpp"
 #include "geometry_msgs/msg/point.hpp"
@@ -114,8 +116,9 @@ inline Polygon getPolygon(
     -l / 2.0 + co, -w / 2.0)(l / 2.0 + co, -w / 2.0)(l / 2.0 + co, w / 2.0);
 
   // rotate polygon
-  bg::strategy::transform::rotate_transformer<bg::radian, double, 2, 2> rotate(-obj_rpy.z);  // original:clockwise
-                                                                                             // rotation
+  // original:clockwise
+  bg::strategy::transform::rotate_transformer<bg::radian, double, 2, 2> rotate(-obj_rpy.z);
+  // rotation
   Polygon rotate_obj_poly;
   bg::transform(obj_poly, rotate_obj_poly, rotate);
   // translate polygon

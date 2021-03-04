@@ -270,8 +270,11 @@ void ObstacleStopPlannerNode::pathCallback(
    */
   if (need_to_stop) {
     insertStopPoint(
-      decimate_trajectory_index_map.at(
-        decimate_trajectory_collision_index) + trajectory_trim_index, base_path, nearest_collision_point, point_helper, output_msg,
+      decimate_trajectory_index_map.at(decimate_trajectory_collision_index) + trajectory_trim_index,
+      base_path,
+      nearest_collision_point,
+      point_helper,
+      output_msg,
       stop_reason_diag);
   }
 
@@ -280,9 +283,13 @@ void ObstacleStopPlannerNode::pathCallback(
    */
   if (is_slow_down) {
     insertSlowDownPoint(
-      decimate_trajectory_index_map.at(
-        decimate_trajectory_slow_down_index), base_path, nearest_slow_down_point, point_helper, calcSlowDownTargetVel(
-        lateral_deviation), vehicle_info_.slow_down_margin_, output_msg);
+      decimate_trajectory_index_map.at(decimate_trajectory_slow_down_index),
+      base_path,
+      nearest_slow_down_point,
+      point_helper,
+      calcSlowDownTargetVel(lateral_deviation),
+      vehicle_info_.slow_down_margin_,
+      output_msg);
   }
   path_pub_->publish(output_msg);
   stop_reason_diag_pub_->publish(stop_reason_diag);

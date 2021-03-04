@@ -16,15 +16,14 @@
 #define OBSTACLE_STOP_PLANNER__OBSTACLE_POINT_CLOUD_HPP_
 
 #include <memory>
-
-#include <rclcpp/logger.hpp>
-#include <sensor_msgs/msg/point_cloud2.hpp>
 #include "pcl/point_types.h"
 #include "pcl_conversions/pcl_conversions.h"
 #include "pcl/point_cloud.h"
 #include "pcl/common/transforms.h"
 #include "pcl/filters/voxel_grid.h"
 #include "tf2_ros/transform_listener.h"
+#include "rclcpp/logger.hpp"
+#include "sensor_msgs/msg/point_cloud2.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
 #include "obstacle_stop_planner/vehicle.hpp"
 

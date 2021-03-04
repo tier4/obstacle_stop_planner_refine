@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <limits>
+#include <algorithm>
 #include "obstacle_stop_planner/point_helper.hpp"
 #include "pcl_conversions/pcl_conversions.h"
 
