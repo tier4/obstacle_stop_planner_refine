@@ -40,11 +40,11 @@ public:
     std::map<size_t /* decimate */, size_t /* origin */> & index_map);
   bool trimTrajectoryFromSelfPose(
     const autoware_planning_msgs::msg::Trajectory & input_trajectory,
-    const geometry_msgs::msg::Pose self_pose,
+    const geometry_msgs::msg::Pose & self_pose,
     autoware_planning_msgs::msg::Trajectory & output_trajectory);
   bool trimTrajectoryWithIndexFromSelfPose(
     const autoware_planning_msgs::msg::Trajectory & input_trajectory,
-    const geometry_msgs::msg::Pose self_pose,
+    const geometry_msgs::msg::Pose & self_pose,
     autoware_planning_msgs::msg::Trajectory & output_trajectory,
     size_t & index);
   bool extendTrajectory(

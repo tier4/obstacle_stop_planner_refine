@@ -78,7 +78,7 @@ bool Trajectory::decimateTrajectory(
 
 bool Trajectory::trimTrajectoryWithIndexFromSelfPose(
   const autoware_planning_msgs::msg::Trajectory & input_trajectory,
-  const geometry_msgs::msg::Pose self_pose,
+  const geometry_msgs::msg::Pose & self_pose,
   autoware_planning_msgs::msg::Trajectory & output_trajectory, size_t & index)
 {
   double min_distance = 0.0;
@@ -104,7 +104,7 @@ bool Trajectory::trimTrajectoryWithIndexFromSelfPose(
 
 bool Trajectory::trimTrajectoryFromSelfPose(
   const autoware_planning_msgs::msg::Trajectory & input_trajectory,
-  const geometry_msgs::msg::Pose self_pose,
+  const geometry_msgs::msg::Pose & self_pose,
   autoware_planning_msgs::msg::Trajectory & output_trajectory)
 {
   size_t index;
