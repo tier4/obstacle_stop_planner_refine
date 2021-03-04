@@ -214,8 +214,8 @@ double AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
   double dist_to_point = 0;
   // get distance from self to next nearest point
   dist_to_point += boost::geometry::distance(
-    convertPointRosToBoost(self_pose.position),
-    convertPointRosToBoost(trajectory.points.at(1).pose.position));
+    autoware_utils::fromMsg(self_pose.position).to_2d(),
+    autoware_utils::fromMsg(trajectory.points.at(1).pose.position).to_2d());
 
   // add distance from next self-nearest-point(=idx:0) to prev point of nearest_point_idx
   for (int i = 1; i < nearest_point_idx - 1; i++) {
@@ -226,7 +226,7 @@ double AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
   // add distance from nearest_collision_point to prev point of nearest_point_idx
   dist_to_point += boost::geometry::distance(
     nearest_point2d,
-    convertPointRosToBoost(trajectory.points.at(nearest_point_idx - 1).pose.position));
+    autoware_utils::fromMsg(trajectory.points.at(nearest_point_idx - 1).pose.position).to_2d());
 
   // subtract base_link to front
   dist_to_point -= param_.min_behavior_stop_margin;
@@ -263,7 +263,7 @@ bool AdaptiveCruiseController::estimatePointVelocityFromObject(
   bool get_obj = false;
   double obj_vel;
   double obj_yaw;
-  const auto collision_point_2d = convertPointRosToBoost(nearest_collision_p_ros);
+  const auto collision_point_2d = autoware_utils::fromMsg(nearest_collision_p_ros).to_2d();
   for (const auto & obj : object_ptr->objects) {
     const auto obj_poly = getPolygon(
       obj.state.pose_covariance.pose, obj.shape.dimensions, 0.0,
@@ -490,8 +490,8 @@ void AdaptiveCruiseController::insertMaxVelocityToPath(
   double dist_to_first_point = 0.0;
   if (output_trajectory.points.size() > 1) {
     dist_to_first_point = boost::geometry::distance(
-      convertPointRosToBoost(self_pose.position),
-      convertPointRosToBoost(output_trajectory.points.at(1).pose.position));
+      autoware_utils::fromMsg(self_pose.position).to_2d(),
+      autoware_utils::fromMsg(output_trajectory.points.at(1).pose.position).to_2d());
   }
   dist += dist_to_first_point;
 

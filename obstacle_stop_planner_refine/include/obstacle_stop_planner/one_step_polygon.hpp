@@ -39,7 +39,7 @@ inline autoware_utils::Polygon2d createOneStepPolygon(
 
   // start step
   {
-    double yaw = getYawFromGeometryMsgsQuaternion(base_step_pose.orientation);
+    double yaw = getYawFromQuaternion(base_step_pose.orientation);
 
     boost::geometry::strategy::transform::rotate_transformer<
       boost::geometry::radian, double, 2, 2> rotate(yaw);
@@ -53,7 +53,7 @@ inline autoware_utils::Polygon2d createOneStepPolygon(
   }
   // next step
   {
-    double yaw = getYawFromGeometryMsgsQuaternion(next_step_pose.orientation);
+    double yaw = getYawFromQuaternion(next_step_pose.orientation);
     boost::geometry::strategy::transform::rotate_transformer<
       boost::geometry::radian, double, 2, 2> rotate(yaw);
     autoware_utils::LinearRing2d transformed_footprint;

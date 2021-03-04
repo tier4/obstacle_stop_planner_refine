@@ -30,7 +30,7 @@
 
 namespace
 {
-inline double getYawFromGeometryMsgsQuaternion(const geometry_msgs::msg::Quaternion & quat)
+inline double getYawFromQuaternion(const geometry_msgs::msg::Quaternion & quat)
 {
   tf2::Quaternion tf2_quat(quat.x, quat.y, quat.z, quat.w);
   double roll, pitch, yaw;
@@ -76,12 +76,6 @@ inline cv::Point2d calcCentroid(const std::vector<cv::Point2d> & pointcloud)
   centroid.x = centroid.x / static_cast<double>(pointcloud.size());
   centroid.y = centroid.y / static_cast<double>(pointcloud.size());
   return centroid;
-}
-
-inline autoware_utils::Point2d convertPointRosToBoost(const geometry_msgs::msg::Point & point)
-{
-  const autoware_utils::Point2d point2d(point.x, point.y);
-  return point2d;
 }
 
 inline geometry_msgs::msg::Vector3 rpyFromQuat(const geometry_msgs::msg::Quaternion & q)
