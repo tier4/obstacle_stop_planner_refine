@@ -39,11 +39,6 @@
 
 namespace obstacle_stop_planner
 {
-namespace bg = boost::geometry;
-using Point = bg::model::d2::point_xy<double>;
-using Polygon = bg::model::polygon<Point, false>;
-using Line = bg::model::linestring<Point>;
-
 ObstacleStopPlannerNode::ObstacleStopPlannerNode()
 : Node("obstacle_stop_planner"),
   tf_buffer_(this->get_clock()),
@@ -176,11 +171,14 @@ void ObstacleStopPlannerNode::pathCallback(
     const auto prev_center_pose = vehicle_info_.getVehicleCenterFromBase(
       trajectory.points.at(
         i).pose);
-    Point prev_center_point(prev_center_pose.position.x, prev_center_pose.position.y);
+    autoware_utils::Point2d prev_center_point(
+      prev_center_pose.position.x,
+      prev_center_pose.position.y);
     const auto next_center_pose = vehicle_info_.getVehicleCenterFromBase(
-      trajectory.points.at(
-        i + 1).pose);
-    Point next_center_point(next_center_pose.position.x, next_center_pose.position.y);
+      trajectory.points.at(i + 1).pose);
+    autoware_utils::Point2d next_center_point(
+      next_center_pose.position.x,
+      next_center_pose.position.y);
     /*
      * create one step polygon for vehicle
      */
@@ -291,19 +289,22 @@ void ObstacleStopPlannerNode::pathCallback(
 
 // collision
 void ObstacleStopPlannerNode::getCollisionPointcloud(
-  const pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud, const Point & prev_center_point,
-  const Point & next_center_point, const double search_radius,
+  const pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud,
+  const autoware_utils::Point2d & prev_center_point,
+  const autoware_utils::Point2d & next_center_point,
+  const double search_radius,
   const autoware_utils::Polygon2d & one_step_polygon,
   const autoware_planning_msgs::msg::TrajectoryPoint & trajectory_point,
-  pcl::PointCloud<pcl::PointXYZ>::Ptr collision_pointcloud, bool & is_collision)
+  pcl::PointCloud<pcl::PointXYZ>::Ptr collision_pointcloud,
+  bool & is_collision)
 {
   for (size_t j = 0; j < slow_down_pointcloud->size(); ++j) {
-    Point point(slow_down_pointcloud->at(j).x, slow_down_pointcloud->at(j).y);
+    autoware_utils::Point2d point(slow_down_pointcloud->at(j).x, slow_down_pointcloud->at(j).y);
     if (
-      bg::distance(prev_center_point, point) < search_radius ||
-      bg::distance(next_center_point, point) < search_radius)
+      boost::geometry::distance(prev_center_point, point) < search_radius ||
+      boost::geometry::distance(next_center_point, point) < search_radius)
     {
-      if (bg::within(point, one_step_polygon)) {
+      if (boost::geometry::within(point, one_step_polygon)) {
         collision_pointcloud->push_back(slow_down_pointcloud->at(j));
         is_collision = true;
         debug_ptr_->pushPolygon(
@@ -319,19 +320,22 @@ void ObstacleStopPlannerNode::getSlowDownPointcloud(
   const bool is_slow_down,
   const bool enable_slow_down,
   const pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_candidate_pointcloud,
-  const Point & prev_center_point, const Point & next_center_point, const double search_radius,
+  const autoware_utils::Point2d & prev_center_point,
+  const autoware_utils::Point2d & next_center_point,
+  const double search_radius,
   const autoware_utils::Polygon2d & boost_polygon,
-  pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud, bool & candidate_slow_down)
+  pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud,
+  bool & candidate_slow_down)
 {
   if (!is_slow_down && enable_slow_down) {
     for (size_t j = 0; j < obstacle_candidate_pointcloud->size(); ++j) {
-      Point point(
+      autoware_utils::Point2d point(
         obstacle_candidate_pointcloud->at(j).x, obstacle_candidate_pointcloud->at(j).y);
       if (
-        bg::distance(prev_center_point, point) < search_radius ||
-        bg::distance(next_center_point, point) < search_radius)
+        boost::geometry::distance(prev_center_point, point) < search_radius ||
+        boost::geometry::distance(next_center_point, point) < search_radius)
       {
-        if (bg::within(point, boost_polygon)) {
+        if (boost::geometry::within(point, boost_polygon)) {
           slow_down_pointcloud->push_back(obstacle_candidate_pointcloud->at(j));
           candidate_slow_down = true;
         }

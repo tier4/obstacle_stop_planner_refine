@@ -26,7 +26,6 @@
 #include "boost/geometry/geometries/point_xy.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 #include "obstacle_stop_planner/vehicle.hpp"
-#include "autoware_utils/autoware_utils.hpp"
 #include "obstacle_stop_planner/util/create_vehicle_footprint.hpp"
 
 namespace obstacle_stop_planner
@@ -42,32 +41,34 @@ inline autoware_utils::Polygon2d createOneStepPolygon(
   {
     double yaw = getYawFromGeometryMsgsQuaternion(base_step_pose.orientation);
 
-    bg::strategy::transform::rotate_transformer<bg::radian, double, 2, 2> rotate(yaw);
+    boost::geometry::strategy::transform::rotate_transformer<
+      boost::geometry::radian, double, 2, 2> rotate(yaw);
     autoware_utils::LinearRing2d transformed_footprint;
-    bg::transform(footprint, transformed_footprint, rotate);
+    boost::geometry::transform(footprint, transformed_footprint, rotate);
 
-    bg::strategy::transform::translate_transformer<double, 2, 2> translate(
+    boost::geometry::strategy::transform::translate_transformer<double, 2, 2> translate(
       base_step_pose.position.x, base_step_pose.position.y);
-    bg::transform(transformed_footprint, transformed_footprint, translate);
+    boost::geometry::transform(transformed_footprint, transformed_footprint, translate);
     one_step_move_vehicle_corner_points.outer() = transformed_footprint;
   }
   // next step
   {
     double yaw = getYawFromGeometryMsgsQuaternion(next_step_pose.orientation);
-    bg::strategy::transform::rotate_transformer<bg::radian, double, 2, 2> rotate(yaw);
+    boost::geometry::strategy::transform::rotate_transformer<
+      boost::geometry::radian, double, 2, 2> rotate(yaw);
     autoware_utils::LinearRing2d transformed_footprint;
-    bg::transform(footprint, transformed_footprint, rotate);
+    boost::geometry::transform(footprint, transformed_footprint, rotate);
 
-    bg::strategy::transform::translate_transformer<double, 2, 2> translate(
+    boost::geometry::strategy::transform::translate_transformer<double, 2, 2> translate(
       base_step_pose.position.x, base_step_pose.position.y);
-    bg::transform(transformed_footprint, transformed_footprint, translate);
+    boost::geometry::transform(transformed_footprint, transformed_footprint, translate);
     for (const auto & item : transformed_footprint) {
       one_step_move_vehicle_corner_points.outer().emplace_back(item);
     }
   }
 
   autoware_utils::Polygon2d polygon;
-  bg::convex_hull(one_step_move_vehicle_corner_points, polygon);
+  boost::geometry::convex_hull(one_step_move_vehicle_corner_points, polygon);
   return polygon;
 }
 

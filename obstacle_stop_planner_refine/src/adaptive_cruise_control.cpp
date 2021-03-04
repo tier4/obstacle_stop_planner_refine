@@ -198,10 +198,10 @@ double AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
   self_size.x = vehicle_length_;
   self_size.y = vehicle_width_;
   double self_offset = (wheel_base_ + front_overhang_) - vehicle_length_ / 2.0;
-  Polygon self_poly = getPolygon(self_pose, self_size, self_offset);
+  const auto self_poly = getPolygon(self_pose, self_size, self_offset);
 
   // get nearest point
-  Point nearest_point2d(nearest_collision_point.x, nearest_collision_point.y);
+  autoware_utils::Point2d nearest_point2d(nearest_collision_point.x, nearest_collision_point.y);
 
   if (nearest_point_idx <= 2) {
     // if too nearest collision point, return direct distance
@@ -263,9 +263,9 @@ bool AdaptiveCruiseController::estimatePointVelocityFromObject(
   bool get_obj = false;
   double obj_vel;
   double obj_yaw;
-  const Point collision_point_2d = convertPointRosToBoost(nearest_collision_p_ros);
+  const auto collision_point_2d = convertPointRosToBoost(nearest_collision_p_ros);
   for (const auto & obj : object_ptr->objects) {
-    const Polygon obj_poly = getPolygon(
+    const auto obj_poly = getPolygon(
       obj.state.pose_covariance.pose, obj.shape.dimensions, 0.0,
       param_.object_polygon_length_margin, param_.object_polygon_width_margin);
     if (boost::geometry::distance(obj_poly, collision_point_2d) <= 0) {

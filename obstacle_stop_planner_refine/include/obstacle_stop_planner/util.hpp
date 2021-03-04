@@ -26,11 +26,7 @@
 #include "tf2/utils.h"
 #include "diagnostic_msgs/msg/diagnostic_status.hpp"
 #include "diagnostic_msgs/msg/key_value.hpp"
-
-namespace bg = boost::geometry;
-using Point = bg::model::d2::point_xy<double>;
-using Polygon = bg::model::polygon<Point, false>;  // clockwise = false
-using Line = bg::model::linestring<Point>;
+#include "autoware_utils/autoware_utils.hpp"
 
 namespace
 {
@@ -82,9 +78,9 @@ inline cv::Point2d calcCentroid(const std::vector<cv::Point2d> & pointcloud)
   return centroid;
 }
 
-inline Point convertPointRosToBoost(const geometry_msgs::msg::Point & point)
+inline autoware_utils::Point2d convertPointRosToBoost(const geometry_msgs::msg::Point & point)
 {
-  const Point point2d(point.x, point.y);
+  const autoware_utils::Point2d point2d(point.x, point.y);
   return point2d;
 }
 
@@ -101,31 +97,33 @@ inline geometry_msgs::msg::Vector3 rpyFromQuat(const geometry_msgs::msg::Quatern
   return rpy;
 }
 
-inline Polygon getPolygon(
+inline autoware_utils::Polygon2d getPolygon(
   const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::Vector3 & size,
   const double center_offset, const double l_margin = 0.0, const double w_margin = 0.0)
 {
-  Polygon obj_poly;
+  autoware_utils::Polygon2d obj_poly;
   geometry_msgs::msg::Vector3 obj_rpy = rpyFromQuat(pose.orientation);
 
   double l = size.x * std::cos(obj_rpy.y) + l_margin;
   double w = size.y * std::cos(obj_rpy.x) + w_margin;
   double co = center_offset;
-  bg::exterior_ring(obj_poly) =
-    boost::assign::list_of<Point>(l / 2.0 + co, w / 2.0)(-l / 2.0 + co, w / 2.0)(
+  boost::geometry::exterior_ring(obj_poly) =
+    boost::assign::list_of<autoware_utils::Point2d>(l / 2.0 + co, w / 2.0)(-l / 2.0 + co, w / 2.0)(
     -l / 2.0 + co, -w / 2.0)(l / 2.0 + co, -w / 2.0)(l / 2.0 + co, w / 2.0);
 
   // rotate polygon
   // original:clockwise
-  bg::strategy::transform::rotate_transformer<bg::radian, double, 2, 2> rotate(-obj_rpy.z);
+  boost::geometry::strategy::transform::rotate_transformer<
+    boost::geometry::radian, double, 2, 2> rotate(-obj_rpy.z);
   // rotation
-  Polygon rotate_obj_poly;
-  bg::transform(obj_poly, rotate_obj_poly, rotate);
+  autoware_utils::Polygon2d rotate_obj_poly;
+  boost::geometry::transform(obj_poly, rotate_obj_poly, rotate);
   // translate polygon
-  bg::strategy::transform::translate_transformer<double, 2, 2> translate(pose.position.x,
+  boost::geometry::strategy::transform::translate_transformer<double, 2, 2> translate(
+    pose.position.x,
     pose.position.y);
-  Polygon translate_obj_poly;
-  bg::transform(rotate_obj_poly, translate_obj_poly, translate);
+  autoware_utils::Polygon2d translate_obj_poly;
+  boost::geometry::transform(rotate_obj_poly, translate_obj_poly, translate);
   return translate_obj_poly;
 }
 
