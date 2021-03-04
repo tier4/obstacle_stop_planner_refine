@@ -49,11 +49,11 @@ struct SlowDownPoint
 class PointHelper
 {
 public:
-  PointHelper(const VehicleInfo & vehicle_info)
+  explicit PointHelper(const VehicleInfo & vehicle_info)
   {
     vehicle_info_ = std::make_shared<VehicleInfo>(vehicle_info);
   }
-  PointHelper(std::shared_ptr<VehicleInfo> & vehicle_info) {vehicle_info_ = vehicle_info;}
+  explicit PointHelper(std::shared_ptr<VehicleInfo> & vehicle_info) {vehicle_info_ = vehicle_info;}
 
   bool getBackwardPointFromBasePoint(
     const Eigen::Vector2d & line_point1, const Eigen::Vector2d & line_point2,

@@ -106,7 +106,7 @@ private:
   void getCollisionPointcloud(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud,
     const Point & prev_center_point, const Point & next_center_point,
-    const double search_radius, const OneStepPolygon & one_step_polygon,
+    const double search_radius, const autoware_utils::Polygon2d & one_step_polygon,
     const autoware_planning_msgs::msg::TrajectoryPoint & trajectory_point,
     pcl::PointCloud<pcl::PointXYZ>::Ptr collision_pointcloud,
     bool & is_collision);
