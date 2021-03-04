@@ -32,7 +32,7 @@
 #define EIGEN_MPL2_ONLY
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/Geometry"
-namespace motion_planning
+namespace obstacle_stop_planner
 {
 enum class PolygonType : int8_t { Vehicle = 0, Collision, SlowDownRange, SlowDown };
 
@@ -73,6 +73,6 @@ private:
   std::vector<autoware_utils::Polygon3d> slow_down_polygons_;
 };
 
-}  // namespace motion_planning
+}  // namespace obstacle_stop_planner
 
 #endif  // OBSTACLE_STOP_PLANNER__DEBUG_MARKER_HPP_

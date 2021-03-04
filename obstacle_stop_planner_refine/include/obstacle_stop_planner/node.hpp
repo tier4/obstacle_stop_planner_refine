@@ -44,7 +44,7 @@
 #include "obstacle_stop_planner/one_step_polygon.hpp"
 #include "obstacle_stop_planner/point_helper.hpp"
 
-namespace motion_planning
+namespace obstacle_stop_planner
 {
 class ObstacleStopPlannerNode : public rclcpp::Node
 {
@@ -76,7 +76,7 @@ private:
   /*
    * Parameter
    */
-  std::unique_ptr<motion_planning::AdaptiveCruiseController> acc_controller_;
+  std::unique_ptr<obstacle_stop_planner::AdaptiveCruiseController> acc_controller_;
   geometry_msgs::msg::TwistStamped::ConstSharedPtr current_velocity_ptr_;
   autoware_perception_msgs::msg::DynamicObjectArray::ConstSharedPtr object_ptr_;
   rclcpp::Time prev_col_point_time_;
@@ -103,6 +103,6 @@ private:
   void insertSlowDownPoint(const size_t search_start_index, const autoware_planning_msgs::msg::Trajectory &base_path, const pcl::PointXYZ& nearest_slow_down_point, const PointHelper& point_helper, const double slow_down_target_vel, const double slow_down_margin, autoware_planning_msgs::msg::Trajectory & output_msg);
 
 };
-}  // namespace motion_planning
+}  // namespace obstacle_stop_planner
 
 #endif  // OBSTACLE_STOP_PLANNER__NODE_HPP_

@@ -14,7 +14,7 @@
 
 #include "obstacle_stop_planner/trajectory.hpp"
 
-namespace motion_planning
+namespace obstacle_stop_planner
 {
 bool Trajectory::decimateTrajectory(
   const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length, const VehicleInfo & vehicle_info,
@@ -126,4 +126,4 @@ bool Trajectory::extendTrajectory(
   return true;
 }
 
-}  // namespace motion_planning
+}  // namespace obstacle_stop_planner

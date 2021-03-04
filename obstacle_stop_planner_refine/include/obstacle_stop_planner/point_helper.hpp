@@ -30,7 +30,7 @@
 #include "eigen3/Eigen/Geometry"
 
 
-namespace motion_planning {
+namespace obstacle_stop_planner {
 
 struct StopPoint
 {
@@ -92,6 +92,6 @@ public:
 private:
   std::shared_ptr<VehicleInfo> vehicle_info_;
 };
-}  // namespace motion_planning
+}  // namespace obstacle_stop_planner
 
 #endif  // OBSTACLE_STOP_PLANNER__POINT_HELPER_HPP_

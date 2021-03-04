@@ -19,7 +19,7 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include "autoware_utils/autoware_utils.hpp"
 
-namespace motion_planning
+namespace obstacle_stop_planner
 {
 ObstacleStopPlannerDebugNode::ObstacleStopPlannerDebugNode(
   rclcpp::Node * node, const double base_link2front)
@@ -579,4 +579,4 @@ autoware_planning_msgs::msg::StopReasonArray ObstacleStopPlannerDebugNode::makeS
   return stop_reason_array;
 }
 
-}  // namespace motion_planning
+}  // namespace obstacle_stop_planner

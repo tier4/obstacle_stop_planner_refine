@@ -27,7 +27,7 @@
 #include "autoware_perception_msgs/msg/dynamic_object_array.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
 
-namespace motion_planning
+namespace obstacle_stop_planner
 {
 class AdaptiveCruiseController
 {
@@ -221,6 +221,6 @@ private:
   static constexpr unsigned int num_debug_values_ = 10;
 };
 
-}  // namespace motion_planning
+}  // namespace obstacle_stop_planner
 
 #endif  // OBSTACLE_STOP_PLANNER__ADAPTIVE_CRUISE_CONTROL_HPP_

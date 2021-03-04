@@ -17,7 +17,7 @@
 #include "tf2/utils.h"
 #include "tf2_eigen/tf2_eigen.h"
 
-namespace motion_planning
+namespace obstacle_stop_planner
 {
 ObstaclePointCloud::ObstaclePointCloud(rclcpp::Logger logger)
 : logger_(logger)
@@ -117,4 +117,4 @@ bool ObstaclePointCloud::searchPointcloudNearTrajectory(
   return true;
 }
 
-}  // namespace motion_planning
+}  // namespace obstacle_stop_planner

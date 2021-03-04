@@ -28,7 +28,7 @@
 #include "autoware_planning_msgs/msg/trajectory.hpp"
 #include "obstacle_stop_planner/vehicle.hpp"
 
-namespace motion_planning {
+namespace obstacle_stop_planner {
 
 class ObstaclePointCloud
 {
@@ -54,6 +54,6 @@ private:
   std::shared_ptr<VehicleInfo> vehicle_info_;
 };
 
-}  // namespace motion_planning
+}  // namespace obstacle_stop_planner
 
 #endif  // OBSTACLE_STOP_PLANNER__OBSTACLE_POINT_CLOUD_HPP_
