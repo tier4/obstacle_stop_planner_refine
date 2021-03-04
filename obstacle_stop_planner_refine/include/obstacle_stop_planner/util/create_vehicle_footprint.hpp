@@ -18,6 +18,8 @@
 #include <autoware_utils/geometry/geometry.hpp>
 #include <vehicle_info_util/vehicle_info.hpp>
 
+namespace obstacle_stop_planner
+{
 inline autoware_utils::LinearRing2d createVehicleFootprint(
   const vehicle_info_util::VehicleInfo & vehicle_info, const double top_margin = 0.0,
   const double side_margin = 0.0)
@@ -41,5 +43,6 @@ inline autoware_utils::LinearRing2d createVehicleFootprint(
 
   return footprint;
 }
+}  // namespace obstacle_stop_planner
 
 #endif  // OBSTACLE_STOP_PLANNER__UTIL__CREATE_VEHICLE_FOOTPRINT_HPP_
