@@ -126,7 +126,6 @@ private:
     const PointHelper & point_helper, const double slow_down_target_vel,
     const double slow_down_margin,
     autoware_planning_msgs::msg::Trajectory & output_msg);
-
 };
 }  // namespace obstacle_stop_planner
 
