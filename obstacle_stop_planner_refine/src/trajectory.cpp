@@ -40,8 +40,7 @@ bool Trajectory::decimateTrajectory(
   double next_length = 0.0;
   const double epsilon = 0.001;
   Eigen::Vector2d point1, point2;
-  PointHelper point_helper;
-  point_helper.setVehicleInfo(vehicle_info);
+  PointHelper point_helper {vehicle_info};
 
   for (int i = 0; i < static_cast<int>(input_trajectory.points.size()) - 1; ++i) {
     if (next_length <= trajectory_length_sum + epsilon) {
@@ -114,16 +113,16 @@ bool Trajectory::trimTrajectoryFromSelfPose(
 
 bool Trajectory::extendTrajectory(
   const autoware_planning_msgs::msg::Trajectory & input_trajectory,
-  const double extend_distance,
+  const VehicleInfo & vehicle_info,
   autoware_planning_msgs::msg::Trajectory & output_trajectory)
 {
   output_trajectory = input_trajectory;
   const auto goal_point = input_trajectory.points.back();
   double interpolation_distance = 0.1;
-  PointHelper point_helper;
+  PointHelper point_helper {vehicle_info};
 
   double extend_sum = 0.0;
-  while (extend_sum <= (extend_distance - interpolation_distance)) {
+  while (extend_sum <= (vehicle_info.extend_distance_ - interpolation_distance)) {
     const auto extend_trajectory_point = point_helper.getExtendTrajectoryPoint(
       extend_sum,
       goal_point);
@@ -131,7 +130,7 @@ bool Trajectory::extendTrajectory(
     extend_sum += interpolation_distance;
   }
   const auto extend_trajectory_point = point_helper.getExtendTrajectoryPoint(
-    extend_distance,
+    vehicle_info.extend_distance_,
     goal_point);
   output_trajectory.points.push_back(extend_trajectory_point);
 

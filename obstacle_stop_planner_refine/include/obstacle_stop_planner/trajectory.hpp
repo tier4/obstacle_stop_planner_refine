@@ -49,7 +49,7 @@ public:
     size_t & index);
   bool extendTrajectory(
     const autoware_planning_msgs::msg::Trajectory & input_trajectory,
-    const double extend_distance,
+    const VehicleInfo & vehicle_info,
     autoware_planning_msgs::msg::Trajectory & output_trajectory);
 };
 }  // namespace obstacle_stop_planner
