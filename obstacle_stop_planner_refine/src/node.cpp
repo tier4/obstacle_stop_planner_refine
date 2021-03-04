@@ -46,18 +46,23 @@ using Polygon = bg::model::polygon<Point, false>;
 using Line = bg::model::linestring<Point>;
 
 ObstacleStopPlannerNode::ObstacleStopPlannerNode()
-: Node("obstacle_stop_planner")
-, tf_buffer_(this->get_clock())
-, tf_listener_(tf_buffer_)
-, obstacle_pointcloud_(this->get_logger())
-, vehicle_info_(vehicle_info_util::VehicleInfo::create(*this), this->get_node_parameters_interface())
+: Node("obstacle_stop_planner"),
+  tf_buffer_(this->get_clock()),
+  tf_listener_(tf_buffer_),
+  obstacle_pointcloud_(this->get_logger()),
+  vehicle_info_(vehicle_info_util::VehicleInfo::create(*this),
+    this->get_node_parameters_interface())
 {
   obstacle_pointcloud_.setVehicleInfo(vehicle_info_);
-  debug_ptr_ = std::make_shared<ObstacleStopPlannerDebugNode>(this, vehicle_info_.wheel_base_m_ + vehicle_info_.front_overhang_m_);
+  debug_ptr_ = std::make_shared<ObstacleStopPlannerDebugNode>(
+    this,
+    vehicle_info_.wheel_base_m_ +
+    vehicle_info_.front_overhang_m_);
 
   // Initializer
   acc_controller_ = std::make_unique<obstacle_stop_planner::AdaptiveCruiseController>(
-    this, vehicle_info_.vehicle_width_m_, vehicle_info_.vehicle_length_m_, vehicle_info_.wheel_base_m_, vehicle_info_.front_overhang_m_);
+    this, vehicle_info_.vehicle_width_m_, vehicle_info_.vehicle_length_m_,
+    vehicle_info_.wheel_base_m_, vehicle_info_.front_overhang_m_);
 
   // Publishers
   path_pub_ =
@@ -124,7 +129,9 @@ void ObstacleStopPlannerNode::pathCallback(
   getSelfPose(input_msg->header, tf_buffer_, self_pose);
   autoware_planning_msgs::msg::Trajectory trim_trajectory;
   size_t trajectory_trim_index;
-  trajectory_.trimTrajectoryWithIndexFromSelfPose(base_path, self_pose, trim_trajectory, trajectory_trim_index);
+  trajectory_.trimTrajectoryWithIndexFromSelfPose(
+    base_path, self_pose, trim_trajectory,
+    trajectory_trim_index);
 
   /*
    * decimate trajectory for calculation cost
@@ -132,7 +139,8 @@ void ObstacleStopPlannerNode::pathCallback(
   autoware_planning_msgs::msg::Trajectory decimate_trajectory;
   std::map<size_t /* decimate */, size_t /* origin */> decimate_trajectory_index_map;
   trajectory_.decimateTrajectory(
-    trim_trajectory, vehicle_info_.step_length_, vehicle_info_, decimate_trajectory, decimate_trajectory_index_map);
+    trim_trajectory, vehicle_info_.step_length_, vehicle_info_, decimate_trajectory,
+    decimate_trajectory_index_map);
 
   autoware_planning_msgs::msg::Trajectory & trajectory = decimate_trajectory;
 
@@ -171,19 +179,25 @@ void ObstacleStopPlannerNode::pathCallback(
     /*
      * create one step circle center for vehicle
      */
-    const auto prev_center_pose = vehicle_info_.getVehicleCenterFromBase(trajectory.points.at(i).pose);
+    const auto prev_center_pose = vehicle_info_.getVehicleCenterFromBase(
+      trajectory.points.at(
+        i).pose);
     Point prev_center_point(prev_center_pose.position.x, prev_center_pose.position.y);
-    const auto next_center_pose = vehicle_info_.getVehicleCenterFromBase(trajectory.points.at(i + 1).pose);
+    const auto next_center_pose = vehicle_info_.getVehicleCenterFromBase(
+      trajectory.points.at(
+        i + 1).pose);
     Point next_center_point(next_center_pose.position.x, next_center_pose.position.y);
     /*
      * create one step polygon for vehicle
      */
     OneStepPolygon move_vehicle_polygon;
     move_vehicle_polygon.setVehicleInfo(vehicle_info_);
-    move_vehicle_polygon.create(trajectory.points.at(i).pose, trajectory.points.at(i + 1).pose,
+    move_vehicle_polygon.create(
+      trajectory.points.at(i).pose, trajectory.points.at(i + 1).pose,
       vehicle_info_.expand_stop_range_);
     debug_ptr_->pushPolygon(
-      move_vehicle_polygon.getPolygon(), trajectory.points.at(i).pose.position.z, PolygonType::Vehicle);
+      move_vehicle_polygon.getPolygon(), trajectory.points.at(
+        i).pose.position.z, PolygonType::Vehicle);
 
     OneStepPolygon move_slow_down_range_polygon;
     move_slow_down_range_polygon.setVehicleInfo(vehicle_info_);
@@ -191,7 +205,8 @@ void ObstacleStopPlannerNode::pathCallback(
       /*
       * create one step polygon for slow_down range
       */
-      move_slow_down_range_polygon.create(trajectory.points.at(i).pose, trajectory.points.at(i + 1).pose,
+      move_slow_down_range_polygon.create(
+        trajectory.points.at(i).pose, trajectory.points.at(i + 1).pose,
         vehicle_info_.expand_slow_down_range_);
       debug_ptr_->pushPolygon(
         move_slow_down_range_polygon.getPolygon(), trajectory.points.at(i).pose.position.z,
@@ -202,9 +217,16 @@ void ObstacleStopPlannerNode::pathCallback(
     pcl::PointCloud<pcl::PointXYZ>::Ptr collision_pointcloud_ptr(
       new pcl::PointCloud<pcl::PointXYZ>);
     collision_pointcloud_ptr->header = obstacle_candidate_pointcloud_ptr->header;
-    getSlowDownPointcloud(is_slow_down, vehicle_info_.enable_slow_down_, obstacle_candidate_pointcloud_ptr, prev_center_point,next_center_point, vehicle_info_.slow_down_search_radius_, move_slow_down_range_polygon.getPolygon(), slow_down_pointcloud_ptr, candidate_slow_down);
+    getSlowDownPointcloud(
+      is_slow_down, vehicle_info_.enable_slow_down_,
+      obstacle_candidate_pointcloud_ptr, prev_center_point, next_center_point,
+      vehicle_info_.slow_down_search_radius_,
+      move_slow_down_range_polygon.getPolygon(), slow_down_pointcloud_ptr, candidate_slow_down);
 
-    getCollisionPointcloud(slow_down_pointcloud_ptr, prev_center_point, next_center_point, vehicle_info_.stop_search_radius_, move_vehicle_polygon, trajectory.points.at(i), collision_pointcloud_ptr, is_collision);
+    getCollisionPointcloud(
+      slow_down_pointcloud_ptr, prev_center_point, next_center_point,
+      vehicle_info_.stop_search_radius_, move_vehicle_polygon, trajectory.points.at(
+        i), collision_pointcloud_ptr, is_collision);
 
     if (candidate_slow_down && !is_collision && !is_slow_down) {
       is_slow_down = true;
@@ -248,14 +270,20 @@ void ObstacleStopPlannerNode::pathCallback(
    * insert stop point
    */
   if (need_to_stop) {
-    insertStopPoint(decimate_trajectory_index_map.at(decimate_trajectory_collision_index) + trajectory_trim_index, base_path, nearest_collision_point, point_helper, output_msg, stop_reason_diag);
+    insertStopPoint(
+      decimate_trajectory_index_map.at(
+        decimate_trajectory_collision_index) + trajectory_trim_index, base_path, nearest_collision_point, point_helper, output_msg,
+      stop_reason_diag);
   }
 
   /*
    * insert slow_down point
    */
   if (is_slow_down) {
-    insertSlowDownPoint(decimate_trajectory_index_map.at(decimate_trajectory_slow_down_index), base_path, nearest_slow_down_point, point_helper, calcSlowDownTargetVel(lateral_deviation), vehicle_info_.slow_down_margin_, output_msg);
+    insertSlowDownPoint(
+      decimate_trajectory_index_map.at(
+        decimate_trajectory_slow_down_index), base_path, nearest_slow_down_point, point_helper, calcSlowDownTargetVel(
+        lateral_deviation), vehicle_info_.slow_down_margin_, output_msg);
   }
   path_pub_->publish(output_msg);
   stop_reason_diag_pub_->publish(stop_reason_diag);
@@ -263,7 +291,12 @@ void ObstacleStopPlannerNode::pathCallback(
 }
 
 // collision
-void ObstacleStopPlannerNode::getCollisionPointcloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud, const Point& prev_center_point, const Point& next_center_point, const double search_radius, const OneStepPolygon& one_step_polygon, const autoware_planning_msgs::msg::TrajectoryPoint & trajectory_point, pcl::PointCloud<pcl::PointXYZ>::Ptr collision_pointcloud, bool& is_collision)
+void ObstacleStopPlannerNode::getCollisionPointcloud(
+  const pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud, const Point & prev_center_point,
+  const Point & next_center_point, const double search_radius,
+  const OneStepPolygon & one_step_polygon,
+  const autoware_planning_msgs::msg::TrajectoryPoint & trajectory_point,
+  pcl::PointCloud<pcl::PointXYZ>::Ptr collision_pointcloud, bool & is_collision)
 {
   for (size_t j = 0; j < slow_down_pointcloud->size(); ++j) {
     Point point(slow_down_pointcloud->at(j).x, slow_down_pointcloud->at(j).y);
@@ -283,7 +316,13 @@ void ObstacleStopPlannerNode::getCollisionPointcloud(const pcl::PointCloud<pcl::
 }
 
 // slow down
-void ObstacleStopPlannerNode::getSlowDownPointcloud(const bool is_slow_down, const bool enable_slow_down, const pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_candidate_pointcloud, const Point& prev_center_point, const Point& next_center_point, const double search_radius, const autoware_utils::Polygon2d& boost_polygon, pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud, bool& candidate_slow_down)
+void ObstacleStopPlannerNode::getSlowDownPointcloud(
+  const bool is_slow_down,
+  const bool enable_slow_down,
+  const pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_candidate_pointcloud,
+  const Point & prev_center_point, const Point & next_center_point, const double search_radius,
+  const autoware_utils::Polygon2d & boost_polygon,
+  pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud, bool & candidate_slow_down)
 {
   if (!is_slow_down && enable_slow_down) {
     for (size_t j = 0; j < obstacle_candidate_pointcloud->size(); ++j) {
@@ -304,10 +343,14 @@ void ObstacleStopPlannerNode::getSlowDownPointcloud(const bool is_slow_down, con
   }
 }
 
-void ObstacleStopPlannerNode::insertSlowDownPoint(const size_t search_start_index, const autoware_planning_msgs::msg::Trajectory &base_path, const pcl::PointXYZ& nearest_slow_down_point, const PointHelper& point_helper, const double slow_down_target_vel, const double slow_down_margin, autoware_planning_msgs::msg::Trajectory & output_msg)
+void ObstacleStopPlannerNode::insertSlowDownPoint(
+  const size_t search_start_index,
+  const autoware_planning_msgs::msg::Trajectory & base_path,
+  const pcl::PointXYZ & nearest_slow_down_point, const PointHelper & point_helper,
+  const double slow_down_target_vel, const double slow_down_margin,
+  autoware_planning_msgs::msg::Trajectory & output_msg)
 {
-  for (size_t i = search_start_index; i < base_path.points.size(); ++i)
-  {
+  for (size_t i = search_start_index; i < base_path.points.size(); ++i) {
     Eigen::Vector2d trajectory_vec;
     {
       const double yaw =
@@ -327,7 +370,8 @@ void ObstacleStopPlannerNode::insertSlowDownPoint(const size_t search_start_inde
         base_path, current_velocity_ptr_->twist.linear.x);
 
       if (slow_down_start_point.index <= output_msg.points.size()) {
-        const auto slowdown_trajectory_point = point_helper.insertSlowDownStartPoint(slow_down_start_point, base_path, output_msg);
+        const auto slowdown_trajectory_point = point_helper.insertSlowDownStartPoint(
+          slow_down_start_point, base_path, output_msg);
         debug_ptr_->pushPose(slowdown_trajectory_point.pose, PoseType::SlowDownStart);
         insertSlowDownVelocity(
           slow_down_start_point.index, slow_down_target_vel, slow_down_start_point.velocity,
@@ -339,10 +383,14 @@ void ObstacleStopPlannerNode::insertSlowDownPoint(const size_t search_start_inde
 }
 
 // stop
-void ObstacleStopPlannerNode::insertStopPoint(const size_t search_start_index, const autoware_planning_msgs::msg::Trajectory &base_path, const pcl::PointXYZ& nearest_collision_point, const PointHelper& point_helper, autoware_planning_msgs::msg::Trajectory & output_msg, diagnostic_msgs::msg::DiagnosticStatus& stop_reason_diag)
+void ObstacleStopPlannerNode::insertStopPoint(
+  const size_t search_start_index,
+  const autoware_planning_msgs::msg::Trajectory & base_path,
+  const pcl::PointXYZ & nearest_collision_point, const PointHelper & point_helper,
+  autoware_planning_msgs::msg::Trajectory & output_msg,
+  diagnostic_msgs::msg::DiagnosticStatus & stop_reason_diag)
 {
-  for (size_t i = search_start_index; i < base_path.points.size(); ++i)
-  {
+  for (size_t i = search_start_index; i < base_path.points.size(); ++i) {
     Eigen::Vector2d trajectory_vec;
     {
       const double yaw =
@@ -360,7 +408,8 @@ void ObstacleStopPlannerNode::insertStopPoint(const size_t search_start_index, c
       const auto stop_point =
         point_helper.searchInsertPoint(i, base_path, trajectory_vec, collision_point_vec);
       if (stop_point.index <= output_msg.points.size()) {
-        const auto trajectory_point = point_helper.insertStopPoint(stop_point, base_path, output_msg);
+        const auto trajectory_point =
+          point_helper.insertStopPoint(stop_point, base_path, output_msg);
         stop_reason_diag = makeStopReasonDiag("obstacle", trajectory_point.pose);
         debug_ptr_->pushPose(trajectory_point.pose, PoseType::Stop);
       }
@@ -374,7 +423,9 @@ void ObstacleStopPlannerNode::externalExpandStopRangeCallback(
 {
   vehicle_info_.expand_stop_range_ = input_msg->expand_stop_range;
   vehicle_info_.stop_search_radius_ =
-    vehicle_info_.step_length_ + std::hypot(vehicle_info_.vehicle_width_m_ / 2.0 + vehicle_info_.expand_stop_range_, vehicle_info_.vehicle_length_m_ / 2.0);
+    vehicle_info_.step_length_ + std::hypot(
+    vehicle_info_.vehicle_width_m_ / 2.0 + vehicle_info_.expand_stop_range_,
+    vehicle_info_.vehicle_length_m_ / 2.0);
 }
 
 void ObstacleStopPlannerNode::insertSlowDownVelocity(
@@ -392,7 +443,10 @@ void ObstacleStopPlannerNode::insertSlowDownVelocity(
       output_path.points.at(j).pose.position.y - output_path.points.at(j + 1).pose.position.y);
     slow_down_vel = std::max(
       slow_down_target_vel,
-      std::sqrt(std::max(slow_down_vel * slow_down_vel - 2 * vehicle_info_.max_deceleration_ * dist, 0.0)));
+      std::sqrt(
+        std::max(
+          slow_down_vel * slow_down_vel - 2 * vehicle_info_.max_deceleration_ * dist,
+          0.0)));
     if (!is_slow_down_end && slow_down_vel <= slow_down_target_vel) {
       slow_down_end_trajectory_point = output_path.points.at(j + 1);
       is_slow_down_end = true;
@@ -407,9 +461,10 @@ void ObstacleStopPlannerNode::insertSlowDownVelocity(
 
 double ObstacleStopPlannerNode::calcSlowDownTargetVel(const double lateral_deviation)
 {
-  return vehicle_info_.min_slow_down_vel_ + (vehicle_info_.max_slow_down_vel_ - vehicle_info_.min_slow_down_vel_) *
-    std::max(lateral_deviation - vehicle_info_.vehicle_width_m_ / 2, 0.0) /
-    vehicle_info_.expand_slow_down_range_;
+  return vehicle_info_.min_slow_down_vel_ +
+         (vehicle_info_.max_slow_down_vel_ - vehicle_info_.min_slow_down_vel_) *
+         std::max(lateral_deviation - vehicle_info_.vehicle_width_m_ / 2, 0.0) /
+         vehicle_info_.expand_slow_down_range_;
 }
 
 void ObstacleStopPlannerNode::dynamicObjectCallback(

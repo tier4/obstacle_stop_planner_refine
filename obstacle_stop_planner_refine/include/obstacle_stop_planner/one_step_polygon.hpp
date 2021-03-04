@@ -28,7 +28,8 @@
 #include "autoware_utils/autoware_utils.hpp"
 #include "obstacle_stop_planner/util/create_vehicle_footprint.hpp"
 
-namespace obstacle_stop_planner {
+namespace obstacle_stop_planner
+{
 
 class OneStepPolygon
 {
@@ -37,7 +38,10 @@ public:
     const geometry_msgs::msg::Pose base_step_pose, const geometry_msgs::msg::Pose next_step_pose,
     const double expand_width);
   autoware_utils::Polygon2d getPolygon() const {return polygon_;}
-  void setVehicleInfo(VehicleInfo vehicle_info) {vehicle_info_ = std::make_shared<VehicleInfo>(vehicle_info);}
+  void setVehicleInfo(VehicleInfo vehicle_info)
+  {
+    vehicle_info_ = std::make_shared<VehicleInfo>(vehicle_info);
+  }
 
 private:
   autoware_utils::Polygon2d polygon_;
@@ -59,7 +63,8 @@ inline void OneStepPolygon::create(
     autoware_utils::LinearRing2d transformed_footprint;
     bg::transform(footprint, transformed_footprint, rotate);
 
-    bg::strategy::transform::translate_transformer<double, 2, 2> translate(base_step_pose.position.x, base_step_pose.position.y);
+    bg::strategy::transform::translate_transformer<double, 2, 2> translate(
+      base_step_pose.position.x, base_step_pose.position.y);
     bg::transform(transformed_footprint, transformed_footprint, translate);
     one_step_move_vehicle_corner_points.outer() = transformed_footprint;
   }
@@ -70,9 +75,10 @@ inline void OneStepPolygon::create(
     autoware_utils::LinearRing2d transformed_footprint;
     bg::transform(footprint, transformed_footprint, rotate);
 
-    bg::strategy::transform::translate_transformer<double, 2, 2> translate(base_step_pose.position.x, base_step_pose.position.y);
+    bg::strategy::transform::translate_transformer<double, 2, 2> translate(
+      base_step_pose.position.x, base_step_pose.position.y);
     bg::transform(transformed_footprint, transformed_footprint, translate);
-    for (const auto& item : transformed_footprint) {
+    for (const auto & item : transformed_footprint) {
       one_step_move_vehicle_corner_points.outer().emplace_back(item);
     }
   }

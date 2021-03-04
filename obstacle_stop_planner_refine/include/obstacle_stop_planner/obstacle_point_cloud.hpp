@@ -28,7 +28,8 @@
 #include "autoware_planning_msgs/msg/trajectory.hpp"
 #include "obstacle_stop_planner/vehicle.hpp"
 
-namespace obstacle_stop_planner {
+namespace obstacle_stop_planner
+{
 
 class ObstaclePointCloud
 {
@@ -40,7 +41,9 @@ public:
   void setVehicleInfo(const VehicleInfo vehicle_info);
 
   bool isDataReceived();
-  pcl::PointCloud<pcl::PointXYZ>::Ptr searchCandidateObstacle(const tf2_ros::Buffer & tf_buffer, const autoware_planning_msgs::msg::Trajectory & trajectory);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr searchCandidateObstacle(
+    const tf2_ros::Buffer & tf_buffer,
+    const autoware_planning_msgs::msg::Trajectory & trajectory);
 
 private:
   bool searchPointcloudNearTrajectory(
