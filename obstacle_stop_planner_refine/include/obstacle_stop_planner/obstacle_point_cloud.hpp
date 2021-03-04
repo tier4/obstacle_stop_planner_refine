@@ -35,12 +35,12 @@ class ObstaclePointCloud
 public:
   explicit ObstaclePointCloud(rclcpp::Logger logger);
 
-  void SetPointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg);
-  void SetSearchRadius(const double value);
-  void SetVehicleInfo(const VehicleInfo vehicle_info);
+  void setPointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg);
+  void setSearchRadius(const double value);
+  void setVehicleInfo(const VehicleInfo vehicle_info);
 
-  bool IsDataReceived();
-  pcl::PointCloud<pcl::PointXYZ>::Ptr SearchCandidateObstacle(const tf2_ros::Buffer & tf_buffer, const autoware_planning_msgs::msg::Trajectory & trajectory);
+  bool isDataReceived();
+  pcl::PointCloud<pcl::PointXYZ>::Ptr searchCandidateObstacle(const tf2_ros::Buffer & tf_buffer, const autoware_planning_msgs::msg::Trajectory & trajectory);
 
 private:
   bool searchPointcloudNearTrajectory(
