@@ -100,12 +100,15 @@ private:
   void getSlowDownPointcloud(
     const bool is_slow_down, const bool enable_slow_down,
     const pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_candidate_pointcloud,
-    const Point & prev_center_point, const Point & next_center_point, const double search_radius,
+    const autoware_utils::Point2d & prev_center_point,
+    const autoware_utils::Point2d & next_center_point,
+    const double search_radius,
     const autoware_utils::Polygon2d & one_step_polygon,
     pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud, bool & candidate_slow_down);
   void getCollisionPointcloud(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud,
-    const Point & prev_center_point, const Point & next_center_point,
+    const autoware_utils::Point2d & prev_center_point,
+    const autoware_utils::Point2d & next_center_point,
     const double search_radius, const autoware_utils::Polygon2d & one_step_polygon,
     const autoware_planning_msgs::msg::TrajectoryPoint & trajectory_point,
     pcl::PointCloud<pcl::PointXYZ>::Ptr collision_pointcloud,
