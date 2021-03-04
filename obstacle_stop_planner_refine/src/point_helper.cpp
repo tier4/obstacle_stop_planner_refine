@@ -36,7 +36,7 @@ void PointHelper::getNearestPoint(
 {
   double min_norm = 0.0;
   bool is_init = false;
-  const double yaw = getYawFromGeometryMsgsQuaternion(base_pose.orientation);
+  const double yaw = getYawFromQuaternion(base_pose.orientation);
   Eigen::Vector2d base_pose_vec;
   base_pose_vec << std::cos(yaw), std::sin(yaw);
 
@@ -59,7 +59,7 @@ void PointHelper::getLateralNearestPoint(
   pcl::PointXYZ * lateral_nearest_point, double * deviation) const
 {
   double min_norm = std::numeric_limits<double>::max();
-  const double yaw = getYawFromGeometryMsgsQuaternion(base_pose.orientation);
+  const double yaw = getYawFromQuaternion(base_pose.orientation);
   Eigen::Vector2d base_pose_vec;
   base_pose_vec << std::cos(yaw), std::sin(yaw);
   for (size_t i = 0; i < pointcloud.size(); ++i) {
@@ -131,7 +131,7 @@ StopPoint PointHelper::createTargetPoint(
   {
     line_start_point << base_path.points.at(0).pose.position.x,
       base_path.points.at(0).pose.position.y;
-    const double yaw = getYawFromGeometryMsgsQuaternion(base_path.points.at(0).pose.orientation);
+    const double yaw = getYawFromQuaternion(base_path.points.at(0).pose.orientation);
     line_end_point << std::cos(yaw), std::sin(yaw);
   }
 

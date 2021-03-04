@@ -358,7 +358,7 @@ void ObstacleStopPlannerNode::insertSlowDownPoint(
     Eigen::Vector2d trajectory_vec;
     {
       const double yaw =
-        getYawFromGeometryMsgsQuaternion(base_path.points.at(i).pose.orientation);
+        getYawFromQuaternion(base_path.points.at(i).pose.orientation);
       trajectory_vec << std::cos(yaw), std::sin(yaw);
     }
     Eigen::Vector2d slow_down_point_vec;
@@ -398,7 +398,7 @@ void ObstacleStopPlannerNode::insertStopPoint(
     Eigen::Vector2d trajectory_vec;
     {
       const double yaw =
-        getYawFromGeometryMsgsQuaternion(base_path.points.at(i).pose.orientation);
+        getYawFromQuaternion(base_path.points.at(i).pose.orientation);
       trajectory_vec << std::cos(yaw), std::sin(yaw);
     }
     Eigen::Vector2d collision_point_vec;
