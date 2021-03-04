@@ -23,7 +23,7 @@
 #include "obstacle_stop_planner/vehicle.hpp"
 #include "obstacle_stop_planner/point_helper.hpp"
 
-namespace motion_planning {
+namespace obstacle_stop_planner {
 
 class Trajectory
 {
@@ -49,6 +49,6 @@ public:
     const double extend_distance,
     autoware_planning_msgs::msg::Trajectory & output_trajectory);
 };
-}  // namespace motion_planning
+}  // namespace obstacle_stop_planner
 
 #endif  // OBSTACLE_STOP_PLANNER__TRAJECTORY_HPP_

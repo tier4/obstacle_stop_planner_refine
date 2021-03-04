@@ -20,7 +20,7 @@
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<motion_planning::ObstacleStopPlannerNode>());
+  rclcpp::spin(std::make_shared<obstacle_stop_planner::ObstacleStopPlannerNode>());
   rclcpp::shutdown();
   return 0;
 }

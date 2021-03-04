@@ -37,7 +37,7 @@
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/Geometry"
 
-namespace motion_planning
+namespace obstacle_stop_planner
 {
 namespace bg = boost::geometry;
 using Point = bg::model::d2::point_xy<double>;
@@ -55,7 +55,7 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode()
   debug_ptr_ = std::make_shared<ObstacleStopPlannerDebugNode>(this, vehicle_info_.wheel_base_m_ + vehicle_info_.front_overhang_m_);
 
   // Initializer
-  acc_controller_ = std::make_unique<motion_planning::AdaptiveCruiseController>(
+  acc_controller_ = std::make_unique<obstacle_stop_planner::AdaptiveCruiseController>(
     this, vehicle_info_.vehicle_width_m_, vehicle_info_.vehicle_length_m_, vehicle_info_.wheel_base_m_, vehicle_info_.front_overhang_m_);
 
   // Publishers
@@ -445,4 +445,4 @@ bool ObstacleStopPlannerNode::getSelfPose(
     return false;
   }
 }
-}  // namespace motion_planning
+}  // namespace obstacle_stop_planner

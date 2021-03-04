@@ -28,7 +28,7 @@
 #include "obstacle_stop_planner/adaptive_cruise_control.hpp"
 #include "obstacle_stop_planner/util.hpp"
 
-namespace motion_planning
+namespace obstacle_stop_planner
 {
 AdaptiveCruiseController::AdaptiveCruiseController(
   rclcpp::Node * node, const double vehicle_width, const double vehicle_length,
@@ -596,4 +596,4 @@ double AdaptiveCruiseController::lowpass_filter(
   return gain * prev_value + (1.0 - gain) * current_value;
 }
 
-}  // namespace motion_planning
+}  // namespace obstacle_stop_planner
