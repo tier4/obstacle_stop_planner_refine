@@ -82,7 +82,7 @@ public:
     const geometry_msgs::msg::Pose & base_pose) const
   {
     geometry_msgs::msg::Pose center_pose;
-    const double yaw = getYawFromGeometryMsgsQuaternion(base_pose.orientation);
+    const double yaw = getYawFromQuaternion(base_pose.orientation);
     center_pose.position.x =
       base_pose.position.x + (vehicle_length_m_ / 2.0 - rear_overhang_m_) * std::cos(yaw);
     center_pose.position.y =
