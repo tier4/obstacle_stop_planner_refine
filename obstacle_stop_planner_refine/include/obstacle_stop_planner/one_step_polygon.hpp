@@ -31,8 +31,7 @@
 
 namespace obstacle_stop_planner
 {
-
-autoware_utils::Polygon2d createOneStepPolygon(
+inline autoware_utils::Polygon2d createOneStepPolygon(
   const geometry_msgs::msg::Pose & base_step_pose, const geometry_msgs::msg::Pose & next_step_pose,
   const double expand_width, const VehicleInfo & vehicle_info)
 {
