@@ -51,7 +51,7 @@ void ObstaclePointCloud::setSearchRadius(const double value)
   search_radius_ = value;
 }
 
-void ObstaclePointCloud::setVehicleInfo(const VehicleInfo vehicle_info)
+void ObstaclePointCloud::setVehicleInfo(const VehicleInfo & vehicle_info)
 {
   vehicle_info_ = std::make_shared<VehicleInfo>(vehicle_info);
 }

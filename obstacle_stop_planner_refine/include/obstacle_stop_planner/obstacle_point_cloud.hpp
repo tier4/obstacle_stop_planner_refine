@@ -37,7 +37,7 @@ public:
 
   void setPointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg);
   void setSearchRadius(const double value);
-  void setVehicleInfo(const VehicleInfo vehicle_info);
+  void setVehicleInfo(const VehicleInfo & vehicle_info);
 
   bool isDataReceived();
   pcl::PointCloud<pcl::PointXYZ>::Ptr searchCandidateObstacle(

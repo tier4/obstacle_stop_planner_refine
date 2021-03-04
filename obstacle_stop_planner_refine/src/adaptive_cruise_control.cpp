@@ -482,7 +482,7 @@ double AdaptiveCruiseController::calcTargetVelocityByPID(
 }
 
 void AdaptiveCruiseController::insertMaxVelocityToPath(
-  const geometry_msgs::msg::Pose self_pose, const double current_vel, const double target_vel,
+  const geometry_msgs::msg::Pose & self_pose, const double current_vel, const double target_vel,
   const double dist_to_collision_point, autoware_planning_msgs::msg::Trajectory & output_trajectory)
 {
   // plus distance from self to next nearest point
@@ -560,7 +560,7 @@ void AdaptiveCruiseController::registerQueToVelocity(
 }
 
 double AdaptiveCruiseController::getMedianVel(
-  const std::vector<geometry_msgs::msg::TwistStamped> vel_que)
+  const std::vector<geometry_msgs::msg::TwistStamped>& vel_que)
 {
   if (vel_que.size() == 0) {
     RCLCPP_WARN_STREAM(node_->get_logger(), "size of vel que is 0. Something has wrong.");

@@ -36,10 +36,10 @@ class OneStepPolygon
 {
 public:
   void create(
-    const geometry_msgs::msg::Pose base_step_pose, const geometry_msgs::msg::Pose next_step_pose,
+    const geometry_msgs::msg::Pose & base_step_pose, const geometry_msgs::msg::Pose & next_step_pose,
     const double expand_width);
   autoware_utils::Polygon2d getPolygon() const {return polygon_;}
-  void setVehicleInfo(VehicleInfo vehicle_info)
+  void setVehicleInfo(VehicleInfo & vehicle_info)
   {
     vehicle_info_ = std::make_shared<VehicleInfo>(vehicle_info);
   }
@@ -50,7 +50,7 @@ private:
 };
 
 inline void OneStepPolygon::create(
-  const geometry_msgs::msg::Pose base_step_pose, const geometry_msgs::msg::Pose next_step_pose,
+  const geometry_msgs::msg::Pose & base_step_pose, const geometry_msgs::msg::Pose & next_step_pose,
   const double expand_width)
 {
   autoware_utils::Polygon2d one_step_move_vehicle_corner_points;

@@ -68,7 +68,7 @@ inline diagnostic_msgs::msg::DiagnosticStatus makeStopReasonDiag(
   return stop_reason_diag;
 }
 
-inline cv::Point2d calcCentroid(const std::vector<cv::Point2d> pointcloud)
+inline cv::Point2d calcCentroid(const std::vector<cv::Point2d> & pointcloud)
 {
   cv::Point2d centroid;
   centroid.x = 0;
