@@ -24,7 +24,7 @@ ObstaclePointCloud::ObstaclePointCloud(rclcpp::Logger logger)
 {
 }
 
-void ObstaclePointCloud::SetPointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg)
+void ObstaclePointCloud::setPointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg)
 {
   obstacle_ros_pointcloud_ptr_ = std::make_shared<sensor_msgs::msg::PointCloud2>();
   pcl::VoxelGrid<pcl::PointXYZ> filter;
@@ -45,22 +45,22 @@ void ObstaclePointCloud::SetPointCloud(const sensor_msgs::msg::PointCloud2::Cons
   obstacle_ros_pointcloud_ptr_->header = msg->header;
 }
 
-void ObstaclePointCloud::SetSearchRadius(const double value)
+void ObstaclePointCloud::setSearchRadius(const double value)
 {
   search_radius_ = value;
 }
 
-void ObstaclePointCloud::SetVehicleInfo(const VehicleInfo vehicle_info)
+void ObstaclePointCloud::setVehicleInfo(const VehicleInfo vehicle_info)
 {
   vehicle_info_ = std::make_shared<VehicleInfo>(vehicle_info);
 }
 
-bool ObstaclePointCloud::IsDataReceived()
+bool ObstaclePointCloud::isDataReceived()
 {
   return obstacle_ros_pointcloud_ptr_ != nullptr ? true : false;
 }
 
-pcl::PointCloud<pcl::PointXYZ>::Ptr ObstaclePointCloud::SearchCandidateObstacle(const tf2_ros::Buffer & tf_buffer, const autoware_planning_msgs::msg::Trajectory & trajectory)
+pcl::PointCloud<pcl::PointXYZ>::Ptr ObstaclePointCloud::searchCandidateObstacle(const tf2_ros::Buffer & tf_buffer, const autoware_planning_msgs::msg::Trajectory & trajectory)
 {
   pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_candidate_pointcloud_ptr(
     new pcl::PointCloud<pcl::PointXYZ>);

@@ -51,7 +51,7 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode()
 , obstacle_pointcloud_(this->get_logger())
 , vehicle_info_(vehicle_info_util::VehicleInfo::create(*this), this->get_node_parameters_interface())
 {
-  obstacle_pointcloud_.SetVehicleInfo(vehicle_info_);
+  obstacle_pointcloud_.setVehicleInfo(vehicle_info_);
   debug_ptr_ = std::make_shared<ObstacleStopPlannerDebugNode>(this, vehicle_info_.wheel_base_m_ + vehicle_info_.front_overhang_m_);
 
   // Initializer
@@ -87,12 +87,12 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode()
 void ObstacleStopPlannerNode::obstaclePointcloudCallback(
   const sensor_msgs::msg::PointCloud2::ConstSharedPtr input_msg)
 {
-  obstacle_pointcloud_.SetPointCloud(input_msg);
+  obstacle_pointcloud_.setPointCloud(input_msg);
 }
 void ObstacleStopPlannerNode::pathCallback(
   const autoware_planning_msgs::msg::Trajectory::ConstSharedPtr input_msg)
 {
-  if (!obstacle_pointcloud_.IsDataReceived()) {
+  if (!obstacle_pointcloud_.isDataReceived()) {
     RCLCPP_WARN_THROTTLE(
       get_logger(), *get_clock(), std::chrono::milliseconds(1000).count(),
       "waiting for obstacle pointcloud...");
@@ -143,8 +143,8 @@ void ObstacleStopPlannerNode::pathCallback(
 
   // search obstacle candidate pointcloud to reduce calculation cost
   const double search_radius = vehicle_info_.getSearchRadius();
-  obstacle_pointcloud_.SetSearchRadius(search_radius);
-  obstacle_pointcloud_.SearchCandidateObstacle(tf_buffer_, trajectory);
+  obstacle_pointcloud_.setSearchRadius(search_radius);
+  obstacle_pointcloud_.searchCandidateObstacle(tf_buffer_, trajectory);
 
   /*
    * check collision, slow_down
@@ -164,7 +164,7 @@ void ObstacleStopPlannerNode::pathCallback(
   double lateral_deviation = 0.0;
 
   PointHelper point_helper;
-  point_helper.SetVehicleInfo(vehicle_info_);
+  point_helper.setVehicleInfo(vehicle_info_);
 
   for (int i = 0; i < static_cast<int>(trajectory.points.size()) - 1; ++i) {
     /*
@@ -178,22 +178,22 @@ void ObstacleStopPlannerNode::pathCallback(
      * create one step polygon for vehicle
      */
     OneStepPolygon move_vehicle_polygon;
-    move_vehicle_polygon.SetVehicleInfo(vehicle_info_);
-    move_vehicle_polygon.Create(trajectory.points.at(i).pose, trajectory.points.at(i + 1).pose,
+    move_vehicle_polygon.setVehicleInfo(vehicle_info_);
+    move_vehicle_polygon.create(trajectory.points.at(i).pose, trajectory.points.at(i + 1).pose,
       vehicle_info_.expand_stop_range_);
     debug_ptr_->pushPolygon(
-      move_vehicle_polygon.GetPolygon(), trajectory.points.at(i).pose.position.z, PolygonType::Vehicle);
+      move_vehicle_polygon.getPolygon(), trajectory.points.at(i).pose.position.z, PolygonType::Vehicle);
 
     OneStepPolygon move_slow_down_range_polygon;
-    move_slow_down_range_polygon.SetVehicleInfo(vehicle_info_);
+    move_slow_down_range_polygon.setVehicleInfo(vehicle_info_);
     if (vehicle_info_.enable_slow_down_) {
       /*
       * create one step polygon for slow_down range
       */
-      move_slow_down_range_polygon.Create(trajectory.points.at(i).pose, trajectory.points.at(i + 1).pose,
+      move_slow_down_range_polygon.create(trajectory.points.at(i).pose, trajectory.points.at(i + 1).pose,
         vehicle_info_.expand_slow_down_range_);
       debug_ptr_->pushPolygon(
-        move_slow_down_range_polygon.GetPolygon(), trajectory.points.at(i).pose.position.z,
+        move_slow_down_range_polygon.getPolygon(), trajectory.points.at(i).pose.position.z,
         PolygonType::SlowDownRange);
     }
 
@@ -201,7 +201,7 @@ void ObstacleStopPlannerNode::pathCallback(
     pcl::PointCloud<pcl::PointXYZ>::Ptr collision_pointcloud_ptr(
       new pcl::PointCloud<pcl::PointXYZ>);
     collision_pointcloud_ptr->header = obstacle_candidate_pointcloud_ptr->header;
-    getSlowDownPointcloud(is_slow_down, vehicle_info_.enable_slow_down_, obstacle_candidate_pointcloud_ptr, prev_center_point,next_center_point, vehicle_info_.slow_down_search_radius_, move_slow_down_range_polygon.GetPolygon(), slow_down_pointcloud_ptr, candidate_slow_down);
+    getSlowDownPointcloud(is_slow_down, vehicle_info_.enable_slow_down_, obstacle_candidate_pointcloud_ptr, prev_center_point,next_center_point, vehicle_info_.slow_down_search_radius_, move_slow_down_range_polygon.getPolygon(), slow_down_pointcloud_ptr, candidate_slow_down);
 
     getCollisionPointcloud(slow_down_pointcloud_ptr, prev_center_point, next_center_point, vehicle_info_.stop_search_radius_, move_vehicle_polygon, trajectory.points.at(i), collision_pointcloud_ptr, is_collision);
 
@@ -209,7 +209,7 @@ void ObstacleStopPlannerNode::pathCallback(
       is_slow_down = true;
       decimate_trajectory_slow_down_index = i;
       debug_ptr_->pushPolygon(
-        move_slow_down_range_polygon.GetPolygon(), trajectory.points.at(i).pose.position.z,
+        move_slow_down_range_polygon.getPolygon(), trajectory.points.at(i).pose.position.z,
         PolygonType::SlowDown);
       point_helper.getNearestPoint(
         *slow_down_pointcloud_ptr, trajectory.points.at(i).pose, &nearest_slow_down_point,
@@ -270,11 +270,11 @@ void ObstacleStopPlannerNode::getCollisionPointcloud(const pcl::PointCloud<pcl::
       bg::distance(prev_center_point, point) < search_radius ||
       bg::distance(next_center_point, point) < search_radius)
     {
-      if (bg::within(point, one_step_polygon.GetPolygon())) {
+      if (bg::within(point, one_step_polygon.getPolygon())) {
         collision_pointcloud->push_back(slow_down_pointcloud->at(j));
         is_collision = true;
         debug_ptr_->pushPolygon(
-          one_step_polygon.GetPolygon(), trajectory_point.pose.position.z,
+          one_step_polygon.getPolygon(), trajectory_point.pose.position.z,
           PolygonType::Collision);
       }
     }

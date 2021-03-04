@@ -33,18 +33,18 @@ namespace obstacle_stop_planner {
 class OneStepPolygon
 {
 public:
-  void Create(
+  void create(
     const geometry_msgs::msg::Pose base_step_pose, const geometry_msgs::msg::Pose next_step_pose,
     const double expand_width);
-  autoware_utils::Polygon2d GetPolygon() const {return polygon_;}
-  void SetVehicleInfo(VehicleInfo vehicle_info) {vehicle_info_ = std::make_shared<VehicleInfo>(vehicle_info);}
+  autoware_utils::Polygon2d getPolygon() const {return polygon_;}
+  void setVehicleInfo(VehicleInfo vehicle_info) {vehicle_info_ = std::make_shared<VehicleInfo>(vehicle_info);}
 
 private:
   autoware_utils::Polygon2d polygon_;
   std::shared_ptr<VehicleInfo> vehicle_info_;
 };
 
-inline void OneStepPolygon::Create(
+inline void OneStepPolygon::create(
   const geometry_msgs::msg::Pose base_step_pose, const geometry_msgs::msg::Pose next_step_pose,
   const double expand_width)
 {
