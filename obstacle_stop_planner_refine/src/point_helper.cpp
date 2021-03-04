@@ -19,7 +19,8 @@ namespace obstacle_stop_planner
 {
 bool PointHelper::getBackwardPointFromBasePoint(
   const Eigen::Vector2d & line_point1, const Eigen::Vector2d & line_point2,
-  const Eigen::Vector2d & base_point, const double backward_length, Eigen::Vector2d & output_point) const
+  const Eigen::Vector2d & base_point, const double backward_length,
+  Eigen::Vector2d & output_point) const
 {
   Eigen::Vector2d line_vec = line_point2 - line_point1;
   Eigen::Vector2d backward_vec = backward_length * line_vec.normalized();
@@ -94,7 +95,9 @@ StopPoint PointHelper::searchInsertPoint(
   const Eigen::Vector2d & trajectory_vec, const Eigen::Vector2d & collision_point_vec) const
 {
   const auto max_dist_stop_point =
-    createTargetPoint(idx, vehicle_info_->stop_margin_, trajectory_vec, collision_point_vec, base_path);
+    createTargetPoint(
+    idx, vehicle_info_->stop_margin_, trajectory_vec, collision_point_vec,
+    base_path);
   const auto min_dist_stop_point = createTargetPoint(
     idx, vehicle_info_->min_behavior_stop_margin_, trajectory_vec, collision_point_vec, base_path);
 
@@ -179,7 +182,9 @@ SlowDownPoint PointHelper::createSlowDownStartPoint(
     line_start_point, line_end_point, line_start_point, length_sum - margin, slow_down_point.point);
 
   slow_down_point.velocity = std::max(
-    std::sqrt(slow_down_target_vel * slow_down_target_vel + 2 * vehicle_info_->max_deceleration_ * length_sum),
+    std::sqrt(
+      slow_down_target_vel * slow_down_target_vel + 2 * vehicle_info_->max_deceleration_ *
+      length_sum),
     current_velocity_x);
   return slow_down_point;
 }
@@ -200,7 +205,8 @@ autoware_planning_msgs::msg::TrajectoryPoint PointHelper::insertSlowDownStartPoi
 }
 
 autoware_planning_msgs::msg::TrajectoryPoint PointHelper::getExtendTrajectoryPoint(
-  const double extend_distance, const autoware_planning_msgs::msg::TrajectoryPoint & goal_point) const
+  const double extend_distance,
+  const autoware_planning_msgs::msg::TrajectoryPoint & goal_point) const
 {
   tf2::Transform map2goal;
   tf2::fromMsg(goal_point.pose, map2goal);

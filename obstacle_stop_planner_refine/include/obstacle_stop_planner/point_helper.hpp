@@ -30,7 +30,8 @@
 #include "eigen3/Eigen/Geometry"
 
 
-namespace obstacle_stop_planner {
+namespace obstacle_stop_planner
+{
 
 struct StopPoint
 {
@@ -48,8 +49,11 @@ struct SlowDownPoint
 class PointHelper
 {
 public:
-  void setVehicleInfo(const VehicleInfo vehicle_info) { vehicle_info_ = std::make_shared<VehicleInfo>(vehicle_info); }
-  void setVehicleInfo(std::shared_ptr<VehicleInfo> vehicle_info) { vehicle_info_ = vehicle_info; }
+  void setVehicleInfo(const VehicleInfo vehicle_info)
+  {
+    vehicle_info_ = std::make_shared<VehicleInfo>(vehicle_info);
+  }
+  void setVehicleInfo(std::shared_ptr<VehicleInfo> vehicle_info) {vehicle_info_ = vehicle_info;}
 
   bool getBackwardPointFromBasePoint(
     const Eigen::Vector2d & line_point1, const Eigen::Vector2d & line_point2,
