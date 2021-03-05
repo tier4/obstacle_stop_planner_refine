@@ -21,7 +21,7 @@
 
 namespace obstacle_stop_planner
 {
-ObstaclePointCloud::ObstaclePointCloud(rclcpp::Logger logger)
+ObstaclePointCloud::ObstaclePointCloud(const rclcpp::Logger & logger)
 : logger_(logger)
 {
 }

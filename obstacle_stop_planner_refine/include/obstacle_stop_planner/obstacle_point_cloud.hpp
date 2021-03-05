@@ -33,7 +33,7 @@ namespace obstacle_stop_planner
 class ObstaclePointCloud
 {
 public:
-  explicit ObstaclePointCloud(rclcpp::Logger logger);
+  explicit ObstaclePointCloud(const rclcpp::Logger & logger);
 
   void updatePointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg);
 
@@ -51,7 +51,7 @@ private:
     pcl::PointCloud<pcl::PointXYZ>::Ptr output_pointcloud_ptr);
 
   sensor_msgs::msg::PointCloud2::SharedPtr obstacle_ros_pointcloud_ptr_;
-  rclcpp::Logger logger_;
+  const rclcpp::Logger logger_;
 };
 
 }  // namespace obstacle_stop_planner
