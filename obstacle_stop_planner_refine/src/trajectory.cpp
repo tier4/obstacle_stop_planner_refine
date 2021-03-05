@@ -39,33 +39,30 @@ bool Trajectory::decimateTrajectory(
   double trajectory_length_sum = 0.0;
   double next_length = 0.0;
   const double epsilon = 0.001;
-  Eigen::Vector2d point1, point2;
   PointHelper point_helper {vehicle_info};
 
   for (int i = 0; i < static_cast<int>(input_trajectory.points.size()) - 1; ++i) {
     if (next_length <= trajectory_length_sum + epsilon) {
-      Eigen::Vector2d line_start_point, line_end_point, interpolated_point;
-      line_start_point << input_trajectory.points.at(i).pose.position.x,
-        input_trajectory.points.at(i).pose.position.y;
-      line_end_point << input_trajectory.points.at(i + 1).pose.position.x,
-        input_trajectory.points.at(i + 1).pose.position.y;
+      const auto line_start_point = autoware_utils::fromMsg(
+        input_trajectory.points.at(i).pose.position).to_2d();
+      const auto line_end_point = autoware_utils::fromMsg(
+        input_trajectory.points.at(i + 1).pose.position).to_2d();
+      autoware_utils::Point2d interpolated_point;
       point_helper.getBackwardPointFromBasePoint(
         line_start_point, line_end_point, line_end_point,
         -1.0 * (trajectory_length_sum - next_length), interpolated_point);
-      autoware_planning_msgs::msg::TrajectoryPoint trajectory_point;
-      trajectory_point = input_trajectory.points.at(i);
-      trajectory_point.pose.position.x = interpolated_point.x();
-      trajectory_point.pose.position.y = interpolated_point.y();
+      autoware_planning_msgs::msg::TrajectoryPoint trajectory_point = input_trajectory.points.at(i);
+      trajectory_point.pose.position = autoware_utils::toMsg(
+        interpolated_point.to_3d(input_trajectory.points.at(i).pose.position.z));
       output_trajectory.points.push_back(trajectory_point);
       index_map.insert(std::make_pair(output_trajectory.points.size() - 1, size_t(i)));
       next_length += step_length;
       continue;
     }
-    trajectory_length_sum += std::hypot(
-      input_trajectory.points.at(i).pose.position.x - input_trajectory.points.at(
-        i + 1).pose.position.x,
-      input_trajectory.points.at(i).pose.position.y - input_trajectory.points.at(
-        i + 1).pose.position.y);
+
+    const auto p1 = autoware_utils::fromMsg(input_trajectory.points.at(i).pose.position);
+    const auto p2 = autoware_utils::fromMsg(input_trajectory.points.at(i + 1).pose.position);
+    trajectory_length_sum += boost::geometry::distance(p1.to_2d(), p2.to_2d());
   }
   if (!input_trajectory.points.empty()) {
     output_trajectory.points.push_back(input_trajectory.points.back());
@@ -84,12 +81,13 @@ bool Trajectory::trimTrajectoryWithIndexFromSelfPose(
   size_t min_distance_index = 0;
   bool is_init = false;
   for (size_t i = 0; i < input_trajectory.points.size(); ++i) {
-    const double distance = std::hypot(
-      input_trajectory.points.at(i).pose.position.x - self_pose.position.x,
-      input_trajectory.points.at(i).pose.position.y - self_pose.position.y);
-    if (!is_init || distance < min_distance) {
+    const auto p1 = autoware_utils::fromMsg(input_trajectory.points.at(i).pose.position);
+    const auto p2 = autoware_utils::fromMsg(self_pose.position);
+    const double point_distance = boost::geometry::distance(p1.to_2d(), p2.to_2d());
+
+    if (!is_init || point_distance < min_distance) {
       is_init = true;
-      min_distance = distance;
+      min_distance = point_distance;
       min_distance_index = i;
     }
   }
