@@ -39,6 +39,22 @@ inline double getYawFromQuaternion(const geometry_msgs::msg::Quaternion & quat)
   return yaw;
 }
 
+inline geometry_msgs::msg::Pose getVehicleCenterFromBase(
+  const geometry_msgs::msg::Pose & base_pose,
+  const double vehicle_length,
+  const double rear_overhang)
+{
+  geometry_msgs::msg::Pose center_pose;
+  const double yaw = getYawFromQuaternion(base_pose.orientation);
+  center_pose.position.x =
+    base_pose.position.x + (vehicle_length / 2.0 - rear_overhang) * std::cos(yaw);
+  center_pose.position.y =
+    base_pose.position.y + (vehicle_length / 2.0 - rear_overhang) * std::sin(yaw);
+  center_pose.position.z = base_pose.position.z;
+  center_pose.orientation = base_pose.orientation;
+  return center_pose;
+}
+
 inline cv::Point2d calcCentroid(const std::vector<cv::Point2d> & pointcloud)
 {
   cv::Point2d centroid;

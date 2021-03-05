@@ -14,6 +14,7 @@
 
 #include <memory>
 #include "obstacle_stop_planner/obstacle_point_cloud.hpp"
+#include "obstacle_stop_planner/util.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "tf2/utils.h"
 #include "tf2_eigen/tf2_eigen.h"
@@ -54,7 +55,7 @@ bool ObstaclePointCloud::isDataReceived()
 pcl::PointCloud<pcl::PointXYZ>::Ptr ObstaclePointCloud::searchCandidateObstacle(
   const tf2_ros::Buffer & tf_buffer,
   const autoware_planning_msgs::msg::Trajectory & trajectory,
-  const VehicleInfo & vehicle_info)
+  const Param & param)
 {
   pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_candidate_pointcloud_ptr(
     new pcl::PointCloud<pcl::PointXYZ>);
@@ -88,7 +89,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr ObstaclePointCloud::searchCandidateObstacle(
   // search obstacle candidate pointcloud to reduce calculation cost
   searchPointcloudNearTrajectory(
     trajectory, transformed_obstacle_pointcloud_ptr,
-    vehicle_info,
+    param,
     obstacle_candidate_pointcloud_ptr);
   obstacle_candidate_pointcloud_ptr->header = transformed_obstacle_pointcloud_ptr->header;
   return obstacle_candidate_pointcloud_ptr;
@@ -97,12 +98,15 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr ObstaclePointCloud::searchCandidateObstacle(
 bool ObstaclePointCloud::searchPointcloudNearTrajectory(
   const autoware_planning_msgs::msg::Trajectory & trajectory,
   const pcl::PointCloud<pcl::PointXYZ>::Ptr input_pointcloud_ptr,
-  const VehicleInfo & vehicle_info,
+  const Param & param,
   pcl::PointCloud<pcl::PointXYZ>::Ptr output_pointcloud_ptr)
 {
-  const double squared_radius = vehicle_info.getSearchRadius() * vehicle_info.getSearchRadius();
+  const double squared_radius = getSearchRadius(param) * getSearchRadius(param);
   for (const auto & trajectory_point : trajectory.points) {
-    const auto center_pose = vehicle_info.getVehicleCenterFromBase(trajectory_point.pose);
+    const auto center_pose = getVehicleCenterFromBase(
+      trajectory_point.pose,
+      param.vehicle_info.vehicle_length,
+      param.vehicle_info.rear_overhang);
     for (const auto & point : input_pointcloud_ptr->points) {
       const double x = center_pose.position.x - point.x;
       const double y = center_pose.position.y - point.y;

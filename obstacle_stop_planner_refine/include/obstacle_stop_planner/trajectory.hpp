@@ -20,8 +20,8 @@
 #include "geometry_msgs/msg/pose.hpp"
 #include "pcl/point_cloud.h"
 #include "pcl/point_types.h"
-#include "obstacle_stop_planner/vehicle.hpp"
 #include "obstacle_stop_planner/point_helper.hpp"
+#include "obstacle_stop_planner/param.hpp"
 
 namespace obstacle_stop_planner
 {
@@ -31,11 +31,11 @@ class Trajectory
 public:
   bool decimateTrajectory(
     const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
-    const VehicleInfo & vehicle_info,
+    const Param & param,
     autoware_planning_msgs::msg::Trajectory & output_trajectory);
   bool decimateTrajectory(
     const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
-    const VehicleInfo & vehicle_info,
+    const Param & param,
     autoware_planning_msgs::msg::Trajectory & output_trajectory,
     std::map<size_t /* decimate */, size_t /* origin */> & index_map);
   bool trimTrajectoryFromSelfPose(
@@ -49,7 +49,7 @@ public:
     size_t & index);
   bool extendTrajectory(
     const autoware_planning_msgs::msg::Trajectory & input_trajectory,
-    const VehicleInfo & vehicle_info,
+    const Param & param,
     autoware_planning_msgs::msg::Trajectory & output_trajectory);
 };
 }  // namespace obstacle_stop_planner

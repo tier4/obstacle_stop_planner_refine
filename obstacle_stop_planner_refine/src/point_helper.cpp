@@ -98,10 +98,10 @@ StopPoint PointHelper::searchInsertPoint(
 {
   const auto max_dist_stop_point =
     createTargetPoint(
-    idx, vehicle_info_->stop_margin_, trajectory_vec, collision_point_vec,
+    idx, param_.stop_margin, trajectory_vec, collision_point_vec,
     base_path);
   const auto min_dist_stop_point = createTargetPoint(
-    idx, vehicle_info_->min_behavior_stop_margin_, trajectory_vec, collision_point_vec, base_path);
+    idx, param_.min_behavior_stop_margin, trajectory_vec, collision_point_vec, base_path);
 
   // check if stop point is already inserted by behavior planner
   bool is_inserted_already_stop_point = false;
@@ -188,7 +188,7 @@ SlowDownPoint PointHelper::createSlowDownStartPoint(
 
   slow_down_point.velocity = std::max(
     std::sqrt(
-      slow_down_target_vel * slow_down_target_vel + 2 * vehicle_info_->max_deceleration_ *
+      slow_down_target_vel * slow_down_target_vel + 2 * param_.max_deceleration *
       length_sum),
     current_velocity_x);
   return slow_down_point;

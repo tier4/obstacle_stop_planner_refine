@@ -25,7 +25,7 @@
 #include "rclcpp/logger.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
-#include "obstacle_stop_planner/vehicle.hpp"
+#include "obstacle_stop_planner/param.hpp"
 
 namespace obstacle_stop_planner
 {
@@ -41,13 +41,13 @@ public:
   pcl::PointCloud<pcl::PointXYZ>::Ptr searchCandidateObstacle(
     const tf2_ros::Buffer & tf_buffer,
     const autoware_planning_msgs::msg::Trajectory & trajectory,
-    const VehicleInfo & vehicle_info);
+    const Param & param);
 
 private:
   bool searchPointcloudNearTrajectory(
     const autoware_planning_msgs::msg::Trajectory & trajectory,
     const pcl::PointCloud<pcl::PointXYZ>::Ptr input_pointcloud_ptr,
-    const VehicleInfo & vehicle_info,
+    const Param & param,
     pcl::PointCloud<pcl::PointXYZ>::Ptr output_pointcloud_ptr);
 
   sensor_msgs::msg::PointCloud2::SharedPtr obstacle_ros_pointcloud_ptr_;

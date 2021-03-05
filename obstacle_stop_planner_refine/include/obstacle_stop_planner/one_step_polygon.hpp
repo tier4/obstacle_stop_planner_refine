@@ -25,7 +25,6 @@
 #include "boost/geometry/geometries/linestring.hpp"
 #include "boost/geometry/geometries/point_xy.hpp"
 #include "geometry_msgs/msg/pose.hpp"
-#include "obstacle_stop_planner/vehicle.hpp"
 #include "obstacle_stop_planner/util/create_vehicle_footprint.hpp"
 
 namespace obstacle_stop_planner
