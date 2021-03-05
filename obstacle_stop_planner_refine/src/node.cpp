@@ -114,7 +114,6 @@ void ObstacleStopPlannerNode::pathCallback(
 
   const autoware_planning_msgs::msg::Trajectory base_path = extended_trajectory;
   autoware_planning_msgs::msg::Trajectory output_msg = *input_msg;
-  diagnostic_msgs::msg::DiagnosticStatus stop_reason_diag;
 
   /*
    * trim trajectory from self pose
@@ -266,8 +265,7 @@ void ObstacleStopPlannerNode::pathCallback(
       base_path,
       nearest_collision_point,
       point_helper,
-      output_msg,
-      stop_reason_diag);
+      output_msg);
   }
 
   /*
@@ -284,7 +282,6 @@ void ObstacleStopPlannerNode::pathCallback(
       output_msg);
   }
   path_pub_->publish(output_msg);
-  stop_reason_diag_pub_->publish(stop_reason_diag);
   debug_ptr_->publish();
 }
 
@@ -391,8 +388,7 @@ void ObstacleStopPlannerNode::insertStopPoint(
   const size_t search_start_index,
   const autoware_planning_msgs::msg::Trajectory & base_path,
   const pcl::PointXYZ & nearest_collision_point, const PointHelper & point_helper,
-  autoware_planning_msgs::msg::Trajectory & output_msg,
-  diagnostic_msgs::msg::DiagnosticStatus & stop_reason_diag)
+  autoware_planning_msgs::msg::Trajectory & output_msg)
 {
   for (size_t i = search_start_index; i < base_path.points.size(); ++i) {
     Eigen::Vector2d trajectory_vec;
@@ -414,7 +410,6 @@ void ObstacleStopPlannerNode::insertStopPoint(
       if (stop_point.index <= output_msg.points.size()) {
         const auto trajectory_point =
           point_helper.insertStopPoint(stop_point, base_path, output_msg);
-        stop_reason_diag = makeStopReasonDiag("obstacle", trajectory_point.pose);
         debug_ptr_->pushPose(trajectory_point.pose, PoseType::Stop);
       }
       break;

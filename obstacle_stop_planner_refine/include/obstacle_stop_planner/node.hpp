@@ -65,7 +65,6 @@ private:
   rclcpp::Subscription<autoware_planning_msgs::msg::ExpandStopRange>::SharedPtr
     expand_stop_range_sub_;
   rclcpp::Publisher<autoware_planning_msgs::msg::Trajectory>::SharedPtr path_pub_;
-  rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticStatus>::SharedPtr stop_reason_diag_pub_;
 
   std::shared_ptr<ObstacleStopPlannerDebugNode> debug_ptr_;
   tf2_ros::Buffer tf_buffer_;
@@ -120,8 +119,7 @@ private:
     const autoware_planning_msgs::msg::Trajectory & base_path,
     const pcl::PointXYZ & nearest_collision_point,
     const PointHelper & point_helper,
-    autoware_planning_msgs::msg::Trajectory & output_msg,
-    diagnostic_msgs::msg::DiagnosticStatus & stop_reason_diag);
+    autoware_planning_msgs::msg::Trajectory & output_msg);
   void insertSlowDownPoint(
     const size_t search_start_index,
     const autoware_planning_msgs::msg::Trajectory & base_path,
