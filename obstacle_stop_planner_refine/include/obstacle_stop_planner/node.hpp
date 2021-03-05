@@ -39,7 +39,6 @@
 #include "obstacle_stop_planner/adaptive_cruise_control.hpp"
 #include "obstacle_stop_planner/debug_marker.hpp"
 #include "obstacle_stop_planner/obstacle_point_cloud.hpp"
-#include "obstacle_stop_planner/vehicle.hpp"
 #include "obstacle_stop_planner/trajectory.hpp"
 #include "obstacle_stop_planner/one_step_polygon.hpp"
 #include "obstacle_stop_planner/point_helper.hpp"
@@ -69,8 +68,8 @@ private:
   tf2_ros::TransformListener tf_listener_;
   // ObstacleStopPlanner impl_;
   ObstaclePointCloud obstacle_pointcloud_;
-  VehicleInfo vehicle_info_;
   Trajectory trajectory_;
+  Param param_;
 
   /*
    * Parameter

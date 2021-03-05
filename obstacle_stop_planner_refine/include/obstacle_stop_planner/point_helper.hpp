@@ -23,7 +23,7 @@
 #include "geometry_msgs/msg/pose.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
 #include "obstacle_stop_planner/util.hpp"
-#include "obstacle_stop_planner/vehicle.hpp"
+#include "obstacle_stop_planner/param.hpp"
 
 #define EIGEN_MPL2_ONLY
 #include "eigen3/Eigen/Core"
@@ -49,11 +49,8 @@ struct SlowDownPoint
 class PointHelper
 {
 public:
-  explicit PointHelper(const VehicleInfo & vehicle_info)
-  {
-    vehicle_info_ = std::make_shared<VehicleInfo>(vehicle_info);
-  }
-  explicit PointHelper(std::shared_ptr<VehicleInfo> & vehicle_info) {vehicle_info_ = vehicle_info;}
+  explicit PointHelper(const Param & param)
+  : param_(param) {}
 
   bool getBackwardPointFromBasePoint(
     const Eigen::Vector2d & line_point1, const Eigen::Vector2d & line_point2,
@@ -94,7 +91,7 @@ public:
     double extend_distance, const autoware_planning_msgs::msg::TrajectoryPoint & goal_point) const;
 
 private:
-  std::shared_ptr<VehicleInfo> vehicle_info_;
+  const Param param_;
 };
 }  // namespace obstacle_stop_planner
 

@@ -20,18 +20,18 @@ namespace obstacle_stop_planner
 {
 bool Trajectory::decimateTrajectory(
   const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
-  const VehicleInfo & vehicle_info,
+  const Param & param,
   autoware_planning_msgs::msg::Trajectory & output_trajectory)
 {
   std::map<size_t /* decimate */, size_t /* origin */> index_map;
   return decimateTrajectory(
-    input_trajectory, step_length, vehicle_info, output_trajectory,
+    input_trajectory, step_length, param, output_trajectory,
     index_map);
 }
 
 bool Trajectory::decimateTrajectory(
   const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
-  const VehicleInfo & vehicle_info,
+  const Param & param,
   autoware_planning_msgs::msg::Trajectory & output_trajectory,
   std::map<size_t /* decimate */, size_t /* origin */> & index_map)
 {
@@ -39,7 +39,7 @@ bool Trajectory::decimateTrajectory(
   double trajectory_length_sum = 0.0;
   double next_length = 0.0;
   const double epsilon = 0.001;
-  PointHelper point_helper {vehicle_info};
+  PointHelper point_helper {param};
 
   for (int i = 0; i < static_cast<int>(input_trajectory.points.size()) - 1; ++i) {
     if (next_length <= trajectory_length_sum + epsilon) {
@@ -111,16 +111,16 @@ bool Trajectory::trimTrajectoryFromSelfPose(
 
 bool Trajectory::extendTrajectory(
   const autoware_planning_msgs::msg::Trajectory & input_trajectory,
-  const VehicleInfo & vehicle_info,
+  const Param & param,
   autoware_planning_msgs::msg::Trajectory & output_trajectory)
 {
   output_trajectory = input_trajectory;
   const auto goal_point = input_trajectory.points.back();
   double interpolation_distance = 0.1;
-  PointHelper point_helper {vehicle_info};
+  PointHelper point_helper {param};
 
   double extend_sum = 0.0;
-  while (extend_sum <= (vehicle_info.extend_distance_ - interpolation_distance)) {
+  while (extend_sum <= (param.extend_distance - interpolation_distance)) {
     const auto extend_trajectory_point = point_helper.getExtendTrajectoryPoint(
       extend_sum,
       goal_point);
@@ -128,7 +128,7 @@ bool Trajectory::extendTrajectory(
     extend_sum += interpolation_distance;
   }
   const auto extend_trajectory_point = point_helper.getExtendTrajectoryPoint(
-    vehicle_info.extend_distance_,
+    param.extend_distance,
     goal_point);
   output_trajectory.points.push_back(extend_trajectory_point);
 
