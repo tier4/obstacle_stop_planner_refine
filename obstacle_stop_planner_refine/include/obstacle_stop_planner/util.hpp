@@ -39,31 +39,6 @@ inline double getYawFromQuaternion(const geometry_msgs::msg::Quaternion & quat)
   return yaw;
 }
 
-inline std::string jsonDumpsPose(const geometry_msgs::msg::Pose & pose)
-{
-  const std::string json_dumps_pose =
-    (boost::format(
-      R"({"position":{"x":%lf,"y":%lf,"z":%lf},"orientation":{"w":%lf,"x":%lf,"y":%lf,"z":%lf}})") %
-    pose.position.x % pose.position.y % pose.position.z % pose.orientation.w % pose.orientation.x %
-    pose.orientation.y % pose.orientation.z)
-    .str();
-  return json_dumps_pose;
-}
-
-inline diagnostic_msgs::msg::DiagnosticStatus makeStopReasonDiag(
-  const std::string stop_reason, const geometry_msgs::msg::Pose & stop_pose)
-{
-  diagnostic_msgs::msg::DiagnosticStatus stop_reason_diag;
-  diagnostic_msgs::msg::KeyValue stop_reason_diag_kv;
-  stop_reason_diag.level = diagnostic_msgs::msg::DiagnosticStatus::OK;
-  stop_reason_diag.name = "stop_reason";
-  stop_reason_diag.message = stop_reason;
-  stop_reason_diag_kv.key = "stop_pose";
-  stop_reason_diag_kv.value = jsonDumpsPose(stop_pose);
-  stop_reason_diag.values.push_back(stop_reason_diag_kv);
-  return stop_reason_diag;
-}
-
 inline cv::Point2d calcCentroid(const std::vector<cv::Point2d> & pointcloud)
 {
   cv::Point2d centroid;
