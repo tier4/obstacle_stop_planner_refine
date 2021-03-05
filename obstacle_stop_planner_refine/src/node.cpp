@@ -32,6 +32,7 @@
 #include "boost/geometry/geometries/point_xy.hpp"
 #include "obstacle_stop_planner/node.hpp"
 #include "obstacle_stop_planner/util.hpp"
+#include "vehicle_info_util/vehicle_info.hpp"
 
 #define EIGEN_MPL2_ONLY
 #include "eigen3/Eigen/Core"
@@ -43,19 +44,63 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode()
 : Node("obstacle_stop_planner"),
   tf_buffer_(this->get_clock()),
   tf_listener_(tf_buffer_),
-  obstacle_pointcloud_(this->get_logger()),
-  vehicle_info_(vehicle_info_util::VehicleInfo::create(*this),
-    this->get_node_parameters_interface())
+  obstacle_pointcloud_(this->get_logger())
 {
+  // Vehicle Info
+  auto i = vehicle_info_util::VehicleInfo::create(*this);
+  param_.vehicle_info.wheel_radius = i.wheel_radius_m_;
+  param_.vehicle_info.wheel_width = i.wheel_width_m_;
+  param_.vehicle_info.wheel_base = i.wheel_base_m_;
+  param_.vehicle_info.wheel_tread = i.wheel_tread_m_;
+  param_.vehicle_info.front_overhang = i.front_overhang_m_;
+  param_.vehicle_info.rear_overhang = i.rear_overhang_m_;
+  param_.vehicle_info.left_overhang = i.left_overhang_m_;
+  param_.vehicle_info.right_overhang = i.right_overhang_m_;
+  param_.vehicle_info.vehicle_height = i.vehicle_height_m_;
+  param_.vehicle_info.vehicle_length = i.vehicle_length_m_;
+  param_.vehicle_info.vehicle_width = i.vehicle_width_m_;
+  param_.vehicle_info.min_longitudinal_offset = i.min_longitudinal_offset_m_;
+  param_.vehicle_info.max_longitudinal_offset = i.max_longitudinal_offset_m_;
+  param_.vehicle_info.min_lateral_offset = i.min_lateral_offset_m_;
+  param_.vehicle_info.max_lateral_offset = i.max_lateral_offset_m_;
+  param_.vehicle_info.min_height_offset = i.min_height_offset_m_;
+  param_.vehicle_info.max_height_offset = i.max_height_offset_m_;
+
+  // Parameters
+  param_.stop_margin = declare_parameter("stop_planner.stop_margin", 5.0);
+  param_.min_behavior_stop_margin = declare_parameter("stop_planner.min_behavior_stop_margin", 2.0);
+  param_.step_length = declare_parameter("stop_planner.step_length", 1.0);
+  param_.extend_distance = declare_parameter("stop_planner.extend_distance", 0.0);
+  param_.expand_stop_range = declare_parameter("stop_planner.expand_stop_range", 0.0);
+
+  param_.slow_down_margin = declare_parameter("slow_down_planner.slow_down_margin", 5.0);
+  param_.expand_slow_down_range =
+    declare_parameter("slow_down_planner.expand_slow_down_range", 1.0);
+  param_.max_slow_down_vel = declare_parameter("slow_down_planner.max_slow_down_vel", 4.0);
+  param_.min_slow_down_vel = declare_parameter("slow_down_planner.min_slow_down_vel", 2.0);
+  param_.max_deceleration = declare_parameter("slow_down_planner.max_deceleration", 2.0);
+  param_.enable_slow_down = declare_parameter("enable_slow_down", false);
+
+  param_.stop_margin += param_.vehicle_info.wheel_base + param_.vehicle_info.front_overhang;
+  param_.min_behavior_stop_margin +=
+    param_.vehicle_info.wheel_base + param_.vehicle_info.front_overhang;
+  param_.slow_down_margin += param_.vehicle_info.wheel_base + param_.vehicle_info.front_overhang;
+  param_.stop_search_radius = param_.step_length + std::hypot(
+    param_.vehicle_info.vehicle_width / 2.0 + param_.expand_stop_range,
+    param_.vehicle_info.vehicle_length / 2.0);
+  param_.slow_down_search_radius = param_.step_length + std::hypot(
+    param_.vehicle_info.vehicle_width / 2.0 + param_.expand_slow_down_range,
+    param_.vehicle_info.vehicle_length / 2.0);
+
   debug_ptr_ = std::make_shared<ObstacleStopPlannerDebugNode>(
     this,
-    vehicle_info_.wheel_base_m_ +
-    vehicle_info_.front_overhang_m_);
+    param_.vehicle_info.wheel_base +
+    param_.vehicle_info.front_overhang);
 
   // Initializer
   acc_controller_ = std::make_unique<obstacle_stop_planner::AdaptiveCruiseController>(
-    this, vehicle_info_.vehicle_width_m_, vehicle_info_.vehicle_length_m_,
-    vehicle_info_.wheel_base_m_, vehicle_info_.front_overhang_m_);
+    this, param_.vehicle_info.vehicle_width, param_.vehicle_info.vehicle_length,
+    param_.vehicle_info.wheel_base, param_.vehicle_info.front_overhang);
 
   // Publishers
   path_pub_ =
@@ -96,7 +141,7 @@ void ObstacleStopPlannerNode::pathCallback(
     return;
   }
 
-  if (!current_velocity_ptr_ && vehicle_info_.enable_slow_down_) {
+  if (!current_velocity_ptr_ && param_.enable_slow_down) {
     RCLCPP_WARN_THROTTLE(
       get_logger(), *get_clock(), std::chrono::milliseconds(1000).count(),
       "waiting for current velocity...");
@@ -107,7 +152,7 @@ void ObstacleStopPlannerNode::pathCallback(
    * extend trajectory to consider obstacles after the goal
    */
   autoware_planning_msgs::msg::Trajectory extended_trajectory;
-  trajectory_.extendTrajectory(*input_msg, vehicle_info_, extended_trajectory);
+  trajectory_.extendTrajectory(*input_msg, param_, extended_trajectory);
 
   const autoware_planning_msgs::msg::Trajectory base_path = *input_msg;
   autoware_planning_msgs::msg::Trajectory output_msg = *input_msg;
@@ -129,7 +174,7 @@ void ObstacleStopPlannerNode::pathCallback(
   autoware_planning_msgs::msg::Trajectory decimate_trajectory;
   std::map<size_t /* decimate */, size_t /* origin */> decimate_trajectory_index_map;
   trajectory_.decimateTrajectory(
-    trim_trajectory, vehicle_info_.step_length_, vehicle_info_, decimate_trajectory,
+    trim_trajectory, param_.step_length, param_, decimate_trajectory,
     decimate_trajectory_index_map);
 
   autoware_planning_msgs::msg::Trajectory & trajectory = decimate_trajectory;
@@ -141,7 +186,7 @@ void ObstacleStopPlannerNode::pathCallback(
     new pcl::PointCloud<pcl::PointXYZ>);
 
   // search obstacle candidate pointcloud to reduce calculation cost
-  obstacle_pointcloud_.searchCandidateObstacle(tf_buffer_, trajectory, vehicle_info_);
+  obstacle_pointcloud_.searchCandidateObstacle(tf_buffer_, trajectory, param_);
 
   /*
    * check collision, slow_down
@@ -159,20 +204,24 @@ void ObstacleStopPlannerNode::pathCallback(
   pcl::PointXYZ lateral_nearest_slow_down_point;
   pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
   double lateral_deviation = 0.0;
-  PointHelper point_helper {vehicle_info_};
+  PointHelper point_helper {param_};
 
   for (int i = 0; i < static_cast<int>(trajectory.points.size()) - 1; ++i) {
     /*
      * create one step circle center for vehicle
      */
-    const auto prev_center_pose = vehicle_info_.getVehicleCenterFromBase(
+    const auto prev_center_pose = getVehicleCenterFromBase(
       trajectory.points.at(
-        i).pose);
+        i).pose,
+      param_.vehicle_info.vehicle_length,
+      param_.vehicle_info.rear_overhang);
     autoware_utils::Point2d prev_center_point(
       prev_center_pose.position.x,
       prev_center_pose.position.y);
-    const auto next_center_pose = vehicle_info_.getVehicleCenterFromBase(
-      trajectory.points.at(i + 1).pose);
+    const auto next_center_pose = getVehicleCenterFromBase(
+      trajectory.points.at(i + 1).pose,
+      param_.vehicle_info.vehicle_length,
+      param_.vehicle_info.rear_overhang);
     autoware_utils::Point2d next_center_point(
       next_center_pose.position.x,
       next_center_pose.position.y);
@@ -181,20 +230,20 @@ void ObstacleStopPlannerNode::pathCallback(
      */
     const auto move_vehicle_polygon = createOneStepPolygon(
       trajectory.points.at(i).pose, trajectory.points.at(i + 1).pose,
-      vehicle_info_.expand_stop_range_, vehicle_info_);
+      param_.expand_stop_range, param_.vehicle_info);
     debug_ptr_->pushPolygon(
       move_vehicle_polygon,
       trajectory.points.at(i).pose.position.z,
       PolygonType::Vehicle);
 
     autoware_utils::Polygon2d move_slow_down_range_polygon;
-    if (vehicle_info_.enable_slow_down_) {
+    if (param_.enable_slow_down) {
       /*
       * create one step polygon for slow_down range
       */
       move_slow_down_range_polygon = createOneStepPolygon(
         trajectory.points.at(i).pose, trajectory.points.at(i + 1).pose,
-        vehicle_info_.expand_slow_down_range_, vehicle_info_);
+        param_.expand_slow_down_range, param_.vehicle_info);
       debug_ptr_->pushPolygon(
         move_slow_down_range_polygon, trajectory.points.at(i).pose.position.z,
         PolygonType::SlowDownRange);
@@ -205,14 +254,14 @@ void ObstacleStopPlannerNode::pathCallback(
       new pcl::PointCloud<pcl::PointXYZ>);
     collision_pointcloud_ptr->header = obstacle_candidate_pointcloud_ptr->header;
     getSlowDownPointcloud(
-      is_slow_down, vehicle_info_.enable_slow_down_,
+      is_slow_down, param_.enable_slow_down,
       obstacle_candidate_pointcloud_ptr, prev_center_point, next_center_point,
-      vehicle_info_.slow_down_search_radius_,
+      param_.slow_down_search_radius,
       move_slow_down_range_polygon, slow_down_pointcloud_ptr, candidate_slow_down);
 
     getCollisionPointcloud(
       slow_down_pointcloud_ptr, prev_center_point, next_center_point,
-      vehicle_info_.stop_search_radius_, move_vehicle_polygon, trajectory.points.at(
+      param_.stop_search_radius, move_vehicle_polygon, trajectory.points.at(
         i), collision_pointcloud_ptr, is_collision);
 
     if (candidate_slow_down && !is_collision && !is_slow_down) {
@@ -275,7 +324,7 @@ void ObstacleStopPlannerNode::pathCallback(
       nearest_slow_down_point,
       point_helper,
       calcSlowDownTargetVel(lateral_deviation),
-      vehicle_info_.slow_down_margin_,
+      param_.slow_down_margin,
       output_msg);
   }
   path_pub_->publish(output_msg);
@@ -417,11 +466,11 @@ void ObstacleStopPlannerNode::insertStopPoint(
 void ObstacleStopPlannerNode::externalExpandStopRangeCallback(
   const autoware_debug_msgs::msg::Float32Stamped::ConstSharedPtr input_msg)
 {
-  vehicle_info_.expand_stop_range_ = input_msg->data;
-  vehicle_info_.stop_search_radius_ =
-    vehicle_info_.step_length_ + std::hypot(
-    vehicle_info_.vehicle_width_m_ / 2.0 + vehicle_info_.expand_stop_range_,
-    vehicle_info_.vehicle_length_m_ / 2.0);
+  param_.expand_stop_range = input_msg->data;
+  param_.stop_search_radius =
+    param_.step_length + std::hypot(
+    param_.vehicle_info.vehicle_width / 2.0 + param_.expand_stop_range,
+    param_.vehicle_info.vehicle_length / 2.0);
 }
 
 void ObstacleStopPlannerNode::insertSlowDownVelocity(
@@ -441,7 +490,7 @@ void ObstacleStopPlannerNode::insertSlowDownVelocity(
       slow_down_target_vel,
       std::sqrt(
         std::max(
-          slow_down_vel * slow_down_vel - 2 * vehicle_info_.max_deceleration_ * dist,
+          slow_down_vel * slow_down_vel - 2 * param_.max_deceleration * dist,
           0.0)));
     if (!is_slow_down_end && slow_down_vel <= slow_down_target_vel) {
       slow_down_end_trajectory_point = output_path.points.at(j + 1);
@@ -457,10 +506,10 @@ void ObstacleStopPlannerNode::insertSlowDownVelocity(
 
 double ObstacleStopPlannerNode::calcSlowDownTargetVel(const double lateral_deviation)
 {
-  return vehicle_info_.min_slow_down_vel_ +
-         (vehicle_info_.max_slow_down_vel_ - vehicle_info_.min_slow_down_vel_) *
-         std::max(lateral_deviation - vehicle_info_.vehicle_width_m_ / 2, 0.0) /
-         vehicle_info_.expand_slow_down_range_;
+  return param_.min_slow_down_vel +
+         (param_.max_slow_down_vel - param_.min_slow_down_vel) *
+         std::max(lateral_deviation - param_.vehicle_info.vehicle_width / 2, 0.0) /
+         param_.expand_slow_down_range;
 }
 
 void ObstacleStopPlannerNode::dynamicObjectCallback(
