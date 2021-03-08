@@ -19,61 +19,63 @@
 
 namespace obstacle_stop_planner
 {
-bool PointHelper::getBackwardPointFromBasePoint(
-  const Eigen::Vector2d & line_point1, const Eigen::Vector2d & line_point2,
-  const Eigen::Vector2d & base_point, const double backward_length,
-  Eigen::Vector2d & output_point) const
+Point2d PointHelper::getBackwardPointFromBasePoint(
+  const Point2d & line_point1, const Point2d & line_point2,
+  const Point2d & base_point, const double backward_length) const
 {
-  Eigen::Vector2d line_vec = line_point2 - line_point1;
-  Eigen::Vector2d backward_vec = backward_length * line_vec.normalized();
-  output_point = base_point + backward_vec;
-  return true;
+  const auto line_vec = Eigen::Vector2d(line_point2) - line_point1;
+  const auto backward_vec = backward_length * line_vec.normalized();
+  const auto output_point = Eigen::Vector2d(base_point) + backward_vec;
+  return Point2d(output_point.x(), output_point.y());
 }
 
-void PointHelper::getNearestPoint(
-  const pcl::PointCloud<pcl::PointXYZ> & pointcloud, const geometry_msgs::msg::Pose & base_pose,
-  pcl::PointXYZ * nearest_collision_point, rclcpp::Time * nearest_collision_point_time) const
+PointStamped PointHelper::getNearestPoint(
+  const pcl::PointCloud<pcl::PointXYZ> & pointcloud,
+  const geometry_msgs::msg::Pose & base_pose) const
 {
   double min_norm = 0.0;
   bool is_init = false;
   const double yaw = getYawFromQuaternion(base_pose.orientation);
-  Eigen::Vector2d base_pose_vec;
-  base_pose_vec << std::cos(yaw), std::sin(yaw);
+  Point2d base_pose_vec {std::cos(yaw), std::sin(yaw)};
+  PointStamped nearest_collision_point;
 
   for (size_t i = 0; i < pointcloud.size(); ++i) {
-    Eigen::Vector2d pointcloud_vec;
-    pointcloud_vec << pointcloud.at(i).x - base_pose.position.x,
-      pointcloud.at(i).y - base_pose.position.y;
+    Point2d pointcloud_vec {
+      pointcloud.at(i).x - base_pose.position.x,
+      pointcloud.at(i).y - base_pose.position.y};
     double norm = base_pose_vec.dot(pointcloud_vec);
     if (norm < min_norm || !is_init) {
       min_norm = norm;
-      *nearest_collision_point = pointcloud.at(i);
-      *nearest_collision_point_time = pcl_conversions::fromPCL(pointcloud.header).stamp;
+      nearest_collision_point.point = pointcloud.at(i);
+      nearest_collision_point.time = pcl_conversions::fromPCL(pointcloud.header).stamp;
       is_init = true;
     }
   }
+  return nearest_collision_point;
 }
 
-void PointHelper::getLateralNearestPoint(
-  const pcl::PointCloud<pcl::PointXYZ> & pointcloud, const geometry_msgs::msg::Pose & base_pose,
-  pcl::PointXYZ * lateral_nearest_point, double * deviation) const
+PointDeviation PointHelper::getLateralNearestPoint(
+  const pcl::PointCloud<pcl::PointXYZ> & pointcloud,
+  const geometry_msgs::msg::Pose & base_pose) const
 {
   double min_norm = std::numeric_limits<double>::max();
   const double yaw = getYawFromQuaternion(base_pose.orientation);
-  Eigen::Vector2d base_pose_vec;
-  base_pose_vec << std::cos(yaw), std::sin(yaw);
+  Point2d base_pose_vec {std::cos(yaw), std::sin(yaw)};
+  PointDeviation lateral_nearest_point;
+
   for (size_t i = 0; i < pointcloud.size(); ++i) {
-    Eigen::Vector2d pointcloud_vec;
-    pointcloud_vec << pointcloud.at(i).x - base_pose.position.x,
-      pointcloud.at(i).y - base_pose.position.y;
+    Point2d pointcloud_vec {
+      pointcloud.at(i).x - base_pose.position.x,
+      pointcloud.at(i).y - base_pose.position.y};
     double norm =
       std::abs(base_pose_vec.x() * pointcloud_vec.y() - base_pose_vec.y() * pointcloud_vec.x());
     if (norm < min_norm) {
       min_norm = norm;
-      *lateral_nearest_point = pointcloud.at(i);
+      lateral_nearest_point.point = pointcloud.at(i);
     }
   }
-  *deviation = min_norm;
+  lateral_nearest_point.deviation = min_norm;
+  return lateral_nearest_point;
 }
 
 autoware_planning_msgs::msg::TrajectoryPoint PointHelper::insertStopPoint(
@@ -94,7 +96,7 @@ autoware_planning_msgs::msg::TrajectoryPoint PointHelper::insertStopPoint(
 
 StopPoint PointHelper::searchInsertPoint(
   const int idx, const autoware_planning_msgs::msg::Trajectory & base_path,
-  const Eigen::Vector2d & trajectory_vec, const Eigen::Vector2d & collision_point_vec) const
+  const Point2d & trajectory_vec, const Point2d & collision_point_vec) const
 {
   const auto max_dist_stop_point =
     createTargetPoint(
@@ -121,67 +123,67 @@ StopPoint PointHelper::searchInsertPoint(
 }
 
 StopPoint PointHelper::createTargetPoint(
-  const int idx, const double margin, const Eigen::Vector2d & trajectory_vec,
-  const Eigen::Vector2d & collision_point_vec,
+  const int idx, const double margin, const Point2d & trajectory_vec,
+  const Point2d & collision_point_vec,
   const autoware_planning_msgs::msg::Trajectory & base_path) const
 {
   double length_sum = 0.0;
   length_sum += trajectory_vec.normalized().dot(collision_point_vec);
-  Eigen::Vector2d line_start_point, line_end_point;
-  {
-    line_start_point << base_path.points.at(0).pose.position.x,
-      base_path.points.at(0).pose.position.y;
-    const double yaw = getYawFromQuaternion(base_path.points.at(0).pose.orientation);
-    line_end_point << std::cos(yaw), std::sin(yaw);
-  }
+  Point2d line_start_point {
+    base_path.points.at(0).pose.position.x,
+    base_path.points.at(0).pose.position.y};
+  const double yaw = getYawFromQuaternion(base_path.points.at(0).pose.orientation);
+  Point2d line_end_point {std::cos(yaw), std::sin(yaw)};
 
-  StopPoint stop_point{0, Eigen::Vector2d()};
+  StopPoint stop_point{0, Point2d {0.0, 0.0}};
   for (size_t j = idx; 0 < j; --j) {
-    line_start_point << base_path.points.at(j - 1).pose.position.x,
-      base_path.points.at(j - 1).pose.position.y;
-    line_end_point << base_path.points.at(j).pose.position.x,
-      base_path.points.at(j).pose.position.y;
+    line_start_point = {
+      base_path.points.at(j - 1).pose.position.x,
+      base_path.points.at(j - 1).pose.position.y};
+    line_end_point = {
+      base_path.points.at(j).pose.position.x,
+      base_path.points.at(j).pose.position.y};
     if (margin < length_sum) {
       stop_point.index = j;
       break;
     }
     length_sum += (line_end_point - line_start_point).norm();
   }
-  getBackwardPointFromBasePoint(
-    line_start_point, line_end_point, line_start_point, length_sum - margin, stop_point.point);
+  stop_point.point = getBackwardPointFromBasePoint(
+    line_start_point, line_end_point, line_start_point, length_sum - margin);
 
   return stop_point;
 }
 
 SlowDownPoint PointHelper::createSlowDownStartPoint(
   const int idx, const double margin, const double slow_down_target_vel,
-  const Eigen::Vector2d & trajectory_vec, const Eigen::Vector2d & slow_down_point_vec,
+  const Point2d & trajectory_vec, const Point2d & slow_down_point_vec,
   const autoware_planning_msgs::msg::Trajectory & base_path,
   const double current_velocity_x) const
 {
   double length_sum = trajectory_vec.normalized().dot(slow_down_point_vec);
-  Eigen::Vector2d line_start_point, line_end_point;
-  {
-    line_start_point << base_path.points.at(0).pose.position.x,
-      base_path.points.at(0).pose.position.y;
-    const double yaw = getYawFromQuaternion(base_path.points.at(0).pose.orientation);
-    line_end_point << std::cos(yaw), std::sin(yaw);
-  }
+  Point2d line_start_point {
+    base_path.points.at(0).pose.position.x,
+    base_path.points.at(0).pose.position.y};
+  const double yaw = getYawFromQuaternion(base_path.points.at(0).pose.orientation);
+  Point2d line_end_point {std::cos(yaw), std::sin(yaw)};
 
-  SlowDownPoint slow_down_point{0, Eigen::Vector2d(), 0.0};
+  SlowDownPoint slow_down_point{0, Point2d {0.0, 0.0}, 0.0};
   for (size_t j = idx; 0 < j; --j) {
-    line_start_point << base_path.points.at(j).pose.position.x,
-      base_path.points.at(j).pose.position.y;
-    line_end_point << base_path.points.at(j - 1).pose.position.x,
-      base_path.points.at(j - 1).pose.position.y;
+    line_start_point = {
+      base_path.points.at(j).pose.position.x,
+      base_path.points.at(j).pose.position.y};
+    line_end_point = {
+      base_path.points.at(j - 1).pose.position.x,
+      base_path.points.at(j - 1).pose.position.y};
     if (margin < length_sum) {
       slow_down_point.index = j;
       break;
     }
     length_sum += (line_end_point - line_start_point).norm();
   }
-  getBackwardPointFromBasePoint(
-    line_start_point, line_end_point, line_start_point, length_sum - margin, slow_down_point.point);
+  slow_down_point.point = getBackwardPointFromBasePoint(
+    line_start_point, line_end_point, line_start_point, length_sum - margin);
 
   slow_down_point.velocity = std::max(
     std::sqrt(

@@ -80,9 +80,8 @@ private:
     const autoware_debug_msgs::msg::Float32Stamped::ConstSharedPtr input_msg);
 
 private:
-  bool getSelfPose(
-    const std_msgs::msg::Header & header, const tf2_ros::Buffer & tf_buffer,
-    geometry_msgs::msg::Pose & self_pose);
+  geometry_msgs::msg::Pose getSelfPose(
+    const std_msgs::msg::Header & header, const tf2_ros::Buffer & tf_buffer);
   void insertSlowDownVelocity(
     const size_t slow_down_start_point_idx, const double slow_down_target_vel, double slow_down_vel,
     autoware_planning_msgs::msg::Trajectory & output_path);

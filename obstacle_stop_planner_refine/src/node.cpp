@@ -155,8 +155,7 @@ void ObstacleStopPlannerNode::pathCallback(
   /*
    * trim trajectory from self pose
    */
-  geometry_msgs::msg::Pose self_pose;
-  getSelfPose(input_msg->header, tf_buffer_, self_pose);
+  auto self_pose = getSelfPose(input_msg->header, tf_buffer_);
   autoware_planning_msgs::msg::Trajectory trim_trajectory;
   size_t trajectory_trim_index;
   std::tie(trim_trajectory, trajectory_trim_index) =
@@ -193,7 +192,6 @@ void ObstacleStopPlannerNode::pathCallback(
   bool is_slow_down = false;
   size_t decimate_trajectory_slow_down_index;
   pcl::PointXYZ nearest_slow_down_point;
-  pcl::PointXYZ lateral_nearest_slow_down_point;
   pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
   double lateral_deviation = 0.0;
   PointHelper point_helper {param_};
@@ -262,12 +260,13 @@ void ObstacleStopPlannerNode::pathCallback(
       debug_ptr_->pushPolygon(
         move_slow_down_range_polygon, trajectory.points.at(i).pose.position.z,
         PolygonType::SlowDown);
-      point_helper.getNearestPoint(
-        *slow_down_pointcloud_ptr, trajectory.points.at(i).pose, &nearest_slow_down_point,
-        &nearest_collision_point_time);
-      point_helper.getLateralNearestPoint(
-        *slow_down_pointcloud_ptr, trajectory.points.at(i).pose, &lateral_nearest_slow_down_point,
-        &lateral_deviation);
+      const auto nearest_slow_down_pointstamped = point_helper.getNearestPoint(
+        *slow_down_pointcloud_ptr, trajectory.points.at(i).pose);
+      nearest_slow_down_point = nearest_slow_down_pointstamped.point;
+      nearest_collision_point_time = nearest_slow_down_pointstamped.time;
+      const auto lateral_nearest_slow_down_point = point_helper.getLateralNearestPoint(
+        *slow_down_pointcloud_ptr, trajectory.points.at(i).pose);
+      lateral_deviation = lateral_nearest_slow_down_point.deviation;
       debug_ptr_->pushObstaclePoint(nearest_slow_down_point, PointType::SlowDown);
     }
 
@@ -275,9 +274,10 @@ void ObstacleStopPlannerNode::pathCallback(
      * search nearest collision point by beginning of path
      */
     if (is_collision) {
-      point_helper.getNearestPoint(
-        *collision_pointcloud_ptr, trajectory.points.at(i).pose, &nearest_collision_point,
-        &nearest_collision_point_time);
+      const auto nearest_collision_pointstamped = point_helper.getNearestPoint(
+        *collision_pointcloud_ptr, trajectory.points.at(i).pose);
+      nearest_collision_point = nearest_collision_pointstamped.point;
+      nearest_collision_point_time = nearest_collision_pointstamped.time;
       debug_ptr_->pushObstaclePoint(nearest_collision_point, PointType::Stop);
       decimate_trajectory_collision_index = i;
       break;
@@ -395,15 +395,12 @@ void ObstacleStopPlannerNode::insertSlowDownPoint(
   autoware_planning_msgs::msg::Trajectory & output_msg)
 {
   for (size_t i = search_start_index; i < base_path.points.size(); ++i) {
-    Eigen::Vector2d trajectory_vec;
-    {
-      const double yaw =
-        getYawFromQuaternion(base_path.points.at(i).pose.orientation);
-      trajectory_vec << std::cos(yaw), std::sin(yaw);
-    }
-    Eigen::Vector2d slow_down_point_vec;
-    slow_down_point_vec << nearest_slow_down_point.x - base_path.points.at(i).pose.position.x,
-      nearest_slow_down_point.y - base_path.points.at(i).pose.position.y;
+    const double yaw =
+      getYawFromQuaternion(base_path.points.at(i).pose.orientation);
+    const Point2d trajectory_vec {std::cos(yaw), std::sin(yaw)};
+    const Point2d slow_down_point_vec {
+      nearest_slow_down_point.x - base_path.points.at(i).pose.position.x,
+      nearest_slow_down_point.y - base_path.points.at(i).pose.position.y};
 
     if (
       trajectory_vec.dot(slow_down_point_vec) < 0.0 ||
@@ -434,15 +431,12 @@ void ObstacleStopPlannerNode::insertStopPoint(
   autoware_planning_msgs::msg::Trajectory & output_msg)
 {
   for (size_t i = search_start_index; i < base_path.points.size(); ++i) {
-    Eigen::Vector2d trajectory_vec;
-    {
-      const double yaw =
-        getYawFromQuaternion(base_path.points.at(i).pose.orientation);
-      trajectory_vec << std::cos(yaw), std::sin(yaw);
-    }
-    Eigen::Vector2d collision_point_vec;
-    collision_point_vec << nearest_collision_point.x - base_path.points.at(i).pose.position.x,
-      nearest_collision_point.y - base_path.points.at(i).pose.position.y;
+    const double yaw =
+      getYawFromQuaternion(base_path.points.at(i).pose.orientation);
+    const Point2d trajectory_vec {std::cos(yaw), std::sin(yaw)};
+    const Point2d collision_point_vec {
+      nearest_collision_point.x - base_path.points.at(i).pose.position.x,
+      nearest_collision_point.y - base_path.points.at(i).pose.position.y};
 
     if (
       trajectory_vec.dot(collision_point_vec) < 0.0 ||
@@ -521,10 +515,10 @@ void ObstacleStopPlannerNode::currentVelocityCallback(
   current_velocity_ptr_ = input_msg;
 }
 
-bool ObstacleStopPlannerNode::getSelfPose(
-  const std_msgs::msg::Header & header, const tf2_ros::Buffer & tf_buffer,
-  geometry_msgs::msg::Pose & self_pose)
+geometry_msgs::msg::Pose ObstacleStopPlannerNode::getSelfPose(
+  const std_msgs::msg::Header & header, const tf2_ros::Buffer & tf_buffer)
 {
+  geometry_msgs::msg::Pose self_pose;
   try {
     geometry_msgs::msg::TransformStamped transform;
     transform =
@@ -538,9 +532,11 @@ bool ObstacleStopPlannerNode::getSelfPose(
     self_pose.orientation.y = transform.transform.rotation.y;
     self_pose.orientation.z = transform.transform.rotation.z;
     self_pose.orientation.w = transform.transform.rotation.w;
-    return true;
   } catch (tf2::TransformException & ex) {
-    return false;
+    RCLCPP_WARN_THROTTLE(
+      get_logger(), *get_clock(), std::chrono::milliseconds(1000).count(),
+      "could not get self pose from tf_buffer.");
   }
+  return self_pose;
 }
 }  // namespace obstacle_stop_planner
