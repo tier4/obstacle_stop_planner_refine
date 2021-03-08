@@ -31,16 +31,12 @@ struct DecimateTrajectoryMap
   std::map<size_t /* decimate */, size_t /* origin */> index_map;
 };
 
-class Trajectory
-{
-public:
-  DecimateTrajectoryMap decimateTrajectory(
-    const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
-    const Param & param);
-  std::tuple<autoware_planning_msgs::msg::Trajectory, size_t> trimTrajectoryWithIndexFromSelfPose(
-    const autoware_planning_msgs::msg::Trajectory & input_trajectory,
-    const geometry_msgs::msg::Pose & self_pose);
-};
+DecimateTrajectoryMap decimateTrajectory(
+  const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
+  const Param & param);
+std::tuple<autoware_planning_msgs::msg::Trajectory, size_t> trimTrajectoryWithIndexFromSelfPose(
+  const autoware_planning_msgs::msg::Trajectory & input_trajectory,
+  const geometry_msgs::msg::Pose & self_pose);
 }  // namespace obstacle_stop_planner
 
 #endif  // OBSTACLE_STOP_PLANNER__TRAJECTORY_HPP_
