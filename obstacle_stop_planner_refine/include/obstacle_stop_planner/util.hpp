@@ -28,6 +28,11 @@
 #include "diagnostic_msgs/msg/key_value.hpp"
 #include "autoware_utils/autoware_utils.hpp"
 
+using autoware_utils::Point2d;
+using autoware_utils::Point3d;
+using autoware_utils::Polygon2d;
+using autoware_utils::Polygon3d;
+
 namespace
 {
 inline double getYawFromQuaternion(const geometry_msgs::msg::Quaternion & quat)
@@ -82,18 +87,18 @@ inline geometry_msgs::msg::Vector3 rpyFromQuat(const geometry_msgs::msg::Quatern
   return rpy;
 }
 
-inline autoware_utils::Polygon2d getPolygon(
+inline Polygon2d getPolygon(
   const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::Vector3 & size,
   const double center_offset, const double l_margin = 0.0, const double w_margin = 0.0)
 {
-  autoware_utils::Polygon2d obj_poly;
+  Polygon2d obj_poly;
   geometry_msgs::msg::Vector3 obj_rpy = rpyFromQuat(pose.orientation);
 
   double l = size.x * std::cos(obj_rpy.y) + l_margin;
   double w = size.y * std::cos(obj_rpy.x) + w_margin;
   double co = center_offset;
   boost::geometry::exterior_ring(obj_poly) =
-    boost::assign::list_of<autoware_utils::Point2d>(l / 2.0 + co, w / 2.0)(-l / 2.0 + co, w / 2.0)(
+    boost::assign::list_of<Point2d>(l / 2.0 + co, w / 2.0)(-l / 2.0 + co, w / 2.0)(
     -l / 2.0 + co, -w / 2.0)(l / 2.0 + co, -w / 2.0)(l / 2.0 + co, w / 2.0);
 
   // rotate polygon
@@ -101,13 +106,13 @@ inline autoware_utils::Polygon2d getPolygon(
   boost::geometry::strategy::transform::rotate_transformer<
     boost::geometry::radian, double, 2, 2> rotate(-obj_rpy.z);
   // rotation
-  autoware_utils::Polygon2d rotate_obj_poly;
+  Polygon2d rotate_obj_poly;
   boost::geometry::transform(obj_poly, rotate_obj_poly, rotate);
   // translate polygon
   boost::geometry::strategy::transform::translate_transformer<double, 2, 2> translate(
     pose.position.x,
     pose.position.y);
-  autoware_utils::Polygon2d translate_obj_poly;
+  Polygon2d translate_obj_poly;
   boost::geometry::transform(rotate_obj_poly, translate_obj_poly, translate);
   return translate_obj_poly;
 }

@@ -26,14 +26,15 @@
 #include "boost/geometry/geometries/point_xy.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 #include "obstacle_stop_planner/util/create_vehicle_footprint.hpp"
+#include "obstacle_stop_planner/util.hpp"
 
 namespace obstacle_stop_planner
 {
-inline autoware_utils::Polygon2d createOneStepPolygon(
+inline Polygon2d createOneStepPolygon(
   const geometry_msgs::msg::Pose & base_step_pose, const geometry_msgs::msg::Pose & next_step_pose,
   const double expand_width, const VehicleInfo & vehicle_info)
 {
-  autoware_utils::Polygon2d one_step_move_vehicle_corner_points;
+  Polygon2d one_step_move_vehicle_corner_points;
   const auto footprint = createVehicleFootprint(vehicle_info, 0.0, expand_width);
 
   // start step
@@ -66,7 +67,7 @@ inline autoware_utils::Polygon2d createOneStepPolygon(
     }
   }
 
-  autoware_utils::Polygon2d polygon;
+  Polygon2d polygon;
   boost::geometry::convex_hull(one_step_move_vehicle_corner_points, polygon);
   return polygon;
 }

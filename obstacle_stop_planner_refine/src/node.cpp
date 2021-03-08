@@ -215,14 +215,14 @@ void ObstacleStopPlannerNode::pathCallback(
         i).pose,
       param_.vehicle_info.vehicle_length,
       param_.vehicle_info.rear_overhang);
-    autoware_utils::Point2d prev_center_point(
+    Point2d prev_center_point(
       prev_center_pose.position.x,
       prev_center_pose.position.y);
     const auto next_center_pose = getVehicleCenterFromBase(
       trajectory.points.at(i + 1).pose,
       param_.vehicle_info.vehicle_length,
       param_.vehicle_info.rear_overhang);
-    autoware_utils::Point2d next_center_point(
+    Point2d next_center_point(
       next_center_pose.position.x,
       next_center_pose.position.y);
     /*
@@ -236,7 +236,7 @@ void ObstacleStopPlannerNode::pathCallback(
       trajectory.points.at(i).pose.position.z,
       PolygonType::Vehicle);
 
-    autoware_utils::Polygon2d move_slow_down_range_polygon;
+    Polygon2d move_slow_down_range_polygon;
     if (param_.enable_slow_down) {
       /*
       * create one step polygon for slow_down range
@@ -334,16 +334,16 @@ void ObstacleStopPlannerNode::pathCallback(
 // collision
 void ObstacleStopPlannerNode::getCollisionPointcloud(
   const pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud,
-  const autoware_utils::Point2d & prev_center_point,
-  const autoware_utils::Point2d & next_center_point,
+  const Point2d & prev_center_point,
+  const Point2d & next_center_point,
   const double search_radius,
-  const autoware_utils::Polygon2d & one_step_polygon,
+  const Polygon2d & one_step_polygon,
   const autoware_planning_msgs::msg::TrajectoryPoint & trajectory_point,
   pcl::PointCloud<pcl::PointXYZ>::Ptr collision_pointcloud,
   bool & is_collision)
 {
   for (size_t j = 0; j < slow_down_pointcloud->size(); ++j) {
-    autoware_utils::Point2d point(slow_down_pointcloud->at(j).x, slow_down_pointcloud->at(j).y);
+    Point2d point(slow_down_pointcloud->at(j).x, slow_down_pointcloud->at(j).y);
     if (
       boost::geometry::distance(prev_center_point, point) < search_radius ||
       boost::geometry::distance(next_center_point, point) < search_radius)
@@ -364,16 +364,16 @@ void ObstacleStopPlannerNode::getSlowDownPointcloud(
   const bool is_slow_down,
   const bool enable_slow_down,
   const pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_candidate_pointcloud,
-  const autoware_utils::Point2d & prev_center_point,
-  const autoware_utils::Point2d & next_center_point,
+  const Point2d & prev_center_point,
+  const Point2d & next_center_point,
   const double search_radius,
-  const autoware_utils::Polygon2d & boost_polygon,
+  const Polygon2d & boost_polygon,
   pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud,
   bool & candidate_slow_down)
 {
   if (!is_slow_down && enable_slow_down) {
     for (size_t j = 0; j < obstacle_candidate_pointcloud->size(); ++j) {
-      autoware_utils::Point2d point(
+      Point2d point(
         obstacle_candidate_pointcloud->at(j).x, obstacle_candidate_pointcloud->at(j).y);
       if (
         boost::geometry::distance(prev_center_point, point) < search_radius ||

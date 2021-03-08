@@ -201,7 +201,7 @@ double AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
   const auto self_poly = getPolygon(self_pose, self_size, self_offset);
 
   // get nearest point
-  autoware_utils::Point2d nearest_point2d(nearest_collision_point.x, nearest_collision_point.y);
+  Point2d nearest_point2d(nearest_collision_point.x, nearest_collision_point.y);
 
   if (nearest_point_idx <= 2) {
     // if too nearest collision point, return direct distance
