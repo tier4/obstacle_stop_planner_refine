@@ -33,15 +33,10 @@
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "tf2/utils.h"
 #include "tf2_ros/transform_listener.h"
-#include "visualization_msgs/msg/marker_array.hpp"
-#include "opencv2/core/core.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
 #include "obstacle_stop_planner/adaptive_cruise_control.hpp"
 #include "obstacle_stop_planner/debug_marker.hpp"
 #include "obstacle_stop_planner/obstacle_point_cloud.hpp"
 #include "obstacle_stop_planner/trajectory.hpp"
-#include "obstacle_stop_planner/one_step_polygon.hpp"
 #include "obstacle_stop_planner/point_helper.hpp"
 #include "obstacle_stop_planner/util.hpp"
 
@@ -69,7 +64,6 @@ private:
   std::shared_ptr<ObstacleStopPlannerDebugNode> debug_ptr_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
-  // ObstacleStopPlanner impl_;
   ObstaclePointCloud obstacle_pointcloud_;
   Trajectory trajectory_;
   Param param_;

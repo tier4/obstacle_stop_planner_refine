@@ -18,14 +18,11 @@
 #include <string>
 #include <vector>
 
-#include "opencv2/core/core.hpp"
 #include "geometry_msgs/msg/point.hpp"
 #include "boost/geometry.hpp"
 #include "boost/format.hpp"
 #include "boost/assign/list_of.hpp"
 #include "tf2/utils.h"
-#include "diagnostic_msgs/msg/diagnostic_status.hpp"
-#include "diagnostic_msgs/msg/key_value.hpp"
 #include "autoware_utils/autoware_utils.hpp"
 
 using autoware_utils::Point2d;
@@ -60,17 +57,17 @@ inline geometry_msgs::msg::Pose getVehicleCenterFromBase(
   return center_pose;
 }
 
-inline cv::Point2d calcCentroid(const std::vector<cv::Point2d> & pointcloud)
+inline Point2d calcCentroid(const std::vector<Point2d> & pointcloud)
 {
-  cv::Point2d centroid;
-  centroid.x = 0;
-  centroid.y = 0;
+  Point2d centroid;
+  centroid.x() = 0;
+  centroid.y() = 0;
   for (const auto & point : pointcloud) {
-    centroid.x += point.x;
-    centroid.y += point.y;
+    centroid.x() += point.x();
+    centroid.y() += point.y();
   }
-  centroid.x = centroid.x / static_cast<double>(pointcloud.size());
-  centroid.y = centroid.y / static_cast<double>(pointcloud.size());
+  centroid.x() = centroid.x() / static_cast<double>(pointcloud.size());
+  centroid.y() = centroid.y() / static_cast<double>(pointcloud.size());
   return centroid;
 }
 

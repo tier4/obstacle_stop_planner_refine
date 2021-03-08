@@ -33,6 +33,7 @@
 #include "boost/geometry/geometries/point_xy.hpp"
 #include "obstacle_stop_planner/node.hpp"
 #include "obstacle_stop_planner/util.hpp"
+#include "obstacle_stop_planner/one_step_polygon.hpp"
 #include "vehicle_info_util/vehicle_info.hpp"
 
 #define EIGEN_MPL2_ONLY

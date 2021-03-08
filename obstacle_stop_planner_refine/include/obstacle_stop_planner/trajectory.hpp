@@ -18,9 +18,6 @@
 #include <map>
 #include "autoware_planning_msgs/msg/trajectory.hpp"
 #include "geometry_msgs/msg/pose.hpp"
-#include "pcl/point_cloud.h"
-#include "pcl/point_types.h"
-#include "obstacle_stop_planner/point_helper.hpp"
 #include "obstacle_stop_planner/param.hpp"
 
 namespace obstacle_stop_planner
