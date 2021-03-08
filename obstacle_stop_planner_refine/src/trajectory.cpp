@@ -40,10 +40,9 @@ DecimateTrajectoryMap decimateTrajectory(
         input_trajectory.points.at(i).pose.position).to_2d();
       const auto line_end_point = autoware_utils::fromMsg(
         input_trajectory.points.at(i + 1).pose.position).to_2d();
-      Point2d interpolated_point;
-      point_helper.getBackwardPointFromBasePoint(
+      Point2d interpolated_point = point_helper.getBackwardPointFromBasePoint(
         line_start_point, line_end_point, line_end_point,
-        -1.0 * (trajectory_length_sum - next_length), interpolated_point);
+        -1.0 * (trajectory_length_sum - next_length));
       autoware_planning_msgs::msg::TrajectoryPoint trajectory_point = input_trajectory.points.at(i);
       trajectory_point.pose.position = autoware_utils::toMsg(
         interpolated_point.to_3d(input_trajectory.points.at(i).pose.position.z));
