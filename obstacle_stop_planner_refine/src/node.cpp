@@ -32,6 +32,7 @@
 #include "obstacle_stop_planner/node.hpp"
 #include "obstacle_stop_planner/util.hpp"
 #include "obstacle_stop_planner/one_step_polygon.hpp"
+#include "obstacle_stop_planner/trajectory.hpp"
 #include "vehicle_info_util/vehicle_info.hpp"
 
 #define EIGEN_MPL2_ONLY
@@ -159,12 +160,12 @@ void ObstacleStopPlannerNode::pathCallback(
   autoware_planning_msgs::msg::Trajectory trim_trajectory;
   size_t trajectory_trim_index;
   std::tie(trim_trajectory, trajectory_trim_index) =
-    trajectory_.trimTrajectoryWithIndexFromSelfPose(base_path, self_pose);
+    trimTrajectoryWithIndexFromSelfPose(base_path, self_pose);
 
   /*
    * decimate trajectory for calculation cost
    */
-  DecimateTrajectoryMap decimate_trajectory_map = trajectory_.decimateTrajectory(
+  DecimateTrajectoryMap decimate_trajectory_map = decimateTrajectory(
     trim_trajectory, param_.step_length, param_);
 
   autoware_planning_msgs::msg::Trajectory & trajectory =

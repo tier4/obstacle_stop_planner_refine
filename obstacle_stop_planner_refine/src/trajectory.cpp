@@ -22,7 +22,7 @@
 
 namespace obstacle_stop_planner
 {
-DecimateTrajectoryMap Trajectory::decimateTrajectory(
+DecimateTrajectoryMap decimateTrajectory(
   const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
   const Param & param)
 {
@@ -69,7 +69,7 @@ DecimateTrajectoryMap Trajectory::decimateTrajectory(
 }
 
 std::tuple<autoware_planning_msgs::msg::Trajectory, size_t>
-Trajectory::trimTrajectoryWithIndexFromSelfPose(
+trimTrajectoryWithIndexFromSelfPose(
   const autoware_planning_msgs::msg::Trajectory & input_trajectory,
   const geometry_msgs::msg::Pose & self_pose)
 {
