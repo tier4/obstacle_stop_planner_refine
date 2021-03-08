@@ -47,7 +47,7 @@ bool Trajectory::decimateTrajectory(
         input_trajectory.points.at(i).pose.position).to_2d();
       const auto line_end_point = autoware_utils::fromMsg(
         input_trajectory.points.at(i + 1).pose.position).to_2d();
-      autoware_utils::Point2d interpolated_point;
+      Point2d interpolated_point;
       point_helper.getBackwardPointFromBasePoint(
         line_start_point, line_end_point, line_end_point,
         -1.0 * (trajectory_length_sum - next_length), interpolated_point);
