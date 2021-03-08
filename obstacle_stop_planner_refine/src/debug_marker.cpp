@@ -31,9 +31,9 @@ ObstacleStopPlannerDebugNode::ObstacleStopPlannerDebugNode(
 }
 
 bool ObstacleStopPlannerDebugNode::pushPolygon(
-  const autoware_utils::Polygon2d & polygon, const double z, const PolygonType & type)
+  const Polygon2d & polygon, const double z, const PolygonType & type)
 {
-  autoware_utils::Polygon3d polygon3d;
+  Polygon3d polygon3d;
   for (const auto & point : polygon.outer()) {
     polygon3d.outer().emplace_back(point.to_3d(z));
   }
@@ -41,7 +41,7 @@ bool ObstacleStopPlannerDebugNode::pushPolygon(
 }
 
 bool ObstacleStopPlannerDebugNode::pushPolygon(
-  const autoware_utils::Polygon3d & polygon, const PolygonType & type)
+  const Polygon3d & polygon, const PolygonType & type)
 {
   switch (type) {
     case PolygonType::Vehicle:
