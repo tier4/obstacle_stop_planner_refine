@@ -16,6 +16,7 @@
 #define OBSTACLE_STOP_PLANNER__TRAJECTORY_HPP_
 
 #include <map>
+#include <tuple>
 #include "autoware_planning_msgs/msg/trajectory.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 #include "obstacle_stop_planner/param.hpp"
@@ -23,31 +24,22 @@
 namespace obstacle_stop_planner
 {
 
+struct DecimateTrajectoryMap
+{
+  autoware_planning_msgs::msg::Trajectory orig_trajectory;
+  autoware_planning_msgs::msg::Trajectory decimate_trajectory;
+  std::map<size_t /* decimate */, size_t /* origin */> index_map;
+};
+
 class Trajectory
 {
 public:
-  bool decimateTrajectory(
+  DecimateTrajectoryMap decimateTrajectory(
     const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
-    const Param & param,
-    autoware_planning_msgs::msg::Trajectory & output_trajectory);
-  bool decimateTrajectory(
-    const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
-    const Param & param,
-    autoware_planning_msgs::msg::Trajectory & output_trajectory,
-    std::map<size_t /* decimate */, size_t /* origin */> & index_map);
-  bool trimTrajectoryFromSelfPose(
+    const Param & param);
+  std::tuple<autoware_planning_msgs::msg::Trajectory, size_t> trimTrajectoryWithIndexFromSelfPose(
     const autoware_planning_msgs::msg::Trajectory & input_trajectory,
-    const geometry_msgs::msg::Pose & self_pose,
-    autoware_planning_msgs::msg::Trajectory & output_trajectory);
-  bool trimTrajectoryWithIndexFromSelfPose(
-    const autoware_planning_msgs::msg::Trajectory & input_trajectory,
-    const geometry_msgs::msg::Pose & self_pose,
-    autoware_planning_msgs::msg::Trajectory & output_trajectory,
-    size_t & index);
-  bool extendTrajectory(
-    const autoware_planning_msgs::msg::Trajectory & input_trajectory,
-    const Param & param,
-    autoware_planning_msgs::msg::Trajectory & output_trajectory);
+    const geometry_msgs::msg::Pose & self_pose);
 };
 }  // namespace obstacle_stop_planner
 

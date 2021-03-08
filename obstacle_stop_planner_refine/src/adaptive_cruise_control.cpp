@@ -219,8 +219,9 @@ double AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
 
   // add distance from next self-nearest-point(=idx:0) to prev point of nearest_point_idx
   for (int i = 1; i < nearest_point_idx - 1; i++) {
-    dist_to_point += getDistanceFromTwoPoint(
-      trajectory.points.at(i).pose.position, trajectory.points.at(i + 1).pose.position);
+    dist_to_point += boost::geometry::distance(
+      autoware_utils::fromMsg(trajectory.points.at(i).pose.position).to_2d(),
+      autoware_utils::fromMsg(trajectory.points.at(i + 1).pose.position).to_2d());
   }
 
   // add distance from nearest_collision_point to prev point of nearest_point_idx
@@ -507,7 +508,9 @@ void AdaptiveCruiseController::insertMaxVelocityToPath(
     // calc velocity of each point by gradient deceleration
     const auto current_p = output_trajectory.points[i];
     const auto prev_p = output_trajectory.points[i - 1];
-    const double p_dist = getDistanceFromTwoPoint(current_p.pose.position, prev_p.pose.position);
+    const auto p_dist = boost::geometry::distance(
+      autoware_utils::fromMsg(current_p.pose.position).to_2d(),
+      autoware_utils::fromMsg(prev_p.pose.position).to_2d());
     total_dist += p_dist;
     if (current_p.twist.linear.x > target_vel && total_dist >= 0) {
       double next_pre_vel;

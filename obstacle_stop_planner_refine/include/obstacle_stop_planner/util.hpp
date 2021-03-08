@@ -57,20 +57,6 @@ inline geometry_msgs::msg::Pose getVehicleCenterFromBase(
   return center_pose;
 }
 
-inline Point2d calcCentroid(const std::vector<Point2d> & pointcloud)
-{
-  Point2d centroid;
-  centroid.x() = 0;
-  centroid.y() = 0;
-  for (const auto & point : pointcloud) {
-    centroid.x() += point.x();
-    centroid.y() += point.y();
-  }
-  centroid.x() = centroid.x() / static_cast<double>(pointcloud.size());
-  centroid.y() = centroid.y() / static_cast<double>(pointcloud.size());
-  return centroid;
-}
-
 inline geometry_msgs::msg::Vector3 rpyFromQuat(const geometry_msgs::msg::Quaternion & q)
 {
   tf2::Quaternion quat(q.x, q.y, q.z, q.w);
@@ -112,16 +98,6 @@ inline Polygon2d getPolygon(
   Polygon2d translate_obj_poly;
   boost::geometry::transform(rotate_obj_poly, translate_obj_poly, translate);
   return translate_obj_poly;
-}
-
-inline double getDistanceFromTwoPoint(
-  const geometry_msgs::msg::Point & point1,
-  const geometry_msgs::msg::Point & point2)
-{
-  const double dx = point1.x - point2.x;
-  const double dy = point1.y - point2.y;
-  const double dist = std::hypot(dx, dy);
-  return dist;
 }
 }  // namespace
 
