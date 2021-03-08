@@ -148,12 +148,6 @@ void ObstacleStopPlannerNode::pathCallback(
     return;
   }
 
-  /*
-   * extend trajectory to consider obstacles after the goal
-   */
-  autoware_planning_msgs::msg::Trajectory extended_trajectory;
-  trajectory_.extendTrajectory(*input_msg, param_, extended_trajectory);
-
   const autoware_planning_msgs::msg::Trajectory base_path = *input_msg;
   autoware_planning_msgs::msg::Trajectory output_msg = *input_msg;
 
@@ -164,20 +158,17 @@ void ObstacleStopPlannerNode::pathCallback(
   getSelfPose(input_msg->header, tf_buffer_, self_pose);
   autoware_planning_msgs::msg::Trajectory trim_trajectory;
   size_t trajectory_trim_index;
-  trajectory_.trimTrajectoryWithIndexFromSelfPose(
-    base_path, self_pose, trim_trajectory,
-    trajectory_trim_index);
+  std::tie(trim_trajectory, trajectory_trim_index) =
+    trajectory_.trimTrajectoryWithIndexFromSelfPose(base_path, self_pose);
 
   /*
    * decimate trajectory for calculation cost
    */
-  autoware_planning_msgs::msg::Trajectory decimate_trajectory;
-  std::map<size_t /* decimate */, size_t /* origin */> decimate_trajectory_index_map;
-  trajectory_.decimateTrajectory(
-    trim_trajectory, param_.step_length, param_, decimate_trajectory,
-    decimate_trajectory_index_map);
+  DecimateTrajectoryMap decimate_trajectory_map = trajectory_.decimateTrajectory(
+    trim_trajectory, param_.step_length, param_);
 
-  autoware_planning_msgs::msg::Trajectory & trajectory = decimate_trajectory;
+  autoware_planning_msgs::msg::Trajectory & trajectory =
+    decimate_trajectory_map.decimate_trajectory;
 
   /*
    * search candidate obstacle pointcloud
@@ -298,8 +289,12 @@ void ObstacleStopPlannerNode::pathCallback(
   bool need_to_stop = is_collision;
   if (is_collision) {
     acc_controller_->insertAdaptiveCruiseVelocity(
-      decimate_trajectory, decimate_trajectory_collision_index, self_pose, nearest_collision_point,
-      nearest_collision_point_time, object_ptr_, current_velocity_ptr_, need_to_stop, output_msg);
+      decimate_trajectory_map.decimate_trajectory,
+      decimate_trajectory_collision_index,
+      self_pose, nearest_collision_point,
+      nearest_collision_point_time, object_ptr_,
+      current_velocity_ptr_,
+      need_to_stop, output_msg);
   }
 
   /*
@@ -307,7 +302,8 @@ void ObstacleStopPlannerNode::pathCallback(
    */
   if (need_to_stop) {
     insertStopPoint(
-      decimate_trajectory_index_map.at(decimate_trajectory_collision_index) + trajectory_trim_index,
+      decimate_trajectory_map.index_map.at(decimate_trajectory_collision_index) +
+      trajectory_trim_index,
       base_path,
       nearest_collision_point,
       point_helper,
@@ -319,7 +315,7 @@ void ObstacleStopPlannerNode::pathCallback(
    */
   if (is_slow_down) {
     insertSlowDownPoint(
-      decimate_trajectory_index_map.at(decimate_trajectory_slow_down_index),
+      decimate_trajectory_map.index_map.at(decimate_trajectory_slow_down_index),
       base_path,
       nearest_slow_down_point,
       point_helper,
