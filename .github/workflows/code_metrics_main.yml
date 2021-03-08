@@ -1,0 +1,57 @@
+name: Measure code metrics for main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  code-metrics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v2
+
+      - name: Measure code metrics
+        run: |
+          git clone https://github.com/terryyin/lizard.git
+          mkdir -p public/pr-check
+          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" \
+            --CCN 20 --length 200 --arguments 6 \
+            --html > public/pr-check/main-code-metrics.html || true
+          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" \
+            --CCN 20 --length 200 --arguments 6 || true
+
+      - name: Deploy measurement result page to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          keep_files: true
+
+  create-index-page:
+    needs: code-metrics
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v2
+        with:
+          ref: gh-pages
+
+      - name: Create index page
+        run: |
+          cd pr-check
+          tree -H 'https://tier4.github.io/obstacle_stop_planner_refine/pr-check' \
+            -L 2 --noreport --charset utf-8 -T 'Index of code metrics' \
+            -P "*.html" > index.html
+
+      - name: git setting
+        run: |
+          git config --local user.email "actions@example.com"
+          git config --local user.name "Github Actions"
+
+      - name: Commit file
+        run: |
+          git add pr-check/index.html
+          git commit -m "Add index.html" --allow-empty
+          git push origin gh-pages
