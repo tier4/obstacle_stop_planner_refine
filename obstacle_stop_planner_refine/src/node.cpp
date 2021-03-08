@@ -20,7 +20,6 @@
 #include <utility>
 #include <vector>
 
-#include "diagnostic_msgs/msg/key_value.hpp"
 #include "pcl/filters/voxel_grid.h"
 #include "tf2/utils.h"
 #include "tf2_eigen/tf2_eigen.h"
@@ -32,6 +31,7 @@
 #include "boost/geometry/geometries/point_xy.hpp"
 #include "obstacle_stop_planner/node.hpp"
 #include "obstacle_stop_planner/util.hpp"
+#include "obstacle_stop_planner/one_step_polygon.hpp"
 #include "vehicle_info_util/vehicle_info.hpp"
 
 #define EIGEN_MPL2_ONLY

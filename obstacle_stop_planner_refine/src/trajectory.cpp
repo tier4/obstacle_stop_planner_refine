@@ -14,7 +14,10 @@
 
 #include <map>
 #include <utility>
+#include "boost/geometry.hpp"
 #include "obstacle_stop_planner/trajectory.hpp"
+#include "obstacle_stop_planner/point_helper.hpp"
+#include "obstacle_stop_planner/util.hpp"
 
 namespace obstacle_stop_planner
 {

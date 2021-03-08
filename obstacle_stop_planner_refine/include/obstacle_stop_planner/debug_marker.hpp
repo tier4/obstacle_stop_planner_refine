@@ -23,22 +23,13 @@
 #include "geometry_msgs/msg/pose.hpp"
 #include "pcl/point_types.h"
 #include "rclcpp/rclcpp.hpp"
-#include "visualization_msgs/msg/marker.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
-#include "opencv2/core/core.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "autoware_utils/autoware_utils.hpp"
 #include "obstacle_stop_planner/util.hpp"
-#define EIGEN_MPL2_ONLY
-#include "eigen3/Eigen/Core"
-#include "eigen3/Eigen/Geometry"
+
 namespace obstacle_stop_planner
 {
 enum class PolygonType : int8_t { Vehicle = 0, Collision, SlowDownRange, SlowDown };
-
 enum class PointType : int8_t { Stop = 0, SlowDown };
-
 enum class PoseType : int8_t { Stop = 0, SlowDownStart, SlowDownEnd };
 
 class ObstacleStopPlannerDebugNode

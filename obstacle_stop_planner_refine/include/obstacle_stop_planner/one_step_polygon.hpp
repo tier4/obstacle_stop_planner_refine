@@ -18,12 +18,7 @@
 #include <algorithm>
 #include <vector>
 #include <memory>
-#include "boost/assert.hpp"
-#include "boost/assign/list_of.hpp"
-#include "boost/format.hpp"
 #include "boost/geometry.hpp"
-#include "boost/geometry/geometries/linestring.hpp"
-#include "boost/geometry/geometries/point_xy.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 #include "obstacle_stop_planner/util/create_vehicle_footprint.hpp"
 #include "obstacle_stop_planner/util.hpp"
