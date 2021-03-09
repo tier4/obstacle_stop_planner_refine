@@ -490,7 +490,6 @@ void ObstacleStopPlannerNode::insertSlowDownVelocity(
   }
   if (!is_slow_down_end) {
     slow_down_end_trajectory_point = output_path.points.back();
-    is_slow_down_end = true;
   }
   debug_ptr_->pushPose(slow_down_end_trajectory_point.pose, PoseType::SlowDownEnd);
 }
