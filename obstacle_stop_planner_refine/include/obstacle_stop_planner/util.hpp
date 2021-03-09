@@ -61,12 +61,8 @@ inline geometry_msgs::msg::Vector3 rpyFromQuat(const geometry_msgs::msg::Quatern
 {
   tf2::Quaternion quat(q.x, q.y, q.z, q.w);
   tf2::Matrix3x3 mat(quat);
-  double roll, pitch, yaw;
-  mat.getRPY(roll, pitch, yaw);
   geometry_msgs::msg::Vector3 rpy;
-  rpy.x = roll;
-  rpy.y = pitch;
-  rpy.z = yaw;
+  mat.getRPY(rpy.x, rpy.y, rpy.z);
   return rpy;
 }
 

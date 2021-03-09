@@ -454,8 +454,6 @@ double AdaptiveCruiseController::calcTargetVelocity_D(
   double add_vel_d = 0;
 
   add_vel_d = diff_vel;
-  if (add_vel_d >= 0) {diff_vel *= param_.d_coeff_pos;}
-  if (add_vel_d < 0) {diff_vel *= param_.d_coeff_neg;}
   add_vel_d = boost::algorithm::clamp(add_vel_d, -param_.d_max_vel_norm, param_.d_max_vel_norm);
 
   // add buffer
@@ -493,14 +491,12 @@ AdaptiveCruiseController::insertMaxVelocityToPath(
 {
   // plus distance from self to next nearest point
   auto output_trajectory = input_trajectory;
-  double dist = dist_to_collision_point;
   double dist_to_first_point = 0.0;
   if (output_trajectory.points.size() > 1) {
     dist_to_first_point = boost::geometry::distance(
       autoware_utils::fromMsg(self_pose.position).to_2d(),
       autoware_utils::fromMsg(output_trajectory.points.at(1).pose.position).to_2d());
   }
-  dist += dist_to_first_point;
 
   double margin_to_insert = dist_to_collision_point * param_.margin_rate_to_change_vel;
   // accel = (v_after^2 - v_before^2 ) / 2x
@@ -578,7 +574,7 @@ double AdaptiveCruiseController::getMedianVel(
   }
 
   std::vector<double> raw_vel_que;
-  for (const auto vel : vel_que) {
+  for (const auto & vel : vel_que) {
     raw_vel_que.emplace_back(vel.twist.linear.x);
   }
 
