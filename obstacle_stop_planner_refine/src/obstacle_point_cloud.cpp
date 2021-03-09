@@ -83,7 +83,8 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr ObstaclePointCloud::searchCandidateObstacle(
   pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_obstacle_pointcloud_ptr(
     new pcl::PointCloud<pcl::PointXYZ>);
   pcl::transformPointCloud(
-    *obstacle_pointcloud_pcl_ptr_, *transformed_obstacle_pointcloud_ptr,
+    *obstacle_pointcloud_pcl_ptr_,
+    *transformed_obstacle_pointcloud_ptr,
     affine_matrix);
 
   // search obstacle candidate pointcloud to reduce calculation cost
@@ -107,6 +108,7 @@ bool ObstaclePointCloud::searchPointcloudNearTrajectory(
       trajectory_point.pose,
       param.vehicle_info.vehicle_length,
       param.vehicle_info.rear_overhang);
+
     for (const auto & point : input_pointcloud_ptr->points) {
       const double x = center_pose.position.x - point.x;
       const double y = center_pose.position.y - point.y;

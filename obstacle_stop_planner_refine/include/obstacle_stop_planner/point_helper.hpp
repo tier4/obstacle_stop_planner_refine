@@ -16,6 +16,7 @@
 #define OBSTACLE_STOP_PLANNER__POINT_HELPER_HPP_
 
 #include <memory>
+#include <tuple>
 
 #include "rclcpp/rclcpp.hpp"
 #include "pcl/point_cloud.h"
@@ -74,9 +75,10 @@ public:
     const pcl::PointCloud<pcl::PointXYZ> & pointcloud,
     const geometry_msgs::msg::Pose & base_pose) const;
 
-  autoware_planning_msgs::msg::TrajectoryPoint insertStopPoint(
+  std::tuple<autoware_planning_msgs::msg::TrajectoryPoint, autoware_planning_msgs::msg::Trajectory>
+  insertStopPoint(
     const StopPoint & stop_point, const autoware_planning_msgs::msg::Trajectory & base_path,
-    autoware_planning_msgs::msg::Trajectory & output_path) const;
+    const autoware_planning_msgs::msg::Trajectory & input_path) const;
 
   StopPoint searchInsertPoint(
     const int idx, const autoware_planning_msgs::msg::Trajectory & base_path,
@@ -93,10 +95,11 @@ public:
     const autoware_planning_msgs::msg::Trajectory & base_path,
     const double current_velocity_x) const;
 
-  autoware_planning_msgs::msg::TrajectoryPoint insertSlowDownStartPoint(
+  std::tuple<autoware_planning_msgs::msg::TrajectoryPoint, autoware_planning_msgs::msg::Trajectory>
+  insertSlowDownStartPoint(
     const SlowDownPoint & slow_down_start_point,
     const autoware_planning_msgs::msg::Trajectory & base_path,
-    autoware_planning_msgs::msg::Trajectory & output_path) const;
+    const autoware_planning_msgs::msg::Trajectory & input_path) const;
 
   autoware_planning_msgs::msg::TrajectoryPoint getExtendTrajectoryPoint(
     double extend_distance, const autoware_planning_msgs::msg::TrajectoryPoint & goal_point) const;

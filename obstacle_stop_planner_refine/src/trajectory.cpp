@@ -43,10 +43,12 @@ DecimateTrajectoryMap decimateTrajectory(
       Point2d interpolated_point = point_helper.getBackwardPointFromBasePoint(
         line_start_point, line_end_point, line_end_point,
         -1.0 * (trajectory_length_sum - next_length));
+
       autoware_planning_msgs::msg::TrajectoryPoint trajectory_point = input_trajectory.points.at(i);
       trajectory_point.pose.position = autoware_utils::toMsg(
         interpolated_point.to_3d(input_trajectory.points.at(i).pose.position.z));
       output.decimate_trajectory.points.emplace_back(trajectory_point);
+
       output.index_map.insert(
         std::make_pair(output.decimate_trajectory.points.size() - 1, size_t(i)));
       next_length += step_length;
@@ -73,20 +75,22 @@ trimTrajectoryWithIndexFromSelfPose(
   const geometry_msgs::msg::Pose & self_pose)
 {
   autoware_planning_msgs::msg::Trajectory output_trajectory;
-  double min_distance = 0.0;
-  size_t min_distance_index = 0;
-  bool is_init = false;
-  for (size_t i = 0; i < input_trajectory.points.size(); ++i) {
-    const auto p1 = autoware_utils::fromMsg(input_trajectory.points.at(i).pose.position);
-    const auto p2 = autoware_utils::fromMsg(self_pose.position);
-    const double point_distance = boost::geometry::distance(p1.to_2d(), p2.to_2d());
 
-    if (!is_init || point_distance < min_distance) {
-      is_init = true;
+  size_t min_distance_index = 0;
+  const auto self_point = autoware_utils::fromMsg(self_pose.position);
+  const auto input_point = autoware_utils::fromMsg(input_trajectory.points.at(0).pose.position);
+  double min_distance = boost::geometry::distance(input_point.to_2d(), self_point.to_2d());
+
+  for (size_t i = 1; i < input_trajectory.points.size(); ++i) {
+    const auto p1 = autoware_utils::fromMsg(input_trajectory.points.at(i).pose.position);
+    const double point_distance = boost::geometry::distance(p1.to_2d(), self_point.to_2d());
+
+    if (point_distance < min_distance) {
       min_distance = point_distance;
       min_distance_index = i;
     }
   }
+
   for (size_t i = min_distance_index; i < input_trajectory.points.size(); ++i) {
     output_trajectory.points.emplace_back(input_trajectory.points.at(i));
   }

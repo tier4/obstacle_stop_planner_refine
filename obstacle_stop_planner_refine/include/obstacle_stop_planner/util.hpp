@@ -32,13 +32,19 @@ using autoware_utils::Polygon3d;
 
 namespace
 {
+inline geometry_msgs::msg::Vector3 rpyFromQuat(const geometry_msgs::msg::Quaternion & q)
+{
+  tf2::Quaternion quat(q.x, q.y, q.z, q.w);
+  tf2::Matrix3x3 mat(quat);
+  geometry_msgs::msg::Vector3 rpy;
+  mat.getRPY(rpy.x, rpy.y, rpy.z);
+  return rpy;
+}
+
 inline double getYawFromQuaternion(const geometry_msgs::msg::Quaternion & quat)
 {
-  tf2::Quaternion tf2_quat(quat.x, quat.y, quat.z, quat.w);
-  double roll, pitch, yaw;
-  tf2::Matrix3x3(tf2_quat).getRPY(roll, pitch, yaw);
-
-  return yaw;
+  const auto rpy = rpyFromQuat(quat);
+  return rpy.z;
 }
 
 inline geometry_msgs::msg::Pose getVehicleCenterFromBase(
@@ -55,15 +61,6 @@ inline geometry_msgs::msg::Pose getVehicleCenterFromBase(
   center_pose.position.z = base_pose.position.z;
   center_pose.orientation = base_pose.orientation;
   return center_pose;
-}
-
-inline geometry_msgs::msg::Vector3 rpyFromQuat(const geometry_msgs::msg::Quaternion & q)
-{
-  tf2::Quaternion quat(q.x, q.y, q.z, q.w);
-  tf2::Matrix3x3 mat(quat);
-  geometry_msgs::msg::Vector3 rpy;
-  mat.getRPY(rpy.x, rpy.y, rpy.z);
-  return rpy;
 }
 
 inline Polygon2d getPolygon(

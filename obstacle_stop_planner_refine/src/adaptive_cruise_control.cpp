@@ -258,16 +258,11 @@ std::tuple<bool, double> AdaptiveCruiseController::estimatePointVelocityFromObje
   const pcl::PointXYZ & nearest_collision_point,
   const double old_velocity)
 {
-  geometry_msgs::msg::Point nearest_collision_p_ros;
-  nearest_collision_p_ros.x = nearest_collision_point.x;
-  nearest_collision_p_ros.y = nearest_collision_point.y;
-  nearest_collision_p_ros.z = nearest_collision_point.z;
-
   /* get object velocity, and current yaw */
   bool get_obj = false;
   double obj_vel;
   double obj_yaw;
-  const auto collision_point_2d = autoware_utils::fromMsg(nearest_collision_p_ros).to_2d();
+  const Point2d collision_point_2d {nearest_collision_point.x, nearest_collision_point.y};
   for (const auto & obj : object_ptr->objects) {
     const auto obj_poly = getPolygon(
       obj.state.pose_covariance.pose, obj.shape.dimensions, 0.0,
@@ -293,11 +288,6 @@ std::tuple<bool, double> AdaptiveCruiseController::estimatePointVelocityFromPcl(
   const double traj_yaw, const pcl::PointXYZ & nearest_collision_point,
   const rclcpp::Time & nearest_collision_point_time, const double old_velocity)
 {
-  geometry_msgs::msg::Point nearest_collision_p_ros;
-  nearest_collision_p_ros.x = nearest_collision_point.x;
-  nearest_collision_p_ros.y = nearest_collision_point.y;
-  nearest_collision_p_ros.z = nearest_collision_point.z;
-
   /* estimate velocity */
   const double p_dt = nearest_collision_point_time.seconds() - prev_collision_point_time_.seconds();
 
@@ -491,13 +481,6 @@ AdaptiveCruiseController::insertMaxVelocityToPath(
 {
   // plus distance from self to next nearest point
   auto output_trajectory = input_trajectory;
-  double dist_to_first_point = 0.0;
-  if (output_trajectory.points.size() > 1) {
-    dist_to_first_point = boost::geometry::distance(
-      autoware_utils::fromMsg(self_pose.position).to_2d(),
-      autoware_utils::fromMsg(output_trajectory.points.at(1).pose.position).to_2d());
-  }
-
   double margin_to_insert = dist_to_collision_point * param_.margin_rate_to_change_vel;
   // accel = (v_after^2 - v_before^2 ) / 2x
   double target_acc = (std::pow(target_vel, 2) - std::pow(current_vel, 2)) / (2 * margin_to_insert);
