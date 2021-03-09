@@ -13,26 +13,14 @@
 // limitations under the License.
 
 #include "gtest/gtest.h"
-#include "rclcpp/rclcpp.hpp"
+#include "obstacle_stop_planner/util.hpp"
 
-class TestSuite : public ::testing::Test
+namespace obstacle_stop_planner
 {
-protected:
-  void SetUp()
-  {
-    rclcpp::init(0, nullptr);
-  }
-  void TearDown()
-  {
-    (void)rclcpp::shutdown();
-  }
-};  // sanity_check
-
-// write test here
-
-
-int32_t main(int32_t argc, char ** argv)
-{
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+TEST(getYawFromQuaternion, returnValue) {
+  geometry_msgs::msg::Quaternion quat;
+  EXPECT_EQ(0.0, getYawFromQuaternion(quat));
 }
+
+
+}  // namespace obstacle_stop_planner
