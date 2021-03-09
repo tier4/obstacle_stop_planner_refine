@@ -14,6 +14,8 @@
 
 #include <limits>
 #include <algorithm>
+#include <tuple>
+
 #include "obstacle_stop_planner/point_helper.hpp"
 #include "pcl_conversions/pcl_conversions.h"
 
@@ -33,22 +35,27 @@ PointStamped PointHelper::getNearestPoint(
   const pcl::PointCloud<pcl::PointXYZ> & pointcloud,
   const geometry_msgs::msg::Pose & base_pose) const
 {
-  double min_norm = 0.0;
-  bool is_init = false;
   const double yaw = getYawFromQuaternion(base_pose.orientation);
   Point2d base_pose_vec {std::cos(yaw), std::sin(yaw)};
-  PointStamped nearest_collision_point;
 
-  for (size_t i = 0; i < pointcloud.size(); ++i) {
+  Point2d pointcloud_vec {
+    pointcloud.at(0).x - base_pose.position.x,
+    pointcloud.at(0).y - base_pose.position.y};
+  double min_norm = base_pose_vec.dot(pointcloud_vec);
+  PointStamped nearest_collision_point;
+  nearest_collision_point.point = pointcloud.at(0);
+  nearest_collision_point.time = pcl_conversions::fromPCL(pointcloud.header).stamp;
+
+  for (size_t i = 1; i < pointcloud.size(); ++i) {
     Point2d pointcloud_vec {
       pointcloud.at(i).x - base_pose.position.x,
       pointcloud.at(i).y - base_pose.position.y};
     double norm = base_pose_vec.dot(pointcloud_vec);
-    if (norm < min_norm || !is_init) {
+
+    if (norm < min_norm) {
       min_norm = norm;
       nearest_collision_point.point = pointcloud.at(i);
       nearest_collision_point.time = pcl_conversions::fromPCL(pointcloud.header).stamp;
-      is_init = true;
     }
   }
   return nearest_collision_point;
@@ -67,6 +74,7 @@ PointDeviation PointHelper::getLateralNearestPoint(
     Point2d pointcloud_vec {
       pointcloud.at(i).x - base_pose.position.x,
       pointcloud.at(i).y - base_pose.position.y};
+
     double norm =
       std::abs(base_pose_vec.x() * pointcloud_vec.y() - base_pose_vec.y() * pointcloud_vec.x());
     if (norm < min_norm) {
@@ -78,10 +86,12 @@ PointDeviation PointHelper::getLateralNearestPoint(
   return lateral_nearest_point;
 }
 
-autoware_planning_msgs::msg::TrajectoryPoint PointHelper::insertStopPoint(
+std::tuple<autoware_planning_msgs::msg::TrajectoryPoint, autoware_planning_msgs::msg::Trajectory>
+PointHelper::insertStopPoint(
   const StopPoint & stop_point, const autoware_planning_msgs::msg::Trajectory & base_path,
-  autoware_planning_msgs::msg::Trajectory & output_path) const
+  const autoware_planning_msgs::msg::Trajectory & input_path) const
 {
+  auto output_path = input_path;
   autoware_planning_msgs::msg::TrajectoryPoint stop_trajectory_point =
     base_path.points.at(std::max(static_cast<int>(stop_point.index) - 1, 0));
   stop_trajectory_point.pose.position.x = stop_point.point.x();
@@ -91,7 +101,7 @@ autoware_planning_msgs::msg::TrajectoryPoint PointHelper::insertStopPoint(
   for (size_t j = stop_point.index; j < output_path.points.size(); ++j) {
     output_path.points.at(j).twist.linear.x = 0.0;
   }
-  return stop_trajectory_point;
+  return std::make_tuple(stop_trajectory_point, output_path);
 }
 
 StopPoint PointHelper::searchInsertPoint(
@@ -198,15 +208,18 @@ SlowDownPoint PointHelper::createSlowDownStartPoint(
   return slow_down_point;
 }
 
-autoware_planning_msgs::msg::TrajectoryPoint PointHelper::insertSlowDownStartPoint(
+std::tuple<autoware_planning_msgs::msg::TrajectoryPoint, autoware_planning_msgs::msg::Trajectory>
+PointHelper::insertSlowDownStartPoint(
   const SlowDownPoint & slow_down_start_point,
   const autoware_planning_msgs::msg::Trajectory & base_path,
-  autoware_planning_msgs::msg::Trajectory & output_path) const
+  const autoware_planning_msgs::msg::Trajectory & input_path) const
 {
+  auto output_path = input_path;
+
   autoware_planning_msgs::msg::TrajectoryPoint slow_down_start_trajectory_point =
     base_path.points.at(std::max(static_cast<int>(slow_down_start_point.index) - 1, 0));
-  slow_down_start_trajectory_point.pose.position.x = slow_down_start_point.point.x();
-  slow_down_start_trajectory_point.pose.position.y = slow_down_start_point.point.y();
+  slow_down_start_trajectory_point.pose.position =
+    autoware_utils::toMsg(slow_down_start_point.point.to_3d());
   slow_down_start_trajectory_point.twist.linear.x = slow_down_start_point.velocity;
   constexpr double epsilon = 0.001;
   const auto & insert_target_point = output_path.points.at(slow_down_start_point.index);
