@@ -139,20 +139,14 @@ StopPoint PointHelper::createTargetPoint(
 {
   double length_sum = 0.0;
   length_sum += trajectory_vec.normalized().dot(collision_point_vec);
-  Point2d line_start_point {
-    base_path.points.at(0).pose.position.x,
-    base_path.points.at(0).pose.position.y};
+  Point2d line_start_point = autoware_utils::fromMsg(base_path.points.at(0).pose.position).to_2d();
   const double yaw = getYawFromQuaternion(base_path.points.at(0).pose.orientation);
   Point2d line_end_point {std::cos(yaw), std::sin(yaw)};
 
   StopPoint stop_point{0, Point2d {0.0, 0.0}};
   for (size_t j = idx; 0 < j; --j) {
-    line_start_point = {
-      base_path.points.at(j - 1).pose.position.x,
-      base_path.points.at(j - 1).pose.position.y};
-    line_end_point = {
-      base_path.points.at(j).pose.position.x,
-      base_path.points.at(j).pose.position.y};
+    line_start_point = autoware_utils::fromMsg(base_path.points.at(j - 1).pose.position).to_2d();
+    line_end_point = autoware_utils::fromMsg(base_path.points.at(j).pose.position).to_2d();
     if (margin < length_sum) {
       stop_point.index = j;
       break;
@@ -172,20 +166,14 @@ SlowDownPoint PointHelper::createSlowDownStartPoint(
   const double current_velocity_x) const
 {
   double length_sum = trajectory_vec.normalized().dot(slow_down_point_vec);
-  Point2d line_start_point {
-    base_path.points.at(0).pose.position.x,
-    base_path.points.at(0).pose.position.y};
+  Point2d line_start_point = autoware_utils::fromMsg(base_path.points.at(0).pose.position).to_2d();
   const double yaw = getYawFromQuaternion(base_path.points.at(0).pose.orientation);
   Point2d line_end_point {std::cos(yaw), std::sin(yaw)};
 
   SlowDownPoint slow_down_point{0, Point2d {0.0, 0.0}, 0.0};
   for (size_t j = idx; 0 < j; --j) {
-    line_start_point = {
-      base_path.points.at(j).pose.position.x,
-      base_path.points.at(j).pose.position.y};
-    line_end_point = {
-      base_path.points.at(j - 1).pose.position.x,
-      base_path.points.at(j - 1).pose.position.y};
+    line_start_point = autoware_utils::fromMsg(base_path.points.at(j).pose.position).to_2d();
+    line_end_point = autoware_utils::fromMsg(base_path.points.at(j - 1).pose.position).to_2d();
     if (margin < length_sum) {
       slow_down_point.index = j;
       break;
