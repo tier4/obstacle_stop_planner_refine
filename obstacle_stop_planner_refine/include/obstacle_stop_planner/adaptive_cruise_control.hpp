@@ -19,8 +19,6 @@
 #include <tuple>
 
 #include "geometry_msgs/msg/twist_stamped.hpp"
-#include "pcl/point_types.h"
-#include "pcl_conversions/pcl_conversions.h"
 #include "rclcpp/rclcpp.hpp"
 #include "autoware_debug_msgs/msg/float32_multi_array_stamped.hpp"
 #include "tf2/utils.h"
@@ -40,7 +38,7 @@ public:
   std::tuple<bool, autoware_planning_msgs::msg::Trajectory> insertAdaptiveCruiseVelocity(
     const autoware_planning_msgs::msg::Trajectory & trajectory,
     const int nearest_collision_point_idx,
-    const geometry_msgs::msg::Pose self_pose, const pcl::PointXYZ & nearest_collision_point,
+    const geometry_msgs::msg::Pose self_pose, const Point2d & nearest_collision_point,
     const rclcpp::Time nearest_collision_point_time,
     const autoware_perception_msgs::msg::DynamicObjectArray::ConstSharedPtr object_ptr,
     const geometry_msgs::msg::TwistStamped::ConstSharedPtr current_velocity_ptr,
@@ -59,7 +57,7 @@ private:
   double front_overhang_;
 
   rclcpp::Time prev_collision_point_time_;
-  pcl::PointXYZ prev_collision_point_;
+  Point2d prev_collision_point_;
   double prev_target_vehicle_time_ = 0.0;
   double prev_target_vehicle_dist_ = 0.0;
   double prev_target_velocity_ = 0.0;
@@ -176,17 +174,17 @@ private:
   double lowpass_filter(const double current_value, const double prev_value, const double gain);
   double calcDistanceToNearestPointOnPath(
     const autoware_planning_msgs::msg::Trajectory & trajectory, const int nearest_point_idx,
-    const geometry_msgs::msg::Pose & self_pose, const pcl::PointXYZ & nearest_collision_point,
+    const geometry_msgs::msg::Pose & self_pose, const Point2d & nearest_collision_point,
     const rclcpp::Time & nearest_collision_point_time);
   double calcTrajYaw(
     const autoware_planning_msgs::msg::Trajectory & trajectory, const int collision_point_idx);
   std::tuple<bool, double> estimatePointVelocityFromObject(
     const autoware_perception_msgs::msg::DynamicObjectArray::ConstSharedPtr object_ptr,
     const double traj_yaw,
-    const pcl::PointXYZ & nearest_collision_point,
+    const Point2d & nearest_collision_point,
     const double old_velocity);
   std::tuple<bool, double> estimatePointVelocityFromPcl(
-    const double traj_yaw, const pcl::PointXYZ & nearest_collision_point,
+    const double traj_yaw, const Point2d & nearest_collision_point,
     const rclcpp::Time & nearest_collision_point_time, const double old_velocity);
   double estimateRoughPointVelocity(const double current_vel);
   double calcUpperVelocity(const double dist_to_col, const double obj_vel, const double self_vel);

@@ -106,7 +106,7 @@ AdaptiveCruiseController::AdaptiveCruiseController(
 std::tuple<bool, autoware_planning_msgs::msg::Trajectory>
 AdaptiveCruiseController::insertAdaptiveCruiseVelocity(
   const autoware_planning_msgs::msg::Trajectory & trajectory, const int nearest_collision_point_idx,
-  const geometry_msgs::msg::Pose self_pose, const pcl::PointXYZ & nearest_collision_point,
+  const geometry_msgs::msg::Pose self_pose, const Point2d & nearest_collision_point,
   const rclcpp::Time nearest_collision_point_time,
   const autoware_perception_msgs::msg::DynamicObjectArray::ConstSharedPtr object_ptr,
   const geometry_msgs::msg::TwistStamped::ConstSharedPtr current_velocity_ptr,
@@ -184,7 +184,7 @@ AdaptiveCruiseController::insertAdaptiveCruiseVelocity(
 
 double AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
   const autoware_planning_msgs::msg::Trajectory & trajectory, const int nearest_point_idx,
-  const geometry_msgs::msg::Pose & self_pose, const pcl::PointXYZ & nearest_collision_point,
+  const geometry_msgs::msg::Pose & self_pose, const Point2d & nearest_collision_point,
   const rclcpp::Time & nearest_collision_point_time)
 {
   double distance;
@@ -203,11 +203,9 @@ double AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
   const auto self_poly = getPolygon(self_pose, self_size, self_offset);
 
   // get nearest point
-  Point2d nearest_point2d(nearest_collision_point.x, nearest_collision_point.y);
-
   if (nearest_point_idx <= 2) {
     // if too nearest collision point, return direct distance
-    distance = boost::geometry::distance(self_poly, nearest_point2d);
+    distance = boost::geometry::distance(self_poly, nearest_collision_point);
     debug_values_.data.at(DBGVAL::FORWARD_OBJ_DISTANCE) = distance;
     return distance;
   }
@@ -228,7 +226,7 @@ double AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
 
   // add distance from nearest_collision_point to prev point of nearest_point_idx
   dist_to_point += boost::geometry::distance(
-    nearest_point2d,
+    nearest_collision_point,
     autoware_utils::fromMsg(trajectory.points.at(nearest_point_idx - 1).pose.position).to_2d());
 
   // subtract base_link to front
@@ -255,19 +253,18 @@ double AdaptiveCruiseController::calcTrajYaw(
 std::tuple<bool, double> AdaptiveCruiseController::estimatePointVelocityFromObject(
   const autoware_perception_msgs::msg::DynamicObjectArray::ConstSharedPtr object_ptr,
   const double traj_yaw,
-  const pcl::PointXYZ & nearest_collision_point,
+  const Point2d & nearest_collision_point,
   const double old_velocity)
 {
   /* get object velocity, and current yaw */
   bool get_obj = false;
   double obj_vel;
   double obj_yaw;
-  const Point2d collision_point_2d {nearest_collision_point.x, nearest_collision_point.y};
   for (const auto & obj : object_ptr->objects) {
     const auto obj_poly = getPolygon(
       obj.state.pose_covariance.pose, obj.shape.dimensions, 0.0,
       param_.object_polygon_length_margin, param_.object_polygon_width_margin);
-    if (boost::geometry::distance(obj_poly, collision_point_2d) <= 0) {
+    if (boost::geometry::distance(obj_poly, nearest_collision_point) <= 0) {
       obj_vel = obj.state.twist_covariance.twist.linear.x;
       obj_yaw = tf2::getYaw(obj.state.pose_covariance.pose.orientation);
       get_obj = true;
@@ -285,7 +282,7 @@ std::tuple<bool, double> AdaptiveCruiseController::estimatePointVelocityFromObje
 }
 
 std::tuple<bool, double> AdaptiveCruiseController::estimatePointVelocityFromPcl(
-  const double traj_yaw, const pcl::PointXYZ & nearest_collision_point,
+  const double traj_yaw, const Point2d & nearest_collision_point,
   const rclcpp::Time & nearest_collision_point_time, const double old_velocity)
 {
   /* estimate velocity */
@@ -301,10 +298,9 @@ std::tuple<bool, double> AdaptiveCruiseController::estimatePointVelocityFromPcl(
       prev_collision_point_valid_ = true;
       return std::forward_as_tuple(false, old_velocity);
     }
-    const double p_dx = nearest_collision_point.x - prev_collision_point_.x;
-    const double p_dy = nearest_collision_point.y - prev_collision_point_.y;
-    const double p_dist = std::hypot(p_dx, p_dy);
-    const double p_yaw = std::atan2(p_dy, p_dx);
+    const double p_dist = autoware_utils::calcDistance2d(nearest_collision_point, prev_collision_point_);
+    const auto p_diff = nearest_collision_point - prev_collision_point_;
+    const double p_yaw = std::atan2(p_diff.x(), p_diff.y());
     const double p_vel = p_dist / p_dt;
     const double est_velocity = p_vel * std::cos(p_yaw - traj_yaw);
     // valid velocity check

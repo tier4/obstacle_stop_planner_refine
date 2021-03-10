@@ -186,13 +186,13 @@ void ObstacleStopPlannerNode::pathCallback(
   // for collision
   bool is_collision = false;
   size_t decimate_trajectory_collision_index;
-  pcl::PointXYZ nearest_collision_point;
+  Point3d nearest_collision_point;
   rclcpp::Time nearest_collision_point_time;
   // for slow down
   bool candidate_slow_down = false;
   bool is_slow_down = false;
   size_t decimate_trajectory_slow_down_index;
-  pcl::PointXYZ nearest_slow_down_point;
+  Point3d nearest_slow_down_point;
   pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
   double lateral_deviation = 0.0;
   PointHelper point_helper {param_};
@@ -295,7 +295,7 @@ void ObstacleStopPlannerNode::pathCallback(
     std::tie(need_to_stop, output_msg) = acc_controller_->insertAdaptiveCruiseVelocity(
       decimate_trajectory_map.decimate_trajectory,
       decimate_trajectory_collision_index,
-      self_pose, nearest_collision_point,
+      self_pose, nearest_collision_point.to_2d(),
       nearest_collision_point_time, object_ptr_,
       current_velocity_ptr_,
       output_msg);
@@ -309,7 +309,7 @@ void ObstacleStopPlannerNode::pathCallback(
       decimate_trajectory_map.index_map.at(decimate_trajectory_collision_index) +
       trajectory_trim_index,
       base_path,
-      nearest_collision_point,
+      nearest_collision_point.to_2d(),
       output_msg);
   }
 
@@ -320,7 +320,7 @@ void ObstacleStopPlannerNode::pathCallback(
     output_msg = insertSlowDownPoint(
       decimate_trajectory_map.index_map.at(decimate_trajectory_slow_down_index),
       base_path,
-      nearest_slow_down_point,
+      nearest_slow_down_point.to_2d(),
       calcSlowDownTargetVel(lateral_deviation),
       param_.slow_down_margin,
       output_msg);
@@ -401,7 +401,7 @@ ObstacleStopPlannerNode::getSlowDownPointcloud(
 autoware_planning_msgs::msg::Trajectory ObstacleStopPlannerNode::insertSlowDownPoint(
   const size_t search_start_index,
   const autoware_planning_msgs::msg::Trajectory & base_path,
-  const pcl::PointXYZ & nearest_slow_down_point,
+  const Point2d & nearest_slow_down_point,
   const double slow_down_target_vel, const double slow_down_margin,
   const autoware_planning_msgs::msg::Trajectory & input_msg)
 {
@@ -413,8 +413,8 @@ autoware_planning_msgs::msg::Trajectory ObstacleStopPlannerNode::insertSlowDownP
       getYawFromQuaternion(base_path.points.at(i).pose.orientation);
     const Point2d trajectory_vec {std::cos(yaw), std::sin(yaw)};
     const Point2d slow_down_point_vec {
-      nearest_slow_down_point.x - base_path.points.at(i).pose.position.x,
-      nearest_slow_down_point.y - base_path.points.at(i).pose.position.y};
+      nearest_slow_down_point.x() - base_path.points.at(i).pose.position.x,
+      nearest_slow_down_point.y() - base_path.points.at(i).pose.position.y};
 
     if (
       trajectory_vec.dot(slow_down_point_vec) < 0.0 ||
@@ -444,7 +444,7 @@ autoware_planning_msgs::msg::Trajectory ObstacleStopPlannerNode::insertSlowDownP
 autoware_planning_msgs::msg::Trajectory ObstacleStopPlannerNode::insertStopPoint(
   const size_t search_start_index,
   const autoware_planning_msgs::msg::Trajectory & base_path,
-  const pcl::PointXYZ & nearest_collision_point,
+  const Point2d & nearest_collision_point,
   const autoware_planning_msgs::msg::Trajectory & input_msg)
 {
   auto output_msg = input_msg;
@@ -455,8 +455,8 @@ autoware_planning_msgs::msg::Trajectory ObstacleStopPlannerNode::insertStopPoint
       getYawFromQuaternion(base_path.points.at(i).pose.orientation);
     const Point2d trajectory_vec {std::cos(yaw), std::sin(yaw)};
     const Point2d collision_point_vec {
-      nearest_collision_point.x - base_path.points.at(i).pose.position.x,
-      nearest_collision_point.y - base_path.points.at(i).pose.position.y};
+      nearest_collision_point.x() - base_path.points.at(i).pose.position.x,
+      nearest_collision_point.y() - base_path.points.at(i).pose.position.y};
 
     if (
       trajectory_vec.dot(collision_point_vec) < 0.0 ||

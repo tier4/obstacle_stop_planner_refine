@@ -21,6 +21,11 @@
 
 namespace obstacle_stop_planner
 {
+const Point3d pointXYZtoPoint3d(pcl::PointXYZ point)
+{
+  return Point3d(point.x, point.y, point.z);
+}
+
 Point2d PointHelper::getBackwardPointFromBasePoint(
   const Point2d & line_point1, const Point2d & line_point2,
   const Point2d & base_point, const double backward_length) const
@@ -43,7 +48,7 @@ PointStamped PointHelper::getNearestPoint(
     pointcloud.at(0).y - base_pose.position.y};
   double min_norm = base_pose_vec.dot(pointcloud_vec);
   PointStamped nearest_collision_point;
-  nearest_collision_point.point = pointcloud.at(0);
+  nearest_collision_point.point = pointXYZtoPoint3d(pointcloud.at(0));
   nearest_collision_point.time = pcl_conversions::fromPCL(pointcloud.header).stamp;
 
   for (size_t i = 1; i < pointcloud.size(); ++i) {
@@ -54,7 +59,7 @@ PointStamped PointHelper::getNearestPoint(
 
     if (norm < min_norm) {
       min_norm = norm;
-      nearest_collision_point.point = pointcloud.at(i);
+      nearest_collision_point.point = pointXYZtoPoint3d(pointcloud.at(i));
       nearest_collision_point.time = pcl_conversions::fromPCL(pointcloud.header).stamp;
     }
   }

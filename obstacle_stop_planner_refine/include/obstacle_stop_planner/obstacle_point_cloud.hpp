@@ -44,11 +44,10 @@ public:
     const Param & param);
 
 private:
-  bool searchPointcloudNearTrajectory(
+  pcl::PointCloud<pcl::PointXYZ>::Ptr searchPointcloudNearTrajectory(
     const autoware_planning_msgs::msg::Trajectory & trajectory,
     const pcl::PointCloud<pcl::PointXYZ>::Ptr input_pointcloud_ptr,
-    const Param & param,
-    pcl::PointCloud<pcl::PointXYZ>::Ptr output_pointcloud_ptr);
+    const Param & param);
 
   sensor_msgs::msg::PointCloud2::SharedPtr obstacle_ros_pointcloud_ptr_;
   const rclcpp::Logger logger_;
