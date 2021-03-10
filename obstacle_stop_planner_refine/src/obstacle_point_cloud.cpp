@@ -57,9 +57,6 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr ObstaclePointCloud::searchCandidateObstacle(
   const autoware_planning_msgs::msg::Trajectory & trajectory,
   const Param & param)
 {
-  pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_candidate_pointcloud_ptr(
-    new pcl::PointCloud<pcl::PointXYZ>);
-
   // transform pointcloud
   geometry_msgs::msg::TransformStamped transform_stamped;
   try {
@@ -88,20 +85,20 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr ObstaclePointCloud::searchCandidateObstacle(
     affine_matrix);
 
   // search obstacle candidate pointcloud to reduce calculation cost
-  searchPointcloudNearTrajectory(
+  auto obstacle_candidate_pointcloud_ptr = searchPointcloudNearTrajectory(
     trajectory, transformed_obstacle_pointcloud_ptr,
-    param,
-    obstacle_candidate_pointcloud_ptr);
+    param);
   obstacle_candidate_pointcloud_ptr->header = transformed_obstacle_pointcloud_ptr->header;
   return obstacle_candidate_pointcloud_ptr;
 }
 
-bool ObstaclePointCloud::searchPointcloudNearTrajectory(
+pcl::PointCloud<pcl::PointXYZ>::Ptr ObstaclePointCloud::searchPointcloudNearTrajectory(
   const autoware_planning_msgs::msg::Trajectory & trajectory,
   const pcl::PointCloud<pcl::PointXYZ>::Ptr input_pointcloud_ptr,
-  const Param & param,
-  pcl::PointCloud<pcl::PointXYZ>::Ptr output_pointcloud_ptr)
+  const Param & param)
 {
+  pcl::PointCloud<pcl::PointXYZ>::Ptr output_pointcloud_ptr(
+    new pcl::PointCloud<pcl::PointXYZ>);
   const double squared_radius = getSearchRadius(param) * getSearchRadius(param);
   for (const auto & trajectory_point : trajectory.points) {
     const auto center_pose = getVehicleCenterFromBase(
@@ -116,7 +113,7 @@ bool ObstaclePointCloud::searchPointcloudNearTrajectory(
       if (squared_distance < squared_radius) {output_pointcloud_ptr->points.push_back(point);}
     }
   }
-  return true;
+  return output_pointcloud_ptr;
 }
 
 }  // namespace obstacle_stop_planner

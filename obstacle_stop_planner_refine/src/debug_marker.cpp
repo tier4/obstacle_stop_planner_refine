@@ -96,13 +96,9 @@ bool ObstacleStopPlannerDebugNode::pushObstaclePoint(
 }
 
 bool ObstacleStopPlannerDebugNode::pushObstaclePoint(
-  const pcl::PointXYZ & obstacle_point, const PointType & type)
+  const Point3d & obstacle_point, const PointType & type)
 {
-  geometry_msgs::msg::Point ros_point;
-  ros_point.x = obstacle_point.x;
-  ros_point.y = obstacle_point.y;
-  ros_point.z = obstacle_point.z;
-  return pushObstaclePoint(ros_point, type);
+  return pushObstaclePoint(autoware_utils::toMsg(obstacle_point), type);
 }
 
 void ObstacleStopPlannerDebugNode::publish()

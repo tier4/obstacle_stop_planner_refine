@@ -50,7 +50,7 @@ struct SlowDownPoint
 struct PointStamped
 {
   rclcpp::Time time;
-  pcl::PointXYZ point;
+  Point3d point;
 };
 
 struct PointDeviation
