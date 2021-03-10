@@ -109,12 +109,12 @@ private:
   autoware_planning_msgs::msg::Trajectory insertStopPoint(
     const size_t search_start_index,
     const autoware_planning_msgs::msg::Trajectory & base_path,
-    const pcl::PointXYZ & nearest_collision_point,
+    const Point2d & nearest_collision_point,
     const autoware_planning_msgs::msg::Trajectory & input_msg);
   autoware_planning_msgs::msg::Trajectory insertSlowDownPoint(
     const size_t search_start_index,
     const autoware_planning_msgs::msg::Trajectory & base_path,
-    const pcl::PointXYZ & nearest_slow_down_point,
+    const Point2d & nearest_slow_down_point,
     const double slow_down_target_vel,
     const double slow_down_margin,
     const autoware_planning_msgs::msg::Trajectory & output_msg);

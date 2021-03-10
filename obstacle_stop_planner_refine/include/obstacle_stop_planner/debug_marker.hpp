@@ -21,7 +21,6 @@
 #include "autoware_planning_msgs/msg/stop_reason_array.hpp"
 #include "geometry_msgs/msg/point.hpp"
 #include "geometry_msgs/msg/pose.hpp"
-#include "pcl/point_types.h"
 #include "rclcpp/rclcpp.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 #include "obstacle_stop_planner/util.hpp"
@@ -42,7 +41,7 @@ public:
   bool pushPolygon(const Polygon3d & polygon, const PolygonType & type);
   bool pushPose(const geometry_msgs::msg::Pose & pose, const PoseType & type);
   bool pushObstaclePoint(const geometry_msgs::msg::Point & obstacle_point, const PointType & type);
-  bool pushObstaclePoint(const pcl::PointXYZ & obstacle_point, const PointType & type);
+  bool pushObstaclePoint(const Point3d & obstacle_point, const PointType & type);
   visualization_msgs::msg::MarkerArray makeVisualizationMarker();
   autoware_planning_msgs::msg::StopReasonArray makeStopReasonArray();
 
