@@ -30,8 +30,14 @@ using autoware_utils::Point3d;
 using autoware_utils::Polygon2d;
 using autoware_utils::Polygon3d;
 
-namespace
+namespace obstacle_stop_planner
 {
+struct Point2dPair
+{
+  Point2d prev;
+  Point2d next;
+};
+
 inline geometry_msgs::msg::Vector3 rpyFromQuat(const geometry_msgs::msg::Quaternion & q)
 {
   tf2::Quaternion quat(q.x, q.y, q.z, q.w);
@@ -47,7 +53,7 @@ inline double getYawFromQuaternion(const geometry_msgs::msg::Quaternion & quat)
   return rpy.z;
 }
 
-inline geometry_msgs::msg::Pose getVehicleCenterFromBase(
+inline Point2d getVehicleCenterFromBase(
   const geometry_msgs::msg::Pose & base_pose,
   const double vehicle_length,
   const double rear_overhang)
@@ -60,7 +66,7 @@ inline geometry_msgs::msg::Pose getVehicleCenterFromBase(
     base_pose.position.y + (vehicle_length / 2.0 - rear_overhang) * std::sin(yaw);
   center_pose.position.z = base_pose.position.z;
   center_pose.orientation = base_pose.orientation;
-  return center_pose;
+  return autoware_utils::fromMsg(center_pose.position).to_2d();
 }
 
 inline Polygon2d getPolygon(
@@ -92,6 +98,6 @@ inline Polygon2d getPolygon(
   boost::geometry::transform(rotate_obj_poly, translate_obj_poly, translate);
   return translate_obj_poly;
 }
-}  // namespace
+}  // namespace obstacle_stop_planner
 
 #endif  // OBSTACLE_STOP_PLANNER__UTIL_HPP_

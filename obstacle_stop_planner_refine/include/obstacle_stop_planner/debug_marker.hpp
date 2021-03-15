@@ -23,7 +23,7 @@
 #include "geometry_msgs/msg/pose.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
-#include "obstacle_stop_planner/util.hpp"
+#include "obstacle_stop_planner/util/util.hpp"
 
 namespace obstacle_stop_planner
 {

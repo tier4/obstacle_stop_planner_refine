@@ -23,16 +23,18 @@
 #include "pcl/point_types.h"
 #include "geometry_msgs/msg/pose.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
-#include "obstacle_stop_planner/util.hpp"
-#include "obstacle_stop_planner/param.hpp"
-
-#define EIGEN_MPL2_ONLY
-#include "eigen3/Eigen/Core"
-#include "eigen3/Eigen/Geometry"
+#include "obstacle_stop_planner/util/util.hpp"
+#include "autoware_utils/autoware_utils.hpp"
+#include "obstacle_stop_planner/parameter/stop_control_parameter.hpp"
+#include "obstacle_stop_planner/parameter/slow_down_control_parameter.hpp"
 
 
 namespace obstacle_stop_planner
 {
+using geometry_msgs::msg::Pose;
+using geometry_msgs::msg::Point;
+using autoware_planning_msgs::msg::Trajectory;
+using autoware_planning_msgs::msg::TrajectoryPoint;
 
 struct StopPoint
 {
@@ -50,7 +52,7 @@ struct SlowDownPoint
 struct PointStamped
 {
   rclcpp::Time time;
-  Point3d point;
+  Point2d point;
 };
 
 struct PointDeviation
@@ -62,50 +64,39 @@ struct PointDeviation
 class PointHelper
 {
 public:
-  explicit PointHelper(const Param & param)
-  : param_(param) {}
-
   Point2d getBackwardPointFromBasePoint(
     const Point2d & line_point1, const Point2d & line_point2,
     const Point2d & base_point, const double backward_length) const;
   PointStamped getNearestPoint(
     const pcl::PointCloud<pcl::PointXYZ> & pointcloud,
-    const geometry_msgs::msg::Pose & base_pose) const;
+    const Pose & base_pose) const;
   PointDeviation getLateralNearestPoint(
     const pcl::PointCloud<pcl::PointXYZ> & pointcloud,
-    const geometry_msgs::msg::Pose & base_pose) const;
+    const Pose & base_pose) const;
 
-  std::tuple<autoware_planning_msgs::msg::TrajectoryPoint, autoware_planning_msgs::msg::Trajectory>
-  insertStopPoint(
-    const StopPoint & stop_point, const autoware_planning_msgs::msg::Trajectory & base_path,
-    const autoware_planning_msgs::msg::Trajectory & input_path) const;
+  Trajectory insertStopPoint(
+    const StopPoint & stop_point, const Trajectory & base_path,
+    const Trajectory & input_path) const;
 
   StopPoint searchInsertPoint(
-    const int idx, const autoware_planning_msgs::msg::Trajectory & base_path,
-    const Point2d & trajectory_vec, const Point2d & collision_point_vec) const;
+    const int idx, const Trajectory & base_path,
+    const Point2d & trajectory_vec, const Point2d & collision_point_vec, const StopControlParameter & param) const;
 
   StopPoint createTargetPoint(
     const int idx, const double margin, const Point2d & trajectory_vec,
     const Point2d & collision_point_vec,
-    const autoware_planning_msgs::msg::Trajectory & base_path) const;
+    const Trajectory & base_path) const;
 
   SlowDownPoint createSlowDownStartPoint(
     const int idx, const double margin, const double slow_down_target_vel,
     const Point2d & trajectory_vec, const Point2d & slow_down_point_vec,
-    const autoware_planning_msgs::msg::Trajectory & base_path,
-    const double current_velocity_x) const;
+    const Trajectory & base_path,
+    const double current_velocity_x, const SlowDownControlParameter & param) const;
 
-  std::tuple<autoware_planning_msgs::msg::TrajectoryPoint, autoware_planning_msgs::msg::Trajectory>
-  insertSlowDownStartPoint(
+  Trajectory insertSlowDownStartPoint(
     const SlowDownPoint & slow_down_start_point,
-    const autoware_planning_msgs::msg::Trajectory & base_path,
-    const autoware_planning_msgs::msg::Trajectory & input_path) const;
-
-  autoware_planning_msgs::msg::TrajectoryPoint getExtendTrajectoryPoint(
-    double extend_distance, const autoware_planning_msgs::msg::TrajectoryPoint & goal_point) const;
-
-private:
-  const Param param_;
+    const Trajectory & base_path,
+    const Trajectory & input_path) const;
 };
 }  // namespace obstacle_stop_planner
 

@@ -13,7 +13,7 @@
 # limitations under the License.
 cmake_minimum_required(VERSION 3.5)
 
-project(obstacle_stop_planner_refine)
+project(obstacle_stop_planner_nodes)
 
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
@@ -25,59 +25,43 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wno-unused-parameter)
 endif()
 
+# dependencies
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-find_package(Eigen3 REQUIRED)
-find_package(OpenCV REQUIRED)
-find_package(PCL REQUIRED)
-
-ament_auto_add_library(obstacle_stop_planner SHARED
-  src/debug_marker.cpp
-  src/obstacle_stop_planner.cpp
-  src/obstacle_point_cloud.cpp
-  src/point_helper.cpp
-  src/trajectory.cpp
-  src/controller/adaptive_cruise_control.cpp
-  src/controller/slow_down_control.cpp
-  src/controller/stop_control.cpp
+set(OBSTACLE_STOP_PLANNER_NODES_NODE_SRC
+  src/obstacle_stop_planner_node.cpp
 )
 
-target_include_directories(obstacle_stop_planner
-  PUBLIC
-    ${OpenCV_INCLUDE_DIRS}
-    ${PCL_INCLUDE_DIRS}
+set(OBSTACLE_STOP_PLANNER_NODES_NODE_HEADERS
+  include/obstacle_stop_planner_nodes/obstacle_stop_planner_node.hpp
 )
 
-target_link_libraries(obstacle_stop_planner
-    ${OpenCV_LIBRARIES}
-    ${PCL_LIBRARIES}
+# generate component node library
+ament_auto_add_library(obstacle_stop_planner_node SHARED
+  ${OBSTACLE_STOP_PLANNER_NODES_NODE_SRC}
+  ${OBSTACLE_STOP_PLANNER_NODES_NODE_HEADERS}
 )
 
+rclcpp_components_register_node(obstacle_stop_planner_node
+  PLUGIN "autoware::obstacle_stop_planner_nodes::ObstacleStopPlannerNode"
+  EXECUTABLE obstacle_stop_planner_node_exe
+)
+
+# Testing
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
-  find_package(ament_cmake_gtest REQUIRED)
-  include(test/cmake/ament_cmake_auto_gtest-extras.cmake)
-  file(GLOB_RECURSE test_files test/**/*.cpp)
-  ament_auto_add_gtest(test_obstacle_stop_planner
-    test/test_obstacle_stop_planner.test
-    ${test_files}
-  )
-  target_include_directories(test_obstacle_stop_planner
-    PRIVATE
-    ${OpenCV_INCLUDE_DIRS}
-    ${PCL_INCLUDE_DIRS}
-  )
-  target_link_libraries(test_obstacle_stop_planner
-    ${OpenCV_LIBRARIES}
-    ${PCL_LIBRARIES}
-  )
+  # Unit tests
+  # set(TEST_SOURCES test/test_obstacle_stop_planner_node.cpp)
+  # set(TEST_OBSTACLE_STOP_PLANNER_NODE_EXE test_obstacle_stop_planner_node)
+  # ament_add_gtest(${TEST_OBSTACLE_STOP_PLANNER_NODE_EXE} ${TEST_SOURCES})
+  # target_link_libraries(${TEST_OBSTACLE_STOP_PLANNER_NODE_EXE} obstacle_stop_planner_node)
 endif()
 
+# ament package generation and installing
 ament_auto_package(
   INSTALL_TO_SHARE
-  config
-  launch
+    param
 )

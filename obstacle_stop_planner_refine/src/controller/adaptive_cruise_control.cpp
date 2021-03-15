@@ -26,91 +26,35 @@
 #include "boost/geometry/geometries/linestring.hpp"
 #include "boost/geometry/geometries/point_xy.hpp"
 
-#include "obstacle_stop_planner/adaptive_cruise_control.hpp"
-#include "obstacle_stop_planner/util.hpp"
+#include "obstacle_stop_planner/control/adaptive_cruise_control.hpp"
+#include "obstacle_stop_planner/util/util.hpp"
 
 namespace obstacle_stop_planner
 {
+using boost::geometry::distance;
+
 AdaptiveCruiseController::AdaptiveCruiseController(
-  rclcpp::Node * node, const double vehicle_width, const double vehicle_length,
-  const double wheel_base, const double front_overhang)
-: node_(node),
-  vehicle_width_(vehicle_width),
+  const double vehicle_width, const double vehicle_length,
+  const double wheel_base, const double front_overhang)  // TODO(K.Shima): replace to VehicleParam
+: vehicle_width_(vehicle_width),
   vehicle_length_(vehicle_length),
   wheel_base_(wheel_base),
   front_overhang_(front_overhang)
 {
-  // get parameter
-  std::string acc_ns = "adaptive_cruise_control.";
-
-  /* config */
-  param_.min_behavior_stop_margin =
-    node_->get_parameter("stop_planner.min_behavior_stop_margin").as_double() + wheel_base_ +
-    front_overhang_;
-  param_.use_object_to_est_vel =
-    node_->declare_parameter(acc_ns + "use_object_to_estimate_vel", true);
-  param_.use_pcl_to_est_vel = node_->declare_parameter(acc_ns + "use_pcl_to_estimate_vel", true);
-  param_.consider_obj_velocity = node_->declare_parameter(acc_ns + "consider_obj_velocity", true);
-
-  /* parameter for acc */
-  param_.obstacle_stop_velocity_thresh =
-    node_->declare_parameter(acc_ns + "obstacle_stop_velocity_thresh", 1.0);
-  param_.emergency_stop_acceleration =
-    node_->declare_parameter(acc_ns + "emergency_stop_acceleration", -3.5);
-  param_.obstacle_emergency_stop_acceleration =
-    node_->declare_parameter(acc_ns + "obstacle_emergency_stop_acceleration", -5.0);
-  param_.emergency_stop_idling_time =
-    node_->declare_parameter(acc_ns + "emergency_stop_idling_time", 0.5);
-  param_.min_dist_stop = node_->declare_parameter(acc_ns + "min_dist_stop", 4.0);
-  param_.max_standard_acceleration =
-    node_->declare_parameter(acc_ns + "max_standard_acceleration", 0.5);
-  param_.min_standard_acceleration =
-    node_->declare_parameter(acc_ns + "min_standard_acceleration", -1.0);
-  param_.standard_idling_time = node_->declare_parameter(acc_ns + "standard_idling_time", 0.5);
-  param_.min_dist_standard = node_->declare_parameter(acc_ns + "min_dist_standard", 4.0);
-  param_.obstacle_min_standard_acceleration =
-    node_->declare_parameter(acc_ns + "obstacle_min_standard_acceleration", -1.5);
-  param_.margin_rate_to_change_vel =
-    node_->declare_parameter(acc_ns + "margin_rate_to_change_vel", 0.3);
-  param_.use_time_compensation_to_dist =
-    node_->declare_parameter(acc_ns + "use_time_compensation_to_calc_distance", true);
-  param_.lowpass_gain_ = node_->declare_parameter(acc_ns + "lowpass_gain_of_upper_velocity", 0.6);
-
-  /* parameter for pid in acc */
-  param_.p_coeff_pos = node_->declare_parameter(acc_ns + "p_coefficient_positive", 0.1);
-  param_.p_coeff_neg = node_->declare_parameter(acc_ns + "p_coefficient_negative", 0.3);
-  param_.d_coeff_pos = node_->declare_parameter(acc_ns + "d_coefficient_positive", 0.0);
-  param_.d_coeff_neg = node_->declare_parameter(acc_ns + "d_coefficient_negative", 0.1);
-
-  /* parameter for speed estimation of obstacle */
-  param_.object_polygon_length_margin =
-    node_->declare_parameter(acc_ns + "object_polygon_length_margin", 2.0);
-  param_.object_polygon_width_margin =
-    node_->declare_parameter(acc_ns + "object_polygon_width_margin", 0.5);
-  param_.valid_est_vel_diff_time =
-    node_->declare_parameter(acc_ns + "valid_estimated_vel_diff_time", 1.0);
-  param_.valid_vel_que_time = node_->declare_parameter(acc_ns + "valid_vel_que_time", 0.5);
-  param_.valid_est_vel_max = node_->declare_parameter(acc_ns + "valid_estimated_vel_max", 20.0);
-  param_.valid_est_vel_min = node_->declare_parameter(acc_ns + "valid_estimated_vel_min", -20.0);
-  param_.thresh_vel_to_stop = node_->declare_parameter(acc_ns + "thresh_vel_to_stop", 0.5);
-  param_.use_rough_est_vel =
-    node_->declare_parameter(acc_ns + "use_rough_velocity_estimation", false);
-  param_.rough_velocity_rate = node_->declare_parameter(acc_ns + "rough_velocity_rate", 0.9);
-
   /* publisher */
   pub_debug_ = node_->create_publisher<autoware_debug_msgs::msg::Float32MultiArrayStamped>(
     "debug_values",
     1);
 }
 
-std::tuple<bool, autoware_planning_msgs::msg::Trajectory>
+std::tuple<bool, Trajectory>
 AdaptiveCruiseController::insertAdaptiveCruiseVelocity(
-  const autoware_planning_msgs::msg::Trajectory & trajectory, const int nearest_collision_point_idx,
-  const geometry_msgs::msg::Pose self_pose, const Point2d & nearest_collision_point,
+  const Trajectory & trajectory, const int nearest_collision_point_idx,
+  const Pose self_pose, const Point2d & nearest_collision_point,
   const rclcpp::Time nearest_collision_point_time,
-  const autoware_perception_msgs::msg::DynamicObjectArray::ConstSharedPtr object_ptr,
-  const geometry_msgs::msg::TwistStamped::ConstSharedPtr current_velocity_ptr,
-  const autoware_planning_msgs::msg::Trajectory & input_trajectory)
+  const autoware_perception_msgs::msg::DynamicObjectArray::SharedPtr object_ptr,
+  const geometry_msgs::msg::TwistStamped::SharedPtr current_velocity_ptr,
+  const Trajectory & input_trajectory)
 {
   debug_values_.data.clear();
   debug_values_.data.resize(num_debug_values_, 0.0);
@@ -177,17 +121,17 @@ AdaptiveCruiseController::insertAdaptiveCruiseVelocity(
   /*
   * insert max velocity
   */
-  insertMaxVelocityToPath(
+  output_trajectory = insertMaxVelocityToPath(
     self_pose, current_velocity, upper_velocity, col_point_distance, output_trajectory);
   return std::forward_as_tuple(false, output_trajectory);
 }
 
 double AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
-  const autoware_planning_msgs::msg::Trajectory & trajectory, const int nearest_point_idx,
-  const geometry_msgs::msg::Pose & self_pose, const Point2d & nearest_collision_point,
+  const Trajectory & trajectory, const int nearest_point_idx,
+  const Pose & self_pose, const Point2d & nearest_collision_point,
   const rclcpp::Time & nearest_collision_point_time)
 {
-  double distance;
+  double dist;
   if (trajectory.points.size() == 0) {
     RCLCPP_DEBUG_THROTTLE(
       node_->get_logger(), *node_->get_clock(), std::chrono::milliseconds(1000).count(),
@@ -205,32 +149,32 @@ double AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
   // get nearest point
   if (nearest_point_idx <= 2) {
     // if too nearest collision point, return direct distance
-    distance = boost::geometry::distance(self_poly, nearest_collision_point);
-    debug_values_.data.at(DBGVAL::FORWARD_OBJ_DISTANCE) = distance;
-    return distance;
+    dist = distance(self_poly, nearest_collision_point);
+    debug_values_.data.at(DBGVAL::FORWARD_OBJ_DISTANCE) = dist;
+    return dist;
   }
 
   /* get total distance to collision point */
   double dist_to_point = 0;
   // get distance from self to next nearest point
-  dist_to_point += boost::geometry::distance(
+  dist_to_point += distance(
     autoware_utils::fromMsg(self_pose.position).to_2d(),
     autoware_utils::fromMsg(trajectory.points.at(1).pose.position).to_2d());
 
   // add distance from next self-nearest-point(=idx:0) to prev point of nearest_point_idx
   for (int i = 1; i < nearest_point_idx - 1; i++) {
-    dist_to_point += boost::geometry::distance(
+    dist_to_point += distance(
       autoware_utils::fromMsg(trajectory.points.at(i).pose.position).to_2d(),
       autoware_utils::fromMsg(trajectory.points.at(i + 1).pose.position).to_2d());
   }
 
   // add distance from nearest_collision_point to prev point of nearest_point_idx
-  dist_to_point += boost::geometry::distance(
+  dist_to_point += distance(
     nearest_collision_point,
     autoware_utils::fromMsg(trajectory.points.at(nearest_point_idx - 1).pose.position).to_2d());
 
   // subtract base_link to front
-  dist_to_point -= param_.min_behavior_stop_margin;
+  dist_to_point -= stop_param_.min_behavior_stop_margin;
 
   // time compensation
   if (param_.use_time_compensation_to_dist) {
@@ -239,19 +183,19 @@ double AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
     dist_to_point += prev_target_velocity_ * delay_time;
   }
 
-  distance = std::max(0.0, dist_to_point);
-  debug_values_.data.at(DBGVAL::FORWARD_OBJ_DISTANCE) = distance;
-  return distance;
+  dist = std::max(0.0, dist_to_point);
+  debug_values_.data.at(DBGVAL::FORWARD_OBJ_DISTANCE) = dist;
+  return dist;
 }
 
 double AdaptiveCruiseController::calcTrajYaw(
-  const autoware_planning_msgs::msg::Trajectory & trajectory, const int collision_point_idx)
+  const Trajectory & trajectory, const int collision_point_idx)
 {
   return tf2::getYaw(trajectory.points.at(collision_point_idx).pose.orientation);
 }
 
 std::tuple<bool, double> AdaptiveCruiseController::estimatePointVelocityFromObject(
-  const autoware_perception_msgs::msg::DynamicObjectArray::ConstSharedPtr object_ptr,
+  const autoware_perception_msgs::msg::DynamicObjectArray::SharedPtr object_ptr,
   const double traj_yaw,
   const Point2d & nearest_collision_point,
   const double old_velocity)
@@ -264,7 +208,7 @@ std::tuple<bool, double> AdaptiveCruiseController::estimatePointVelocityFromObje
     const auto obj_poly = getPolygon(
       obj.state.pose_covariance.pose, obj.shape.dimensions, 0.0,
       param_.object_polygon_length_margin, param_.object_polygon_width_margin);
-    if (boost::geometry::distance(obj_poly, nearest_collision_point) <= 0) {
+    if (distance(obj_poly, nearest_collision_point) <= 0) {
       obj_vel = obj.state.twist_covariance.twist.linear.x;
       obj_yaw = tf2::getYaw(obj.state.pose_covariance.pose.orientation);
       get_obj = true;
@@ -298,7 +242,7 @@ std::tuple<bool, double> AdaptiveCruiseController::estimatePointVelocityFromPcl(
       prev_collision_point_valid_ = true;
       return std::forward_as_tuple(false, old_velocity);
     }
-    const double p_dist = autoware_utils::calcDistance2d(nearest_collision_point, prev_collision_point_);
+    const double p_dist = distance(nearest_collision_point, prev_collision_point_);
     const auto p_diff = nearest_collision_point - prev_collision_point_;
     const double p_yaw = std::atan2(p_diff.x(), p_diff.y());
     const double p_vel = p_dist / p_dt;
@@ -469,11 +413,10 @@ double AdaptiveCruiseController::calcTargetVelocityByPID(
   return target_vel;
 }
 
-autoware_planning_msgs::msg::Trajectory
-AdaptiveCruiseController::insertMaxVelocityToPath(
-  const geometry_msgs::msg::Pose & self_pose, const double current_vel, const double target_vel,
+Trajectory AdaptiveCruiseController::insertMaxVelocityToPath(
+  const Pose & self_pose, const double current_vel, const double target_vel,
   const double dist_to_collision_point,
-  const autoware_planning_msgs::msg::Trajectory & input_trajectory)
+  const Trajectory & input_trajectory)
 {
   // plus distance from self to next nearest point
   auto output_trajectory = input_trajectory;
@@ -489,7 +432,7 @@ AdaptiveCruiseController::insertMaxVelocityToPath(
     // calc velocity of each point by gradient deceleration
     const auto current_p = output_trajectory.points[i];
     const auto prev_p = output_trajectory.points[i - 1];
-    const auto p_dist = boost::geometry::distance(
+    const auto p_dist = distance(
       autoware_utils::fromMsg(current_p.pose.position).to_2d(),
       autoware_utils::fromMsg(prev_p.pose.position).to_2d());
     total_dist += p_dist;

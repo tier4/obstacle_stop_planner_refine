@@ -25,32 +25,33 @@
 #include "rclcpp/logger.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
-#include "obstacle_stop_planner/param.hpp"
+#include "autoware_utils/autoware_utils.hpp"
 
 namespace obstacle_stop_planner
 {
+using autoware_planning_msgs::msg::Trajectory;
 
 class ObstaclePointCloud
 {
 public:
-  explicit ObstaclePointCloud(const rclcpp::Logger & logger);
-
-  void updatePointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg);
+  ObstaclePointCloud(){};
+  void updatePointCloud(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
 
   bool isDataReceived();
   pcl::PointCloud<pcl::PointXYZ>::Ptr searchCandidateObstacle(
-    const tf2_ros::Buffer & tf_buffer,
-    const autoware_planning_msgs::msg::Trajectory & trajectory,
-    const Param & param);
+    const geometry_msgs::msg::TransformStamped & transform_stamped,
+    const Trajectory & trajectory,
+    const double search_radius,
+    const VehicleInfo & param);
 
 private:
   pcl::PointCloud<pcl::PointXYZ>::Ptr searchPointcloudNearTrajectory(
-    const autoware_planning_msgs::msg::Trajectory & trajectory,
+    const Trajectory & trajectory,
     const pcl::PointCloud<pcl::PointXYZ>::Ptr input_pointcloud_ptr,
-    const Param & param);
+    const double search_radius,
+    const VehicleInfo & param);
 
   sensor_msgs::msg::PointCloud2::SharedPtr obstacle_ros_pointcloud_ptr_;
-  const rclcpp::Logger logger_;
 };
 
 }  // namespace obstacle_stop_planner

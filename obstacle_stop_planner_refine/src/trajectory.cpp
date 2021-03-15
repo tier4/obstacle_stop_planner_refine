@@ -16,23 +16,22 @@
 #include <utility>
 #include <tuple>
 #include "boost/geometry.hpp"
-#include "obstacle_stop_planner/trajectory.hpp"
-#include "obstacle_stop_planner/point_helper.hpp"
-#include "obstacle_stop_planner/util.hpp"
+#include "obstacle_stop_planner/util/trajectory.hpp"
+#include "obstacle_stop_planner/util/point_helper.hpp"
+#include "obstacle_stop_planner/util/util.hpp"
 
 namespace obstacle_stop_planner
 {
 DecimateTrajectoryMap decimateTrajectory(
-  const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
-  const Param & param)
+  const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length)
 {
   DecimateTrajectoryMap output;
-  output.orig_trajectory = input_trajectory;
-  output.decimate_trajectory.header = input_trajectory.header;
+  output.orig = input_trajectory;
+  output.decimate.header = input_trajectory.header;
   double trajectory_length_sum = 0.0;
   double next_length = 0.0;
   const double epsilon = 0.001;
-  PointHelper point_helper {param};
+  PointHelper point_helper;
 
   for (int i = 0; i < static_cast<int>(input_trajectory.points.size()) - 1; ++i) {
     if (next_length <= trajectory_length_sum + epsilon) {
@@ -47,10 +46,10 @@ DecimateTrajectoryMap decimateTrajectory(
       autoware_planning_msgs::msg::TrajectoryPoint trajectory_point = input_trajectory.points.at(i);
       trajectory_point.pose.position = autoware_utils::toMsg(
         interpolated_point.to_3d(input_trajectory.points.at(i).pose.position.z));
-      output.decimate_trajectory.points.emplace_back(trajectory_point);
+      output.decimate.points.emplace_back(trajectory_point);
 
       output.index_map.insert(
-        std::make_pair(output.decimate_trajectory.points.size() - 1, size_t(i)));
+        std::make_pair(output.decimate.points.size() - 1, size_t(i)));
       next_length += step_length;
       continue;
     }
@@ -60,10 +59,10 @@ DecimateTrajectoryMap decimateTrajectory(
     trajectory_length_sum += boost::geometry::distance(p1.to_2d(), p2.to_2d());
   }
   if (!input_trajectory.points.empty()) {
-    output.decimate_trajectory.points.emplace_back(input_trajectory.points.back());
+    output.decimate.points.emplace_back(input_trajectory.points.back());
     output.index_map.insert(
       std::make_pair(
-        output.decimate_trajectory.points.size() - 1,
+        output.decimate.points.size() - 1,
         input_trajectory.points.size() - 1));
   }
   return output;
@@ -97,4 +96,5 @@ trimTrajectoryWithIndexFromSelfPose(
   output_trajectory.header = input_trajectory.header;
   return std::forward_as_tuple(output_trajectory, min_distance_index);
 }
+
 }  // namespace obstacle_stop_planner

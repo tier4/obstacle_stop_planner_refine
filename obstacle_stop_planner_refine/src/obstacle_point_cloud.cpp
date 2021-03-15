@@ -13,20 +13,15 @@
 // limitations under the License.
 
 #include <memory>
-#include "obstacle_stop_planner/obstacle_point_cloud.hpp"
-#include "obstacle_stop_planner/util.hpp"
+#include "obstacle_stop_planner/util/obstacle_point_cloud.hpp"
+#include "obstacle_stop_planner/util/util.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "tf2/utils.h"
 #include "tf2_eigen/tf2_eigen.h"
 
 namespace obstacle_stop_planner
 {
-ObstaclePointCloud::ObstaclePointCloud(const rclcpp::Logger & logger)
-: logger_(logger)
-{
-}
-
-void ObstaclePointCloud::updatePointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg)
+void ObstaclePointCloud::updatePointCloud(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
 {
   obstacle_ros_pointcloud_ptr_ = std::make_shared<sensor_msgs::msg::PointCloud2>();
   pcl::VoxelGrid<pcl::PointXYZ> filter;
@@ -53,24 +48,25 @@ bool ObstaclePointCloud::isDataReceived()
 }
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr ObstaclePointCloud::searchCandidateObstacle(
-  const tf2_ros::Buffer & tf_buffer,
-  const autoware_planning_msgs::msg::Trajectory & trajectory,
-  const Param & param)
+  const geometry_msgs::msg::TransformStamped & transform_stamped,
+  const Trajectory & trajectory,
+  const double search_radius,
+  const VehicleInfo & param)
 {
-  // transform pointcloud
-  geometry_msgs::msg::TransformStamped transform_stamped;
-  try {
-    transform_stamped = tf_buffer.lookupTransform(
-      trajectory.header.frame_id, obstacle_ros_pointcloud_ptr_->header.frame_id,
-      obstacle_ros_pointcloud_ptr_->header.stamp, rclcpp::Duration::from_seconds(0.5));
-  } catch (tf2::TransformException & ex) {
-    RCLCPP_ERROR_STREAM(
-      logger_,
-      "[obstacle_stop_planner] Failed to look up transform from " <<
-        trajectory.header.frame_id << " to " << obstacle_ros_pointcloud_ptr_->header.frame_id);
-    // do not publish path
-    return nullptr;
-  }
+  // // transform pointcloud
+  // geometry_msgs::msg::TransformStamped transform_stamped;
+  // try {
+  //   transform_stamped = tf_buffer.lookupTransform(
+  //     trajectory.header.frame_id, obstacle_ros_pointcloud_ptr_->header.frame_id,
+  //     obstacle_ros_pointcloud_ptr_->header.stamp, rclcpp::Duration::from_seconds(0.5));
+  // } catch (tf2::TransformException & ex) {
+  //   // RCLCPP_ERROR_STREAM(
+  //   //   logger_,
+  //   //   "[obstacle_stop_planner] Failed to look up transform from " <<
+  //   //     trajectory.header.frame_id << " to " << obstacle_ros_pointcloud_ptr_->header.frame_id);
+  //   // do not publish path
+  //   return nullptr;
+  // }
 
   Eigen::Matrix4f affine_matrix =
     tf2::transformToEigen(transform_stamped.transform).matrix().cast<float>();
@@ -87,28 +83,30 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr ObstaclePointCloud::searchCandidateObstacle(
   // search obstacle candidate pointcloud to reduce calculation cost
   auto obstacle_candidate_pointcloud_ptr = searchPointcloudNearTrajectory(
     trajectory, transformed_obstacle_pointcloud_ptr,
+    search_radius,
     param);
   obstacle_candidate_pointcloud_ptr->header = transformed_obstacle_pointcloud_ptr->header;
   return obstacle_candidate_pointcloud_ptr;
 }
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr ObstaclePointCloud::searchPointcloudNearTrajectory(
-  const autoware_planning_msgs::msg::Trajectory & trajectory,
+  const Trajectory & trajectory,
   const pcl::PointCloud<pcl::PointXYZ>::Ptr input_pointcloud_ptr,
-  const Param & param)
+  const double search_radius,
+  const VehicleInfo & param)
 {
   pcl::PointCloud<pcl::PointXYZ>::Ptr output_pointcloud_ptr(
     new pcl::PointCloud<pcl::PointXYZ>);
-  const double squared_radius = getSearchRadius(param) * getSearchRadius(param);
+  const double squared_radius = search_radius * search_radius;
   for (const auto & trajectory_point : trajectory.points) {
     const auto center_pose = getVehicleCenterFromBase(
       trajectory_point.pose,
-      param.vehicle_info.vehicle_length,
-      param.vehicle_info.rear_overhang);
+      param.vehicle_length,
+      param.rear_overhang);
 
     for (const auto & point : input_pointcloud_ptr->points) {
-      const double x = center_pose.position.x - point.x;
-      const double y = center_pose.position.y - point.y;
+      const double x = center_pose.x() - point.x;
+      const double y = center_pose.y() - point.y;
       const double squared_distance = x * x + y * y;
       if (squared_distance < squared_radius) {output_pointcloud_ptr->points.push_back(point);}
     }

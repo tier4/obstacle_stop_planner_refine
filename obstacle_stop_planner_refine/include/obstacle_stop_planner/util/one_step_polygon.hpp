@@ -21,7 +21,7 @@
 #include "boost/geometry.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 #include "obstacle_stop_planner/util/create_vehicle_footprint.hpp"
-#include "obstacle_stop_planner/util.hpp"
+#include "obstacle_stop_planner/util/util.hpp"
 
 namespace obstacle_stop_planner
 {

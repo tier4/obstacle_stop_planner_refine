@@ -12,15 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gtest/gtest.h"
-#include "obstacle_stop_planner/util/util.hpp"
+#ifndef OBSTACLE_STOP_PLANNER__PARAMETER__SLOW_DOWN_CONTROL_PARAMETER_HPP_
+#define OBSTACLE_STOP_PLANNER__PARAMETER__SLOW_DOWN_CONTROL_PARAMETER_HPP_
+
+#include <obstacle_stop_planner/visibility_control.hpp>
 
 namespace obstacle_stop_planner
 {
-TEST(getYawFromQuaternion, returnValue) {
-  geometry_msgs::msg::Quaternion quat;
-  EXPECT_EQ(0.0, getYawFromQuaternion(quat));
-}
-
-
+struct OBSTACLE_STOP_PLANNER_PUBLIC SlowDownControlParameter
+{
+  double slow_down_margin;
+  double expand_slow_down_range;
+  double max_slow_down_vel;
+  double min_slow_down_vel;
+  double max_deceleration;
+  bool enable_slow_down;
+  double slow_down_search_radius;
+};
 }  // namespace obstacle_stop_planner
+
+#endif  // OBSTACLE_STOP_PLANNER__PARAMETER__SLOW_DOWN_CONTROL_PARAMETER_HPP_
