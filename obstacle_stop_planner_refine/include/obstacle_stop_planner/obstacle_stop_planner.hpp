@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef OBSTACLE_STOP_PLANNER__NODE_HPP_
-#define OBSTACLE_STOP_PLANNER__NODE_HPP_
+#ifndef OBSTACLE_STOP_PLANNER__OBSTACLE_STOP_PLANNER_HPP_
+#define OBSTACLE_STOP_PLANNER__OBSTACLE_STOP_PLANNER_HPP_
 
 #include <map>
 #include <memory>
@@ -31,7 +31,6 @@
 #include "obstacle_stop_planner/debug_marker.hpp"
 #include "obstacle_stop_planner/util/util.hpp"
 #include "obstacle_stop_planner/control/adaptive_cruise_control.hpp"
-#include "autoware_planning_msgs/msg/trajectory.hpp"
 #include "obstacle_stop_planner/parameter/adaptive_cruise_control_parameter.hpp"
 #include "obstacle_stop_planner/parameter/slow_down_control_parameter.hpp"
 #include "obstacle_stop_planner/parameter/stop_control_parameter.hpp"
@@ -102,4 +101,4 @@ private:
 };
 }  // namespace obstacle_stop_planner
 
-#endif  // OBSTACLE_STOP_PLANNER__NODE_HPP_
+#endif  // OBSTACLE_STOP_PLANNER__OBSTACLE_STOP_PLANNER_HPP_

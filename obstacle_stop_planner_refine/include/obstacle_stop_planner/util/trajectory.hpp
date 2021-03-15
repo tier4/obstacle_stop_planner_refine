@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBSTACLE_STOP_PLANNER__TRAJECTORY_HPP_
-#define OBSTACLE_STOP_PLANNER__TRAJECTORY_HPP_
+#ifndef OBSTACLE_STOP_PLANNER__UTIL__TRAJECTORY_HPP_
+#define OBSTACLE_STOP_PLANNER__UTIL__TRAJECTORY_HPP_
 
 #include <map>
 #include <tuple>
@@ -38,4 +38,4 @@ std::tuple<autoware_planning_msgs::msg::Trajectory, size_t> trimTrajectoryWithIn
   const geometry_msgs::msg::Pose & self_pose);
 }  // namespace obstacle_stop_planner
 
-#endif  // OBSTACLE_STOP_PLANNER__TRAJECTORY_HPP_
+#endif  // OBSTACLE_STOP_PLANNER__UTIL__TRAJECTORY_HPP_

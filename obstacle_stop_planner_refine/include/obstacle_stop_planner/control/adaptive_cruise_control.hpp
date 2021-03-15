@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBSTACLE_STOP_PLANNER__ADAPTIVE_CRUISE_CONTROL_HPP_
-#define OBSTACLE_STOP_PLANNER__ADAPTIVE_CRUISE_CONTROL_HPP_
+#ifndef OBSTACLE_STOP_PLANNER__CONTROL__ADAPTIVE_CRUISE_CONTROL_HPP_
+#define OBSTACLE_STOP_PLANNER__CONTROL__ADAPTIVE_CRUISE_CONTROL_HPP_
 
 #include <vector>
 #include <tuple>
@@ -73,7 +73,7 @@ private:
   double prev_upper_velocity_ = 0.0;
 
   AdaptiveCruiseControlParameter param_;
-  // TODO: このパラメータがいるってことは役割の分離できてないんじゃない？
+  // TODO(K.Shima): このパラメータがいるってことは役割の分離できてないんじゃない？
   StopControlParameter stop_param_;
 
 
@@ -129,4 +129,4 @@ private:
 
 }  // namespace obstacle_stop_planner
 
-#endif  // OBSTACLE_STOP_PLANNER__ADAPTIVE_CRUISE_CONTROL_HPP_
+#endif  // OBSTACLE_STOP_PLANNER__CONTROL__ADAPTIVE_CRUISE_CONTROL_HPP_

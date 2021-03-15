@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef OBSTACLE_STOP_PLANNER__UTIL_HPP_
-#define OBSTACLE_STOP_PLANNER__UTIL_HPP_
+#ifndef OBSTACLE_STOP_PLANNER__UTIL__UTIL_HPP_
+#define OBSTACLE_STOP_PLANNER__UTIL__UTIL_HPP_
 
 #include <algorithm>
 #include <string>
@@ -100,4 +100,4 @@ inline Polygon2d getPolygon(
 }
 }  // namespace obstacle_stop_planner
 
-#endif  // OBSTACLE_STOP_PLANNER__UTIL_HPP_
+#endif  // OBSTACLE_STOP_PLANNER__UTIL__UTIL_HPP_

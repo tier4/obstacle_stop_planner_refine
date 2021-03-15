@@ -15,16 +15,18 @@
 #ifndef OBSTACLE_STOP_PLANNER_NODES__OBSTACLE_STOP_PLANNER_NODE_HPP_
 #define OBSTACLE_STOP_PLANNER_NODES__OBSTACLE_STOP_PLANNER_NODE_HPP_
 
-#include <obstacle_stop_planner_nodes/visibility_control.hpp>
+#include <memory>
 
-#include <rclcpp/rclcpp.hpp>
+#include "obstacle_stop_planner_nodes/visibility_control.hpp"
+
+#include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
 #include "autoware_debug_msgs/msg/float32_stamped.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
-
 #include "obstacle_stop_planner/obstacle_stop_planner.hpp"
+
 
 namespace obstacle_stop_planner_nodes
 {
@@ -51,7 +53,8 @@ private:
     const tf2_ros::Buffer & tf_buffer);
 
   std::unique_ptr<obstacle_stop_planner::ObstacleStopPlanner> planner_;
-    // publisher and subscriber
+
+  // publisher and subscriber
   Subscription<Trajectory>::SharedPtr path_sub_;
   Subscription<PointCloud2>::SharedPtr obstacle_pointcloud_sub_;
   Subscription<geometry_msgs::msg::TwistStamped>::SharedPtr current_velocity_sub_;

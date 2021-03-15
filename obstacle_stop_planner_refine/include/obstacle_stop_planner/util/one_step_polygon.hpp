@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBSTACLE_STOP_PLANNER__ONE_STEP_POLYGON_HPP_
-#define OBSTACLE_STOP_PLANNER__ONE_STEP_POLYGON_HPP_
+#ifndef OBSTACLE_STOP_PLANNER__UTIL__ONE_STEP_POLYGON_HPP_
+#define OBSTACLE_STOP_PLANNER__UTIL__ONE_STEP_POLYGON_HPP_
 
 #include <algorithm>
 #include <vector>
@@ -69,4 +69,4 @@ inline Polygon2d createOneStepPolygon(
 
 }  // namespace obstacle_stop_planner
 
-#endif  // OBSTACLE_STOP_PLANNER__ONE_STEP_POLYGON_HPP_
+#endif  // OBSTACLE_STOP_PLANNER__UTIL__ONE_STEP_POLYGON_HPP_

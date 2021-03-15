@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBSTACLE_STOP_PLANNER__OBSTACLE_POINT_CLOUD_HPP_
-#define OBSTACLE_STOP_PLANNER__OBSTACLE_POINT_CLOUD_HPP_
+#ifndef OBSTACLE_STOP_PLANNER__UTIL__OBSTACLE_POINT_CLOUD_HPP_
+#define OBSTACLE_STOP_PLANNER__UTIL__OBSTACLE_POINT_CLOUD_HPP_
 
 #include <memory>
 #include "pcl/point_types.h"
@@ -34,7 +34,6 @@ using autoware_planning_msgs::msg::Trajectory;
 class ObstaclePointCloud
 {
 public:
-  ObstaclePointCloud(){};
   void updatePointCloud(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
 
   bool isDataReceived();
@@ -56,4 +55,4 @@ private:
 
 }  // namespace obstacle_stop_planner
 
-#endif  // OBSTACLE_STOP_PLANNER__OBSTACLE_POINT_CLOUD_HPP_
+#endif  // OBSTACLE_STOP_PLANNER__UTIL__OBSTACLE_POINT_CLOUD_HPP_

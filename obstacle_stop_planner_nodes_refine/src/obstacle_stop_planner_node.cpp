@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <memory>
+#include <string>
 
 #include "obstacle_stop_planner_nodes/obstacle_stop_planner_node.hpp"
 #include "vehicle_info_util/vehicle_info.hpp"
@@ -55,7 +56,9 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
   // Parameters for stop_planner
   obstacle_stop_planner::StopControlParameter stop_param;
   stop_param.stop_margin = declare_parameter("stop_planner.stop_margin", 5.0);
-  stop_param.min_behavior_stop_margin = declare_parameter("stop_planner.min_behavior_stop_margin", 2.0);
+  stop_param.min_behavior_stop_margin = declare_parameter(
+    "stop_planner.min_behavior_stop_margin",
+    2.0);
   stop_param.step_length = declare_parameter("stop_planner.step_length", 1.0);
   stop_param.extend_distance = declare_parameter("stop_planner.extend_distance", 0.0);
   stop_param.expand_stop_range = declare_parameter("stop_planner.expand_stop_range", 0.0);
@@ -131,7 +134,11 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
     declare_parameter(acc_ns + "use_rough_velocity_estimation", false);
   acc_param.rough_velocity_rate = declare_parameter(acc_ns + "rough_velocity_rate", 0.9);
 
-  planner_ = std::make_unique<obstacle_stop_planner::ObstacleStopPlanner>(vehicle_info, stop_param, slow_down_param, acc_param);
+  planner_ = std::make_unique<obstacle_stop_planner::ObstacleStopPlanner>(
+    vehicle_info,
+    stop_param,
+    slow_down_param,
+    acc_param);
 
   enable_slow_down_ = slow_down_param.enable_slow_down;
 
@@ -150,17 +157,22 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
 
   current_velocity_sub_ = this->create_subscription<geometry_msgs::msg::TwistStamped>(
     "input/twist", QoS{1},
-    [this](const geometry_msgs::msg::TwistStamped::SharedPtr msg) {this->current_velocity_ptr_ = msg;});
+    [this](const geometry_msgs::msg::TwistStamped::SharedPtr msg) {
+      this->current_velocity_ptr_ = msg;
+    });
 
   dynamic_object_sub_ =
     this->create_subscription<autoware_perception_msgs::msg::DynamicObjectArray>(
     "input/objects", QoS{1},
-    [this](const autoware_perception_msgs::msg::DynamicObjectArray::SharedPtr msg) {this->object_ptr_ = msg;});
+    [this](const autoware_perception_msgs::msg::DynamicObjectArray::SharedPtr msg) {
+      this->object_ptr_ = msg;
+    });
 
   expand_stop_range_sub_ = this->create_subscription<autoware_debug_msgs::msg::Float32Stamped>(
     "input/expand_stop_range", QoS{1},
-    [this](const autoware_debug_msgs::msg::Float32Stamped::SharedPtr msg)
-      {this->externalExpandStopRangeCallback(msg->data);});
+    [this](const autoware_debug_msgs::msg::Float32Stamped::SharedPtr msg) {
+      this->externalExpandStopRangeCallback(msg->data);
+    });
 }
 
 void ObstacleStopPlannerNode::obstaclePointcloudCallback(

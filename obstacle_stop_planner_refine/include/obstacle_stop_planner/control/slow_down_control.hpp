@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBSTACLE_STOP_PLANNER__CONTROL__SLOW_DOWN_CONTROLLER_HPP_
-#define OBSTACLE_STOP_PLANNER__CONTROL__SLOW_DOWN_CONTROLLER_HPP_
+#ifndef OBSTACLE_STOP_PLANNER__CONTROL__SLOW_DOWN_CONTROL_HPP_
+#define OBSTACLE_STOP_PLANNER__CONTROL__SLOW_DOWN_CONTROL_HPP_
 
 #include "obstacle_stop_planner/parameter/slow_down_control_parameter.hpp"
 #include "geometry_msgs/msg/pose.hpp"
@@ -79,4 +79,4 @@ private:
 };
 }  // namespace obstacle_stop_planner
 
-#endif  // OBSTACLE_STOP_PLANNER__CONTROL__SLOW_DOWN_CONTROLLER_HPP_
+#endif  // OBSTACLE_STOP_PLANNER__CONTROL__SLOW_DOWN_CONTROL_HPP_

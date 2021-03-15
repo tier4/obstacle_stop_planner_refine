@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBSTACLE_STOP_PLANNER__POINT_HELPER_HPP_
-#define OBSTACLE_STOP_PLANNER__POINT_HELPER_HPP_
+#ifndef OBSTACLE_STOP_PLANNER__UTIL__POINT_HELPER_HPP_
+#define OBSTACLE_STOP_PLANNER__UTIL__POINT_HELPER_HPP_
 
 #include <memory>
 #include <tuple>
@@ -79,8 +79,11 @@ public:
     const Trajectory & input_path) const;
 
   StopPoint searchInsertPoint(
-    const int idx, const Trajectory & base_path,
-    const Point2d & trajectory_vec, const Point2d & collision_point_vec, const StopControlParameter & param) const;
+    const int idx,
+    const Trajectory & base_path,
+    const Point2d & trajectory_vec,
+    const Point2d & collision_point_vec,
+    const StopControlParameter & param) const;
 
   StopPoint createTargetPoint(
     const int idx, const double margin, const Point2d & trajectory_vec,
@@ -100,4 +103,4 @@ public:
 };
 }  // namespace obstacle_stop_planner
 
-#endif  // OBSTACLE_STOP_PLANNER__POINT_HELPER_HPP_
+#endif  // OBSTACLE_STOP_PLANNER__UTIL__POINT_HELPER_HPP_
