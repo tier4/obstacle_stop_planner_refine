@@ -53,21 +53,6 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr ObstaclePointCloud::searchCandidateObstacle(
   const double search_radius,
   const VehicleInfo & param)
 {
-  // // transform pointcloud
-  // geometry_msgs::msg::TransformStamped transform_stamped;
-  // try {
-  //   transform_stamped = tf_buffer.lookupTransform(
-  //     trajectory.header.frame_id, obstacle_ros_pointcloud_ptr_->header.frame_id,
-  //     obstacle_ros_pointcloud_ptr_->header.stamp, rclcpp::Duration::from_seconds(0.5));
-  // } catch (tf2::TransformException & ex) {
-  //   // RCLCPP_ERROR_STREAM(
-  //   //   logger_,
-  //   //   "[obstacle_stop_planner] Failed to look up transform from " <<
-  //   //     trajectory.header.frame_id << " to " << obstacle_ros_pointcloud_ptr_->header.frame_id);
-  //   // do not publish path
-  //   return nullptr;
-  // }
-
   Eigen::Matrix4f affine_matrix =
     tf2::transformToEigen(transform_stamped.transform).matrix().cast<float>();
   pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_pointcloud_pcl_ptr_(

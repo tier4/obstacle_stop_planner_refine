@@ -58,6 +58,11 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr StopController::getCollisionPointcloud(
   return output_pointcloud;
 }
 
+void StopController::updateParameter(const StopControlParameter & param)
+{
+  param_ = param;
+}
+
 void StopController::clear()
 {
   is_collision_ = false;

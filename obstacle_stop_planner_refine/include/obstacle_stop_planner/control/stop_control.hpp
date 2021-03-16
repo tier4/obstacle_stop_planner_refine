@@ -55,6 +55,8 @@ public:
     const Polygon2d & one_step_polygon,
     const pcl::PointCloud<pcl::PointXYZ>::Ptr input_pointcloud);
 
+  void updateParameter(const StopControlParameter & param);
+
   void clear();
   bool isCollision() const;
 

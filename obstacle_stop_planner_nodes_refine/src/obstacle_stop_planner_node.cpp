@@ -217,11 +217,6 @@ void ObstacleStopPlannerNode::pathCallback(
 void ObstacleStopPlannerNode::externalExpandStopRangeCallback(const float expand_stop_range)
 {
   planner_->updateExpandStopRange(expand_stop_range);
-  // param_.expand_stop_range = expand_stop_range;
-  // param_.stop_search_radius =
-  //   param_.step_length + std::hypot(
-  //   param_.vehicle_info.vehicle_width / 2.0 + param_.expand_stop_range,
-  //   param_.vehicle_info.vehicle_length / 2.0);
 }
 
 Pose ObstacleStopPlannerNode::getSelfPose(
