@@ -60,10 +60,8 @@ if(BUILD_TESTING)
 
   find_package(ament_cmake_gtest REQUIRED)
   include(test/cmake/ament_cmake_auto_gtest-extras.cmake)
-  file(GLOB_RECURSE test_files test/**/*.cpp)
   ament_auto_add_gtest(test_obstacle_stop_planner
-    test/test_obstacle_stop_planner.test
-    ${test_files}
+    DIRECTORY "test"
   )
   target_include_directories(test_obstacle_stop_planner
     PRIVATE
