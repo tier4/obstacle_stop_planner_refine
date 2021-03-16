@@ -19,10 +19,10 @@ jobs:
             --diff-filter=AM \
             --name-only -- '*.hpp|*.cpp|*.py' > file_list.txt
           python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" -f file_list.txt \
-            --CCN 20 --length 200 --arguments 6 \
+            --CCN 20 -T nloc=200 --arguments 6 \
             --html > public/pr-check/code-metrics.html || true
           python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" -f file_list.txt \
-            --CCN 20 --length 200 --arguments 6 || true
+            --CCN 20 -T nloc=200 --arguments 6 || true
 
       - name: Rename file
         run: |

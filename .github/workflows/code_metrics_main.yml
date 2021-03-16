@@ -17,10 +17,10 @@ jobs:
           git clone https://github.com/terryyin/lizard.git
           mkdir -p public/pr-check
           python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" \
-            --CCN 20 --length 200 --arguments 6 \
+            --CCN 20 -T nloc=200 --arguments 6 \
             --html > public/pr-check/main-code-metrics.html || true
           python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" \
-            --CCN 20 --length 200 --arguments 6 || true
+            --CCN 20 -T nloc=200 --arguments 6 || true
 
       - name: Deploy measurement result page to gh-pages
         uses: peaceiris/actions-gh-pages@v3
