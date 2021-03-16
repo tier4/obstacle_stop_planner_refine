@@ -1,44 +1,24 @@
-name: Build and test
+name: Build and test (actions-ros + setup-ros on ubuntu:focal)
 
 on: pull_request
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    container: ros:foxy
+    container: ubuntu:focal
 
     steps:
       - name: Check out repo
         uses: actions/checkout@v2
 
-      - name: Clone dependency packages
-        run: |
-          mkdir dependency_ws
-          vcs import dependency_ws < build_depends.repos
+      - name: Setup ROS environment
+        uses: ros-tooling/setup-ros@v0.1
+        with:
+          required-ros-distributions: foxy
 
-      - name: Install missing dependencies
-        run: |
-          sudo apt-get update
-          rosdep update
-          DEBIAN_FRONTEND=noninteractive rosdep install --ignore-src --rosdistro foxy -y \
-            --from-paths obstacle_stop_planner_refine \
-            --skip-keys=vehicle_info_util \
-            --skip-keys=autoware_planning_msgs \
-            --skip-keys=autoware_perception_msgs \
-            --skip-keys=autoware_debug_msgs
-
-      - name: Build
-        run: |
-          . /opt/ros/foxy/setup.sh
-          colcon build \
-            --packages-up-to obstacle_stop_planner_refine \
-            --event-handlers console_cohesion+ \
-            --cmake-args -DCMAKE_BUILD_TYPE=Debug
-
-      - name: Run tests
-        run: |
-          . /opt/ros/foxy/setup.sh
-          colcon test \
-            --packages-up-to obstacle_stop_planner_refine \
-            --event-handlers console_cohesion+ \
-            --return-code-on-test-failure
+      - name: Run action-ros-ci
+        uses: ros-tooling/action-ros-ci@v0.1
+        with:
+          package-name: obstacle_stop_planner_refine
+          target-ros2-distro: foxy
+          vcs-repo-file-url: build_depends.repos
