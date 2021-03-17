@@ -2,7 +2,7 @@ name: Clang nightly build
 
 on:
   schedule:
-    - cron: "15 10 * * *" # run at 19:15 JST for test
+    - cron: "0 19 * * *" # run at 4 AM JST
 
 jobs:
   build-using-clang:
