@@ -25,6 +25,7 @@
 
 #include "autoware_perception_msgs/msg/dynamic_object_array.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
+#include "autoware_utils/autoware_utils.hpp"
 
 namespace obstacle_stop_planner
 {
