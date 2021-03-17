@@ -29,6 +29,11 @@
 
 namespace obstacle_stop_planner
 {
+using autoware_utils::Point2d;
+using autoware_utils::Point3d;
+using autoware_utils::Polygon2d;
+using autoware_utils::Polygon3d;
+
 class AdaptiveCruiseController
 {
 public:

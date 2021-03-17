@@ -298,7 +298,7 @@ std::tuple<bool, double> AdaptiveCruiseController::estimatePointVelocityFromPcl(
       prev_collision_point_valid_ = true;
       return std::forward_as_tuple(false, old_velocity);
     }
-    const double p_dist = autoware_utils::calcDistance2d(nearest_collision_point, prev_collision_point_);
+    const double p_dist = boost::geometry::distance(nearest_collision_point, prev_collision_point_);
     const auto p_diff = nearest_collision_point - prev_collision_point_;
     const double p_yaw = std::atan2(p_diff.x(), p_diff.y());
     const double p_vel = p_dist / p_dt;
