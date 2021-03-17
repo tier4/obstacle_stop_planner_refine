@@ -17,8 +17,29 @@ jobs:
           required-ros-distributions: foxy
 
       - name: Run action-ros-ci
+        id: action_ros_ci_step
         uses: ros-tooling/action-ros-ci@v0.1
         with:
           package-name: obstacle_stop_planner_refine
           target-ros2-distro: foxy
           vcs-repo-file-url: build_depends.repos
+          colcon-mixin-name: coverage-gcc coverage-pytest
+          # If possible, pin the repository in the workflow to a specific commit to avoid
+          # changes in colcon-mixin-repository from breaking your tests.
+          colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/1ddb69bedfd1f04c2f000e95452f7c24a4d6176b/index.yaml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1.2.1
+        with:
+          files: ros_ws/lcov/total_coverage.info,ros_ws/coveragepy/.coverage
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: true
+          verbose: true
+
+      - name: Upload colcon-logs
+        uses: actions/upload-artifact@v1
+        with:
+          name: colcon-logs
+          path: ${{ steps.action_ros_ci_step.outputs.ros-workspace-directory-name }}/log
+        if: always() # upload the logs even when the build fails
