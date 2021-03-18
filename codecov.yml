@@ -21,4 +21,4 @@ comment:
 
 fixes:
   # For each package in your repo
-  - "ros_ws/obstacle_stop_planner_refine/::"
+  - "ros_ws/src/*/obstacle_stop_planner_refine/::"
