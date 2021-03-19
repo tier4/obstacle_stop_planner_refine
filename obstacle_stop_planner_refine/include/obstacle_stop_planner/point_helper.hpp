@@ -65,29 +65,30 @@ public:
   explicit PointHelper(const Param & param)
   : param_(param) {}
 
-  Point2d getBackwardPointFromBasePoint(
+  static Point2d getBackwardPointFromBasePoint(
     const Point2d & line_point1, const Point2d & line_point2,
-    const Point2d & base_point, const double backward_length) const;
-  PointStamped getNearestPoint(
+    const Point2d & base_point, const double backward_length);
+  static PointStamped getNearestPoint(
     const pcl::PointCloud<pcl::PointXYZ> & pointcloud,
-    const geometry_msgs::msg::Pose & base_pose) const;
-  PointDeviation getLateralNearestPoint(
+    const geometry_msgs::msg::Pose & base_pose);
+  static PointDeviation getLateralNearestPoint(
     const pcl::PointCloud<pcl::PointXYZ> & pointcloud,
-    const geometry_msgs::msg::Pose & base_pose) const;
+    const geometry_msgs::msg::Pose & base_pose);
 
-  std::tuple<autoware_planning_msgs::msg::TrajectoryPoint, autoware_planning_msgs::msg::Trajectory>
+  static std::tuple<autoware_planning_msgs::msg::TrajectoryPoint,
+    autoware_planning_msgs::msg::Trajectory>
   insertStopPoint(
     const StopPoint & stop_point, const autoware_planning_msgs::msg::Trajectory & base_path,
-    const autoware_planning_msgs::msg::Trajectory & input_path) const;
+    const autoware_planning_msgs::msg::Trajectory & input_path);
 
   StopPoint searchInsertPoint(
-    const int idx, const autoware_planning_msgs::msg::Trajectory & base_path,
+    const size_t idx, const autoware_planning_msgs::msg::Trajectory & base_path,
     const Point2d & trajectory_vec, const Point2d & collision_point_vec) const;
 
-  StopPoint createTargetPoint(
-    const int idx, const double margin, const Point2d & trajectory_vec,
+  static StopPoint createTargetPoint(
+    const size_t idx, const double margin, const Point2d & trajectory_vec,
     const Point2d & collision_point_vec,
-    const autoware_planning_msgs::msg::Trajectory & base_path) const;
+    const autoware_planning_msgs::msg::Trajectory & base_path);
 
   SlowDownPoint createSlowDownStartPoint(
     const int idx, const double margin, const double slow_down_target_vel,
@@ -95,14 +96,15 @@ public:
     const autoware_planning_msgs::msg::Trajectory & base_path,
     const double current_velocity_x) const;
 
-  std::tuple<autoware_planning_msgs::msg::TrajectoryPoint, autoware_planning_msgs::msg::Trajectory>
+  static std::tuple<autoware_planning_msgs::msg::TrajectoryPoint,
+    autoware_planning_msgs::msg::Trajectory>
   insertSlowDownStartPoint(
     const SlowDownPoint & slow_down_start_point,
     const autoware_planning_msgs::msg::Trajectory & base_path,
-    const autoware_planning_msgs::msg::Trajectory & input_path) const;
+    const autoware_planning_msgs::msg::Trajectory & input_path);
 
-  autoware_planning_msgs::msg::TrajectoryPoint getExtendTrajectoryPoint(
-    double extend_distance, const autoware_planning_msgs::msg::TrajectoryPoint & goal_point) const;
+  static autoware_planning_msgs::msg::TrajectoryPoint getExtendTrajectoryPoint(
+    double extend_distance, const autoware_planning_msgs::msg::TrajectoryPoint & goal_point);
 
 private:
   const Param param_;

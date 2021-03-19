@@ -24,7 +24,7 @@ namespace obstacle_stop_planner
 {
 DecimateTrajectoryMap decimateTrajectory(
   const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
-  const Param & param)
+  const Param & /*param*/)
 {
   DecimateTrajectoryMap output;
   output.orig_trajectory = input_trajectory;
@@ -32,7 +32,6 @@ DecimateTrajectoryMap decimateTrajectory(
   double trajectory_length_sum = 0.0;
   double next_length = 0.0;
   const double epsilon = 0.001;
-  PointHelper point_helper {param};
 
   for (int i = 0; i < static_cast<int>(input_trajectory.points.size()) - 1; ++i) {
     if (next_length <= trajectory_length_sum + epsilon) {
@@ -40,7 +39,7 @@ DecimateTrajectoryMap decimateTrajectory(
         input_trajectory.points.at(i).pose.position).to_2d();
       const auto line_end_point = autoware_utils::fromMsg(
         input_trajectory.points.at(i + 1).pose.position).to_2d();
-      Point2d interpolated_point = point_helper.getBackwardPointFromBasePoint(
+      Point2d interpolated_point = PointHelper::getBackwardPointFromBasePoint(
         line_start_point, line_end_point, line_end_point,
         -1.0 * (trajectory_length_sum - next_length));
 

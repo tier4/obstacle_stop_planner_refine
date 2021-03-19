@@ -91,8 +91,8 @@ private:
     const double slow_down_target_vel,
     const double slow_down_vel,
     const autoware_planning_msgs::msg::Trajectory & input_path);
-  double calcSlowDownTargetVel(const double lateral_deviation);
-  std::tuple<bool, pcl::PointCloud<pcl::PointXYZ>::Ptr> getSlowDownPointcloud(
+  double calcSlowDownTargetVel(const double lateral_deviation) const;
+  static std::tuple<bool, pcl::PointCloud<pcl::PointXYZ>::Ptr> getSlowDownPointcloud(
     const bool is_slow_down, const bool enable_slow_down,
     const pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_candidate_pointcloud,
     const Point2d & prev_center_point,
@@ -120,7 +120,7 @@ private:
     const Point2d & nearest_slow_down_point,
     const double slow_down_target_vel,
     const double slow_down_margin,
-    const autoware_planning_msgs::msg::Trajectory & output_msg);
+    const autoware_planning_msgs::msg::Trajectory & input_msg);
 };
 }  // namespace obstacle_stop_planner
 

@@ -168,7 +168,7 @@ void ObstacleStopPlannerNode::pathCallback(
    */
   auto self_pose = getSelfPose(input_msg->header, tf_buffer_);
   autoware_planning_msgs::msg::Trajectory trim_trajectory;
-  size_t trajectory_trim_index;
+  size_t trajectory_trim_index = 0;
   std::tie(trim_trajectory, trajectory_trim_index) =
     trimTrajectoryWithIndexFromSelfPose(base_path, self_pose);
 
@@ -195,13 +195,13 @@ void ObstacleStopPlannerNode::pathCallback(
    */
   // for collision
   bool is_collision = false;
-  size_t decimate_trajectory_collision_index;
+  size_t decimate_trajectory_collision_index = 0;
   Point3d nearest_collision_point;
   rclcpp::Time nearest_collision_point_time;
   // for slow down
   bool candidate_slow_down = false;
   bool is_slow_down = false;
-  size_t decimate_trajectory_slow_down_index;
+  size_t decimate_trajectory_slow_down_index = 0;
   Point3d nearest_slow_down_point;
   pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
   double lateral_deviation = 0.0;
@@ -272,12 +272,12 @@ void ObstacleStopPlannerNode::pathCallback(
         move_slow_down_range_polygon, trajectory.points.at(i).pose.position.z,
         PolygonType::SlowDown);
 
-      const auto nearest_slow_down_pointstamped = point_helper.getNearestPoint(
+      const auto nearest_slow_down_pointstamped = PointHelper::getNearestPoint(
         *slow_down_pointcloud_ptr, trajectory.points.at(i).pose);
       nearest_slow_down_point = nearest_slow_down_pointstamped.point;
       nearest_collision_point_time = nearest_slow_down_pointstamped.time;
 
-      const auto lateral_nearest_slow_down_point = point_helper.getLateralNearestPoint(
+      const auto lateral_nearest_slow_down_point = PointHelper::getLateralNearestPoint(
         *slow_down_pointcloud_ptr, trajectory.points.at(i).pose);
       lateral_deviation = lateral_nearest_slow_down_point.deviation;
       debug_ptr_->pushObstaclePoint(nearest_slow_down_point, PointType::SlowDown);
@@ -287,7 +287,7 @@ void ObstacleStopPlannerNode::pathCallback(
      * search nearest collision point by beginning of path
      */
     if (is_collision) {
-      const auto nearest_collision_pointstamped = point_helper.getNearestPoint(
+      const auto nearest_collision_pointstamped = PointHelper::getNearestPoint(
         *collision_pointcloud_ptr, trajectory.points.at(i).pose);
       nearest_collision_point = nearest_collision_pointstamped.point;
       nearest_collision_point_time = nearest_collision_pointstamped.time;
@@ -437,7 +437,7 @@ autoware_planning_msgs::msg::Trajectory ObstacleStopPlannerNode::insertSlowDownP
       if (slow_down_start_point.index <= output_msg.points.size()) {
         autoware_planning_msgs::msg::TrajectoryPoint slowdown_trajectory_point;
         std::tie(slowdown_trajectory_point, output_msg) =
-          point_helper.insertSlowDownStartPoint(
+          PointHelper::insertSlowDownStartPoint(
           slow_down_start_point, base_path, output_msg);
         debug_ptr_->pushPose(slowdown_trajectory_point.pose, PoseType::SlowDownStart);
         output_msg = insertSlowDownVelocity(
@@ -477,7 +477,7 @@ autoware_planning_msgs::msg::Trajectory ObstacleStopPlannerNode::insertStopPoint
       if (stop_point.index <= output_msg.points.size()) {
         autoware_planning_msgs::msg::TrajectoryPoint trajectory_point;
         std::tie(trajectory_point, output_msg) =
-          point_helper.insertStopPoint(stop_point, base_path, output_msg);
+          PointHelper::insertStopPoint(stop_point, base_path, output_msg);
         debug_ptr_->pushPose(trajectory_point.pose, PoseType::Stop);
       }
       break;
@@ -528,7 +528,7 @@ autoware_planning_msgs::msg::Trajectory ObstacleStopPlannerNode::insertSlowDownV
   return output_path;
 }
 
-double ObstacleStopPlannerNode::calcSlowDownTargetVel(const double lateral_deviation)
+double ObstacleStopPlannerNode::calcSlowDownTargetVel(const double lateral_deviation) const
 {
   return param_.min_slow_down_vel +
          (param_.max_slow_down_vel - param_.min_slow_down_vel) *

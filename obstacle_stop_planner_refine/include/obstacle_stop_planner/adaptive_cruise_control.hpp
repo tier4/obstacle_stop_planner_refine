@@ -45,7 +45,7 @@ public:
     const autoware_planning_msgs::msg::Trajectory & trajectory,
     const int nearest_collision_point_idx,
     const geometry_msgs::msg::Pose self_pose, const Point2d & nearest_collision_point,
-    const rclcpp::Time nearest_collision_point_time,
+    const rclcpp::Time & nearest_collision_point_time,
     const autoware_perception_msgs::msg::DynamicObjectArray::ConstSharedPtr object_ptr,
     const geometry_msgs::msg::TwistStamped::ConstSharedPtr current_velocity_ptr,
     const autoware_planning_msgs::msg::Trajectory & input_trajectory);
@@ -177,12 +177,14 @@ private:
   Param param_;
 
   double getMedianVel(const std::vector<geometry_msgs::msg::TwistStamped> & vel_que);
-  double lowpass_filter(const double current_value, const double prev_value, const double gain);
+  static double lowpass_filter(
+    const double current_value, const double prev_value,
+    const double gain);
   double calcDistanceToNearestPointOnPath(
     const autoware_planning_msgs::msg::Trajectory & trajectory, const int nearest_point_idx,
     const geometry_msgs::msg::Pose & self_pose, const Point2d & nearest_collision_point,
     const rclcpp::Time & nearest_collision_point_time);
-  double calcTrajYaw(
+  static double calcTrajYaw(
     const autoware_planning_msgs::msg::Trajectory & trajectory, const int collision_point_idx);
   std::tuple<bool, double> estimatePointVelocityFromObject(
     const autoware_perception_msgs::msg::DynamicObjectArray::ConstSharedPtr object_ptr,
@@ -194,18 +196,20 @@ private:
     const rclcpp::Time & nearest_collision_point_time, const double old_velocity);
   double estimateRoughPointVelocity(const double current_vel);
   double calcUpperVelocity(const double dist_to_col, const double obj_vel, const double self_vel);
-  double calcThreshDistToForwardObstacle(const double current_vel, const double obj_vel);
-  double calcBaseDistToForwardObstacle(const double current_vel, const double obj_vel);
-  double calcTargetVelocity_P(const double target_dist, const double current_dist);
-  double calcTargetVelocity_I(const double target_dist, const double current_dist);
+  double calcThreshDistToForwardObstacle(const double current_vel, const double obj_vel) const;
+  double calcBaseDistToForwardObstacle(const double current_vel, const double obj_vel) const;
+  double calcTargetVelocity_P(const double target_dist, const double current_dist) const;
+  static double calcTargetVelocity_I(const double target_dist, const double current_dist);
   double calcTargetVelocity_D(const double target_dist, const double current_dist);
   double calcTargetVelocityByPID(
     const double current_vel, const double current_dist, const double obj_vel);
 
   autoware_planning_msgs::msg::Trajectory insertMaxVelocityToPath(
-    const geometry_msgs::msg::Pose & self_pose, const double current_vel, const double target_vel,
+    const geometry_msgs::msg::Pose & /*self_pose*/,
+    const double current_vel,
+    const double target_vel,
     const double dist_to_collision_point,
-    const autoware_planning_msgs::msg::Trajectory & output_trajectory);
+    const autoware_planning_msgs::msg::Trajectory & input_trajectory) const;
   void registerQueToVelocity(const double vel, const rclcpp::Time & vel_time);
 
   /* Debug */

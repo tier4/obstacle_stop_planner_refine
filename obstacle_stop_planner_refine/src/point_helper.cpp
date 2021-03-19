@@ -21,24 +21,24 @@
 
 namespace obstacle_stop_planner
 {
-const Point3d pointXYZtoPoint3d(pcl::PointXYZ point)
+Point3d pointXYZtoPoint3d(pcl::PointXYZ point)
 {
-  return Point3d(point.x, point.y, point.z);
+  return Point3d{point.x, point.y, point.z};
 }
 
 Point2d PointHelper::getBackwardPointFromBasePoint(
   const Point2d & line_point1, const Point2d & line_point2,
-  const Point2d & base_point, const double backward_length) const
+  const Point2d & base_point, const double backward_length)
 {
   const auto line_vec = Eigen::Vector2d(line_point2) - line_point1;
   const auto backward_vec = backward_length * line_vec.normalized();
   const auto output_point = Eigen::Vector2d(base_point) + backward_vec;
-  return Point2d(output_point.x(), output_point.y());
+  return Point2d{output_point.x(), output_point.y()};
 }
 
 PointStamped PointHelper::getNearestPoint(
   const pcl::PointCloud<pcl::PointXYZ> & pointcloud,
-  const geometry_msgs::msg::Pose & base_pose) const
+  const geometry_msgs::msg::Pose & base_pose)
 {
   const double yaw = getYawFromQuaternion(base_pose.orientation);
   Point2d base_pose_vec {std::cos(yaw), std::sin(yaw)};
@@ -68,23 +68,23 @@ PointStamped PointHelper::getNearestPoint(
 
 PointDeviation PointHelper::getLateralNearestPoint(
   const pcl::PointCloud<pcl::PointXYZ> & pointcloud,
-  const geometry_msgs::msg::Pose & base_pose) const
+  const geometry_msgs::msg::Pose & base_pose)
 {
   double min_norm = std::numeric_limits<double>::max();
   const double yaw = getYawFromQuaternion(base_pose.orientation);
   Point2d base_pose_vec {std::cos(yaw), std::sin(yaw)};
   PointDeviation lateral_nearest_point;
 
-  for (size_t i = 0; i < pointcloud.size(); ++i) {
+  for (auto i : pointcloud) {
     Point2d pointcloud_vec {
-      pointcloud.at(i).x - base_pose.position.x,
-      pointcloud.at(i).y - base_pose.position.y};
+      i.x - base_pose.position.x,
+      i.y - base_pose.position.y};
 
     double norm =
       std::abs(base_pose_vec.x() * pointcloud_vec.y() - base_pose_vec.y() * pointcloud_vec.x());
     if (norm < min_norm) {
       min_norm = norm;
-      lateral_nearest_point.point = pointcloud.at(i);
+      lateral_nearest_point.point = i;
     }
   }
   lateral_nearest_point.deviation = min_norm;
@@ -94,7 +94,7 @@ PointDeviation PointHelper::getLateralNearestPoint(
 std::tuple<autoware_planning_msgs::msg::TrajectoryPoint, autoware_planning_msgs::msg::Trajectory>
 PointHelper::insertStopPoint(
   const StopPoint & stop_point, const autoware_planning_msgs::msg::Trajectory & base_path,
-  const autoware_planning_msgs::msg::Trajectory & input_path) const
+  const autoware_planning_msgs::msg::Trajectory & input_path)
 {
   auto output_path = input_path;
   autoware_planning_msgs::msg::TrajectoryPoint stop_trajectory_point =
@@ -110,7 +110,7 @@ PointHelper::insertStopPoint(
 }
 
 StopPoint PointHelper::searchInsertPoint(
-  const int idx, const autoware_planning_msgs::msg::Trajectory & base_path,
+  const size_t idx, const autoware_planning_msgs::msg::Trajectory & base_path,
   const Point2d & trajectory_vec, const Point2d & collision_point_vec) const
 {
   const auto max_dist_stop_point =
@@ -122,8 +122,8 @@ StopPoint PointHelper::searchInsertPoint(
 
   // check if stop point is already inserted by behavior planner
   bool is_inserted_already_stop_point = false;
-  for (int j = max_dist_stop_point.index - 1; j < static_cast<int>(idx); ++j) {
-    if (base_path.points.at(std::max(j, 0)).twist.linear.x == 0.0) {
+  for (size_t j = max_dist_stop_point.index - 1; j < idx; ++j) {
+    if (base_path.points.at(std::max(j, size_t(0))).twist.linear.x == 0.0) {
       is_inserted_already_stop_point = true;
       break;
     }
@@ -138,9 +138,9 @@ StopPoint PointHelper::searchInsertPoint(
 }
 
 StopPoint PointHelper::createTargetPoint(
-  const int idx, const double margin, const Point2d & trajectory_vec,
+  const size_t idx, const double margin, const Point2d & trajectory_vec,
   const Point2d & collision_point_vec,
-  const autoware_planning_msgs::msg::Trajectory & base_path) const
+  const autoware_planning_msgs::msg::Trajectory & base_path)
 {
   double length_sum = 0.0;
   length_sum += trajectory_vec.normalized().dot(collision_point_vec);
@@ -207,7 +207,7 @@ std::tuple<autoware_planning_msgs::msg::TrajectoryPoint, autoware_planning_msgs:
 PointHelper::insertSlowDownStartPoint(
   const SlowDownPoint & slow_down_start_point,
   const autoware_planning_msgs::msg::Trajectory & base_path,
-  const autoware_planning_msgs::msg::Trajectory & input_path) const
+  const autoware_planning_msgs::msg::Trajectory & input_path)
 {
   auto output_path = input_path;
 
@@ -230,7 +230,7 @@ PointHelper::insertSlowDownStartPoint(
 
 autoware_planning_msgs::msg::TrajectoryPoint PointHelper::getExtendTrajectoryPoint(
   const double extend_distance,
-  const autoware_planning_msgs::msg::TrajectoryPoint & goal_point) const
+  const autoware_planning_msgs::msg::TrajectoryPoint & goal_point)
 {
   tf2::Transform map2goal;
   tf2::fromMsg(goal_point.pose, map2goal);

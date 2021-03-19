@@ -44,7 +44,7 @@ public:
     const Param & param);
 
 private:
-  pcl::PointCloud<pcl::PointXYZ>::Ptr searchPointcloudNearTrajectory(
+  static pcl::PointCloud<pcl::PointXYZ>::Ptr searchPointcloudNearTrajectory(
     const autoware_planning_msgs::msg::Trajectory & trajectory,
     const pcl::PointCloud<pcl::PointXYZ>::Ptr input_pointcloud_ptr,
     const Param & param);

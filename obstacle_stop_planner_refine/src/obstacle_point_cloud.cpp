@@ -41,7 +41,7 @@ void ObstaclePointCloud::updatePointCloud(const sensor_msgs::msg::PointCloud2::C
     no_height_pointcloud_ptr->push_back(pcl::PointXYZ(point.x, point.y, 0.0));
   }
   filter.setInputCloud(no_height_pointcloud_ptr);
-  filter.setLeafSize(0.05f, 0.05f, 100000.0f);
+  filter.setLeafSize(0.05F, 0.05F, 100000.0F);
   filter.filter(*no_height_filtered_pointcloud_ptr);
   pcl::toROSMsg(*no_height_filtered_pointcloud_ptr, *obstacle_ros_pointcloud_ptr_);
   obstacle_ros_pointcloud_ptr_->header = msg->header;

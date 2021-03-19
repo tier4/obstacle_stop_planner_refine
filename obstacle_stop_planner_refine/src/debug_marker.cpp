@@ -154,22 +154,22 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
     marker.color.r = 0.0;
     marker.color.g = 1.0;
     marker.color.b = 0.0;
-    for (size_t i = 0; i < vehicle_polygons_.size(); ++i) {
-      for (size_t j = 0; j < vehicle_polygons_.at(i).outer().size(); ++j) {
+    for (auto & vehicle_polygon : vehicle_polygons_) {
+      for (size_t j = 0; j < vehicle_polygon.outer().size(); ++j) {
         {
           geometry_msgs::msg::Point point = autoware_utils::toMsg(
-            vehicle_polygons_.at(i).outer().at(
+            vehicle_polygon.outer().at(
               j));
           marker.points.push_back(point);
         }
-        if (j + 1 == vehicle_polygons_.at(i).outer().size()) {
+        if (j + 1 == vehicle_polygon.outer().size()) {
           geometry_msgs::msg::Point point = autoware_utils::toMsg(
-            vehicle_polygons_.at(i).outer().at(
+            vehicle_polygon.outer().at(
               0));
           marker.points.push_back(point);
         } else {
           geometry_msgs::msg::Point point = autoware_utils::toMsg(
-            vehicle_polygons_.at(i).outer().at(
+            vehicle_polygon.outer().at(
               j + 1));
           marker.points.push_back(point);
         }
@@ -201,24 +201,21 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
     marker.color.r = 1.0;
     marker.color.g = 0.0;
     marker.color.b = 0.0;
-    for (size_t i = 0; i < collision_polygons_.size(); ++i) {
-      for (size_t j = 0; j < collision_polygons_.at(i).outer().size(); ++j) {
+    for (auto & collision_polygon : collision_polygons_) {
+      for (size_t j = 0; j < collision_polygon.outer().size(); ++j) {
         {
           geometry_msgs::msg::Point point = autoware_utils::toMsg(
-            collision_polygons_.at(
-              i).outer().at(j));
+            collision_polygon.outer().at(j));
           marker.points.push_back(point);
         }
-        if (j + 1 == collision_polygons_.at(i).outer().size()) {
+        if (j + 1 == collision_polygon.outer().size()) {
           geometry_msgs::msg::Point point = autoware_utils::toMsg(
-            collision_polygons_.at(
-              i).outer().at(0));
+            collision_polygon.outer().at(0));
           marker.points.push_back(point);
 
         } else {
           geometry_msgs::msg::Point point = autoware_utils::toMsg(
-            collision_polygons_.at(
-              i).outer().at(j + 1));
+            collision_polygon.outer().at(j + 1));
           marker.points.push_back(point);
         }
       }
@@ -249,24 +246,21 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
     marker.color.r = 0.0;
     marker.color.g = 1.0;
     marker.color.b = 0.0;
-    for (size_t i = 0; i < slow_down_range_polygons_.size(); ++i) {
-      for (size_t j = 0; j < slow_down_range_polygons_.at(i).outer().size(); ++j) {
+    for (auto & slow_down_range_polygon : slow_down_range_polygons_) {
+      for (size_t j = 0; j < slow_down_range_polygon.outer().size(); ++j) {
         {
           geometry_msgs::msg::Point point = autoware_utils::toMsg(
-            slow_down_range_polygons_.at(
-              i).outer().at(j));
+            slow_down_range_polygon.outer().at(j));
           marker.points.push_back(point);
         }
-        if (j + 1 == slow_down_range_polygons_.at(i).outer().size()) {
+        if (j + 1 == slow_down_range_polygon.outer().size()) {
           geometry_msgs::msg::Point point = autoware_utils::toMsg(
-            slow_down_range_polygons_.at(
-              i).outer().at(0));
+            slow_down_range_polygon.outer().at(0));
           marker.points.push_back(point);
 
         } else {
           geometry_msgs::msg::Point point = autoware_utils::toMsg(
-            slow_down_range_polygons_.at(
-              i).outer().at(j + 1));
+            slow_down_range_polygon.outer().at(j + 1));
           marker.points.push_back(point);
         }
       }
@@ -297,24 +291,21 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
     marker.color.r = 1.0;
     marker.color.g = 1.0;
     marker.color.b = 0.0;
-    for (size_t i = 0; i < slow_down_polygons_.size(); ++i) {
-      for (size_t j = 0; j < slow_down_polygons_.at(i).outer().size(); ++j) {
+    for (auto & slow_down_polygon : slow_down_polygons_) {
+      for (size_t j = 0; j < slow_down_polygon.outer().size(); ++j) {
         {
           geometry_msgs::msg::Point point = autoware_utils::toMsg(
-            slow_down_polygons_.at(
-              i).outer().at(j));
+            slow_down_polygon.outer().at(j));
           marker.points.push_back(point);
         }
-        if (j + 1 == slow_down_polygons_.at(i).outer().size()) {
+        if (j + 1 == slow_down_polygon.outer().size()) {
           geometry_msgs::msg::Point point = autoware_utils::toMsg(
-            slow_down_polygons_.at(
-              i).outer().at(0));
+            slow_down_polygon.outer().at(0));
           marker.points.push_back(point);
 
         } else {
           geometry_msgs::msg::Point point = autoware_utils::toMsg(
-            slow_down_polygons_.at(
-              i).outer().at(j + 1));
+            slow_down_polygon.outer().at(j + 1));
           marker.points.push_back(point);
         }
       }
