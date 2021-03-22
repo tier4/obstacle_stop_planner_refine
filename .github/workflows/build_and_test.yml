@@ -22,13 +22,17 @@ jobs:
         with:
           required-ros-distributions: foxy
 
+      - name: Concat build_depends.repos
+        run: |
+          curl -sSL https://raw.githubusercontent.com/tier4/AutowareArchitectureProposal.iv/ros2/build_depends.repos | sed '1d' >> build_depends.repos
+
       - name: Run action-ros-ci
         id: action_ros_ci_step
         uses: ros-tooling/action-ros-ci@v0.1
         with:
           package-name: obstacle_stop_planner_refine
           target-ros2-distro: foxy
-          vcs-repo-file-url: build_depends.repos file://${{ github.workspace }}/src/autoware/AutowareArchitectureProposal.iv/build_depends.repos
+          vcs-repo-file-url: build_depends.repos
           colcon-mixin-name: coverage-gcc coverage-pytest
           # If possible, pin the repository in the workflow to a specific commit to avoid
           # changes in colcon-mixin-repository from breaking your tests.
