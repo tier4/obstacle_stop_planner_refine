@@ -47,8 +47,7 @@ namespace obstacle_stop_planner
 ObstacleStopPlannerNode::ObstacleStopPlannerNode()
 : Node("obstacle_stop_planner"),
   tf_buffer_(this->get_clock()),
-  tf_listener_(tf_buffer_),
-  obstacle_pointcloud_(this->get_logger())
+  tf_listener_(tf_buffer_)
 {
   // Vehicle Info
   auto i = vehicle_info_util::VehicleInfo::create(*this);
@@ -135,12 +134,13 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode()
 void ObstacleStopPlannerNode::obstaclePointcloudCallback(
   const sensor_msgs::msg::PointCloud2::ConstSharedPtr input_msg)
 {
-  obstacle_pointcloud_.updatePointCloud(input_msg);
+  obstacle_pointcloud_ptr_ = updatePointCloud(input_msg);
 }
+
 void ObstacleStopPlannerNode::pathCallback(
   const autoware_planning_msgs::msg::Trajectory::ConstSharedPtr input_msg)
 {
-  if (!obstacle_pointcloud_.isDataReceived()) {
+  if (!obstacle_pointcloud_ptr_) {
     RCLCPP_WARN_THROTTLE(
       get_logger(), *get_clock(), std::chrono::milliseconds(1000).count(),
       "waiting for obstacle pointcloud...");
@@ -188,7 +188,9 @@ void ObstacleStopPlannerNode::pathCallback(
     new pcl::PointCloud<pcl::PointXYZ>);
 
   // search obstacle candidate pointcloud to reduce calculation cost
-  obstacle_pointcloud_.searchCandidateObstacle(tf_buffer_, trajectory, param_);
+  obstacle_candidate_pointcloud_ptr = searchCandidateObstacle(
+    obstacle_pointcloud_ptr_,
+    tf_buffer_, trajectory, param_, this->get_logger());
 
   /*
    * check collision, slow_down

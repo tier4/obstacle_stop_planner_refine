@@ -64,7 +64,7 @@ private:
   std::shared_ptr<ObstacleStopPlannerDebugNode> debug_ptr_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
-  ObstaclePointCloud obstacle_pointcloud_;
+  sensor_msgs::msg::PointCloud2::ConstSharedPtr obstacle_pointcloud_ptr_;
   Param param_;
 
   /*
