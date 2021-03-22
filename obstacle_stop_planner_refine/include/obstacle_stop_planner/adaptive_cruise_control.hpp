@@ -20,9 +20,10 @@
 
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "autoware_debug_msgs/msg/float32_multi_array_stamped.hpp"
 #include "tf2/utils.h"
+#include "boost/optional.hpp"
 
+#include "autoware_debug_msgs/msg/float32_multi_array_stamped.hpp"
 #include "autoware_perception_msgs/msg/dynamic_object_array.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
 #include "autoware_utils/autoware_utils.hpp"
@@ -33,6 +34,7 @@ using autoware_utils::Point2d;
 using autoware_utils::Point3d;
 using autoware_utils::Polygon2d;
 using autoware_utils::Polygon3d;
+using boost::optional;
 
 class AdaptiveCruiseController
 {
@@ -186,14 +188,13 @@ private:
     const rclcpp::Time & nearest_collision_point_time);
   static double calcTrajYaw(
     const autoware_planning_msgs::msg::Trajectory & trajectory, const int collision_point_idx);
-  std::tuple<bool, double> estimatePointVelocityFromObject(
+  optional<double> estimatePointVelocityFromObject(
     const autoware_perception_msgs::msg::DynamicObjectArray::ConstSharedPtr object_ptr,
     const double traj_yaw,
-    const Point2d & nearest_collision_point,
-    const double old_velocity);
-  std::tuple<bool, double> estimatePointVelocityFromPcl(
+    const Point2d & nearest_collision_point);
+  optional<double> estimatePointVelocityFromPcl(
     const double traj_yaw, const Point2d & nearest_collision_point,
-    const rclcpp::Time & nearest_collision_point_time, const double old_velocity);
+    const rclcpp::Time & nearest_collision_point_time);
   double estimateRoughPointVelocity(const double current_vel);
   double calcUpperVelocity(const double dist_to_col, const double obj_vel, const double self_vel);
   double calcThreshDistToForwardObstacle(const double current_vel, const double obj_vel) const;
