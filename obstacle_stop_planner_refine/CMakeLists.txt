@@ -15,7 +15,6 @@ find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
 find_package(Eigen3 REQUIRED)
-find_package(PCL REQUIRED)
 
 ament_auto_add_executable(obstacle_stop_planner_node
   src/debug_marker.cpp
@@ -27,15 +26,6 @@ ament_auto_add_executable(obstacle_stop_planner_node
   src/trajectory.cpp
 )
 
-target_include_directories(obstacle_stop_planner_node
-  PUBLIC
-    ${PCL_INCLUDE_DIRS}
-)
-
-target_link_libraries(obstacle_stop_planner_node
-    ${PCL_LIBRARIES}
-)
-
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
@@ -45,13 +35,6 @@ if(BUILD_TESTING)
   ament_auto_add_gtest(test_obstacle_stop_planner
     test/test_obstacle_stop_planner.test
     ${test_files}
-  )
-  target_include_directories(test_obstacle_stop_planner
-    PRIVATE
-    ${PCL_INCLUDE_DIRS}
-  )
-  target_link_libraries(test_obstacle_stop_planner
-    ${PCL_LIBRARIES}
   )
 endif()
 
