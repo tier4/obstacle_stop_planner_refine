@@ -28,7 +28,7 @@ jobs:
         with:
           package-name: obstacle_stop_planner_refine
           target-ros2-distro: foxy
-          vcs-repo-file-url: build_depends.repos
+          vcs-repo-file-url: build_depends.repos src/autoware/AutowareArchitectureProposal.iv/build_depends.repos
           colcon-mixin-name: coverage-gcc coverage-pytest
           # If possible, pin the repository in the workflow to a specific commit to avoid
           # changes in colcon-mixin-repository from breaking your tests.
