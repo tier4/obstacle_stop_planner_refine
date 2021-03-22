@@ -15,7 +15,6 @@ find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
 find_package(Eigen3 REQUIRED)
-find_package(OpenCV REQUIRED)
 find_package(PCL REQUIRED)
 
 ament_auto_add_executable(obstacle_stop_planner_node
@@ -30,12 +29,10 @@ ament_auto_add_executable(obstacle_stop_planner_node
 
 target_include_directories(obstacle_stop_planner_node
   PUBLIC
-    ${OpenCV_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS}
 )
 
 target_link_libraries(obstacle_stop_planner_node
-    ${OpenCV_LIBRARIES}
     ${PCL_LIBRARIES}
 )
 
@@ -52,11 +49,9 @@ if(BUILD_TESTING)
   )
   target_include_directories(test_obstacle_stop_planner
     PRIVATE
-    ${OpenCV_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS}
   )
   target_link_libraries(test_obstacle_stop_planner
-    ${OpenCV_LIBRARIES}
     ${PCL_LIBRARIES}
   )
 endif()
