@@ -6,6 +6,9 @@ jobs:
   code-metrics:
     runs-on: ubuntu-latest
     steps:
+      - name: Set environment variable
+        run: echo 'PULL_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")' >> $GITHUB_ENV
+
       - name: Check out repo
         uses: actions/checkout@v2
         with:
@@ -26,7 +29,6 @@ jobs:
 
       - name: Rename file
         run: |
-          PULL_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
           mkdir public/pr-check/pr${PULL_NUMBER}
           mv public/pr-check/code-metrics.html public/pr-check/pr${PULL_NUMBER}/code-metrics.html
 
@@ -36,6 +38,12 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public
           keep_files: true
+
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@master
+        with:
+          message: 'A code metric report for this pull request has been generated. You can check the results [here](https://tier4.github.io/obstacle_stop_planner_refine/pr-check/${PULL_NUMBER}-code-metrics.html).'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   create-index-page:
     needs: code-metrics
