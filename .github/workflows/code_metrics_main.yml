@@ -15,10 +15,10 @@ jobs:
       - name: Measure code metrics
         run: |
           git clone https://github.com/terryyin/lizard.git
-          mkdir -p public/pr-check
+          mkdir -p public/pr-check/main
           python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" \
             --CCN 20 -T nloc=200 --arguments 6 \
-            --html > public/pr-check/main-code-metrics.html || true
+            --html > public/pr-check/main/code-metrics.html || true
           python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" \
             --CCN 20 -T nloc=200 --arguments 6 || true
 
