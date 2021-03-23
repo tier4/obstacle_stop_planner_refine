@@ -52,7 +52,7 @@ public:
     const Trajectory & input_trajectory);
 
 private:
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr pub_debug_;
+  // rclcpp::Publisher<autoware_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr pub_debug_;
 
   rclcpp::Node * node_;
   /*

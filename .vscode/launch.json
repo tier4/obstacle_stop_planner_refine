@@ -1,0 +1,61 @@
+{
+  // IntelliSense を使用して利用可能な属性を学べます。
+  // 既存の属性の説明をホバーして表示します。
+  // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "(gdb) obstacle_stop_planner_node_exe",
+      "type": "cppdbg",
+      "request": "attach",
+      "program": "${workspaceFolder}/install/lib/obstacle_stop_planner_nodes/obstacle_stop_planner_node_exe",
+      "processId": "${command:pickProcess}",
+      "MIMode": "gdb",
+      "setupCommands": [
+          {
+              "description": "gdb の再フォーマットを有効にする",
+              "text": "-enable-pretty-printing",
+              "ignoreFailures": true
+          }
+      ]
+    },
+    {
+      "name": "(gdb) gtest",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "build/obstacle_stop_planner_refine/test_obstacle_stop_planner",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+          {
+              "description": "gdb の再フォーマットを有効にする",
+              "text": "-enable-pretty-printing",
+              "ignoreFailures": false
+          }
+      ]
+    },
+    {
+      "name": "(gdb) gtest node",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "build/obstacle_stop_planner_nodes/test_obstacle_stop_planner_node",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+          {
+              "description": "gdb の再フォーマットを有効にする",
+              "text": "-enable-pretty-printing",
+              "ignoreFailures": false
+          }
+      ]
+    },
+  ]
+}

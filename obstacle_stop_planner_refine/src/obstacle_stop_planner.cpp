@@ -64,6 +64,10 @@ ObstacleStopPlanner::ObstacleStopPlanner(
     vehicle_info.vehicle_width, vehicle_info.vehicle_length,
     vehicle_info.wheel_base, vehicle_info.front_overhang);
 
+  stop_control_ = std::make_unique<obstacle_stop_planner::StopController>(stop_param_);
+  slow_down_control_ =
+    std::make_unique<obstacle_stop_planner::SlowDownController>(slow_down_param_);
+
   obstacle_pointcloud_ = std::make_shared<ObstaclePointCloud>();
 }
 

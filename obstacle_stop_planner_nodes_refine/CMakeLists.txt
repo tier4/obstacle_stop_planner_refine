@@ -53,15 +53,21 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
+  add_ros_test(
+    test/obstacle_stop_planner_node_launch_test.py
+    TIMEOUT "30"
+  )
+
   # Unit tests
-  # set(TEST_SOURCES test/test_obstacle_stop_planner_node.cpp)
-  # set(TEST_OBSTACLE_STOP_PLANNER_NODE_EXE test_obstacle_stop_planner_node)
-  # ament_add_gtest(${TEST_OBSTACLE_STOP_PLANNER_NODE_EXE} ${TEST_SOURCES})
-  # target_link_libraries(${TEST_OBSTACLE_STOP_PLANNER_NODE_EXE} obstacle_stop_planner_node)
+  set(TEST_SOURCES test/test_obstacle_stop_planner_node.cpp)
+  set(TEST_OBSTACLE_STOP_PLANNER_NODE_EXE test_obstacle_stop_planner_node)
+  ament_add_gtest(${TEST_OBSTACLE_STOP_PLANNER_NODE_EXE} ${TEST_SOURCES})
+  target_link_libraries(${TEST_OBSTACLE_STOP_PLANNER_NODE_EXE} obstacle_stop_planner_node)
 endif()
 
 # ament package generation and installing
 ament_auto_package(
   INSTALL_TO_SHARE
     param
+    launch
 )
