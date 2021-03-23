@@ -27,6 +27,7 @@ jobs:
       - name: Rename file
         run: |
           PULL_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          mkdir public/pr-check/pr${PULL_NUMBER}
           mv public/pr-check/code-metrics.html public/pr-check/pr${PULL_NUMBER}/code-metrics.html
 
       - name: Deploy measurement result page to gh-pages
