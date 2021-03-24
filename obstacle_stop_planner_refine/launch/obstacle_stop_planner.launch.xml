@@ -5,21 +5,21 @@
   <arg name="input_twist" default="/localization/twist" />
   <arg name="output_trajectory" default="output/trajectory" />
   <arg name="enable_slow_down" default="false" />
-  <arg name="param_file" default="$(find-pkg-share obstacle_stop_planner)/config/obstacle_stop_planner.yaml" />
-  <arg name="acc_param_file" default="$(find-pkg-share obstacle_stop_planner)/config/adaptive_cruise_control.yaml" />
+  <arg name="param_file" default="$(find-pkg-share obstacle_stop_planner)/config/obstacle_stop_planner.param.yaml" />
+  <arg name="acc_param_file" default="$(find-pkg-share obstacle_stop_planner)/config/adaptive_cruise_control.param.yaml" />
   <arg name="vehicle_param_file"/>
 
   <node pkg="obstacle_stop_planner" exec="obstacle_stop_planner_node" name="obstacle_stop_planner" output="screen">
-    <param from="$(var vehicle_param_file)" />    
+    <param from="$(var vehicle_param_file)" />
     <param from="$(var acc_param_file)" />
     <param from="$(var param_file)" />
-    <remap from="output/stop_reason" to="/planning/scenario_planning/status/stop_reason" />
-    <remap from="output/stop_reasons" to="/planning/scenario_planning/status/stop_reasons" />
-    <remap from="output/trajectory" to="$(var output_trajectory)" />
-    <remap from="input/objects" to="$(var input_objects)" />
-    <remap from="input/pointcloud" to="$(var input_pointcloud)" />
-    <remap from="input/trajectory" to="$(var input_trajectory)" />
-    <remap from="input/twist" to="$(var input_twist)" />
+    <remap from="~/output/stop_reason" to="/planning/scenario_planning/status/stop_reason" />
+    <remap from="~/output/stop_reasons" to="/planning/scenario_planning/status/stop_reasons" />
+    <remap from="~/output/trajectory" to="$(var output_trajectory)" />
+    <remap from="~/input/objects" to="$(var input_objects)" />
+    <remap from="~/input/pointcloud" to="$(var input_pointcloud)" />
+    <remap from="~/input/trajectory" to="$(var input_trajectory)" />
+    <remap from="~/input/twist" to="$(var input_twist)" />
     <param name="enable_slow_down" value="$(var enable_slow_down)" />
   </node>
 
