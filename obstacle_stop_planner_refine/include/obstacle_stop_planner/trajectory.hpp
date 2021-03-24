@@ -31,6 +31,9 @@ struct DecimateTrajectoryMap
   std::map<size_t /* decimate */, size_t /* origin */> index_map;
 };
 
+autoware_planning_msgs::msg::Trajectory extendTrajectory(
+  const autoware_planning_msgs::msg::Trajectory & input_trajectory,
+  const double extend_distance);
 DecimateTrajectoryMap decimateTrajectory(
   const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
   const Param & param);

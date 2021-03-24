@@ -24,7 +24,6 @@
 #include "autoware_perception_msgs/msg/dynamic_object_array.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
 #include "autoware_planning_msgs/msg/expand_stop_range.hpp"
-#include "diagnostic_msgs/msg/diagnostic_status.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "autoware_debug_msgs/msg/float32_stamped.hpp"
 #include "pcl/point_types.h"

@@ -22,6 +22,28 @@
 
 namespace obstacle_stop_planner
 {
+autoware_planning_msgs::msg::Trajectory extendTrajectory(
+  const autoware_planning_msgs::msg::Trajectory & input_trajectory,
+  const double extend_distance)
+{
+  auto output_trajectory = input_trajectory;
+  const auto goal_point = input_trajectory.points.back();
+  double interpolation_distance = 0.1;
+
+  double extend_sum = 0.0;
+  while (extend_sum <= (extend_distance - interpolation_distance)) {
+    const auto extend_trajectory_point =
+      PointHelper::getExtendTrajectoryPoint(extend_sum, goal_point);
+    output_trajectory.points.push_back(extend_trajectory_point);
+    extend_sum += interpolation_distance;
+  }
+  const auto extend_trajectory_point =
+    PointHelper::getExtendTrajectoryPoint(extend_distance, goal_point);
+  output_trajectory.points.push_back(extend_trajectory_point);
+
+  return output_trajectory;
+}
+
 DecimateTrajectoryMap decimateTrajectory(
   const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
   const Param & /*param*/)

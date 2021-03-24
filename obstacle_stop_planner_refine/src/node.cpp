@@ -22,7 +22,6 @@
 #include <tuple>
 
 #include "autoware_utils/geometry/geometry.hpp"
-#include "diagnostic_msgs/msg/key_value.hpp"
 #include "pcl/filters/voxel_grid.h"
 #include "tf2/utils.h"
 #include "tf2_eigen/tf2_eigen.h"
@@ -108,8 +107,6 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode()
   // Publishers
   path_pub_ =
     this->create_publisher<autoware_planning_msgs::msg::Trajectory>("~/output/trajectory", 1);
-  stop_reason_diag_pub_ =
-    this->create_publisher<diagnostic_msgs::msg::DiagnosticStatus>("~/output/stop_reason", 1);
 
   // Subscribers
   obstacle_pointcloud_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
@@ -157,8 +154,7 @@ void ObstacleStopPlannerNode::pathCallback(
   /*
    * extend trajectory to consider obstacles after the goal
    */
-  autoware_planning_msgs::msg::Trajectory extended_trajectory;
-  trajectory_.extendTrajectory(*input_msg, param_, extended_trajectory);
+  const auto extended_trajectory = extendTrajectory(*input_msg, param_.extend_distance);
 
   const autoware_planning_msgs::msg::Trajectory base_path = extended_trajectory;
   autoware_planning_msgs::msg::Trajectory output_msg = *input_msg;

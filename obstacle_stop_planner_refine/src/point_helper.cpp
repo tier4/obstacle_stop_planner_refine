@@ -172,8 +172,8 @@ SlowDownPoint PointHelper::createSlowDownStartPoint(
 {
   double length_sum = 0.0;
   length_sum += trajectory_vec.normalized().dot(slow_down_point_vec);
-  Eigen::Vector2d line_start_point{};
-  Eigen::Vector2d line_end_point{};
+  Point2d line_start_point{};
+  Point2d line_end_point{};
 
   SlowDownPoint slow_down_point{0, Point2d {0.0, 0.0}, 0.0};
   for (size_t j = idx; 0 < j; --j) {
@@ -188,11 +188,11 @@ SlowDownPoint PointHelper::createSlowDownStartPoint(
   const double backward_length = length_sum - margin;
   if (backward_length < 0) {
     slow_down_point.index = 0;
-    slow_down_point.point = Eigen::Vector2d(
+    slow_down_point.point = Point2d(
       base_path.points.at(0).pose.position.x, base_path.points.at(0).pose.position.y);
   } else {
-    getBackwardPointFromBasePoint(
-      line_start_point, line_end_point, line_start_point, backward_length, slow_down_point.point);
+    slow_down_point.point = getBackwardPointFromBasePoint(
+      line_start_point, line_end_point, line_start_point, backward_length);
   }
 
   slow_down_point.velocity = std::max(
@@ -225,7 +225,7 @@ PointHelper::insertSlowDownStartPoint(
     output_path.points.insert(
       output_path.points.begin() + slow_down_start_point.index, slow_down_start_trajectory_point);
   }
-  return slow_down_start_trajectory_point;
+  return std::make_tuple(slow_down_start_trajectory_point, output_path);
 }
 
 autoware_planning_msgs::msg::TrajectoryPoint PointHelper::getExtendTrajectoryPoint(
