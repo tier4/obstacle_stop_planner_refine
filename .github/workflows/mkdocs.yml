@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build MkDocs
-        uses: jnanadarshan/mkdocs-build-action@v1
+        uses: jnanadarshan/mkdocs-build-action@v0.24
 
       - name: Change directory structure
         run: |
