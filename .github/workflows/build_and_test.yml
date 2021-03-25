@@ -40,7 +40,7 @@ jobs:
           files: ros_ws/lcov/total_coverage.info,ros_ws/coveragepy/.coverage
           flags: unittests
           name: codecov-umbrella
-          fail_ci_if_error: true
+          # fail_ci_if_error: true  # Temporarily disable it to suppress errors when there is no unit test.
           verbose: true
 
       - name: Upload colcon-logs
