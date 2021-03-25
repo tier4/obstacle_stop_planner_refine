@@ -1,6 +1,7 @@
 site_name: Test Autoware Documentation
 repo_url: https://github.com/tier4/obstacle_stop_planner_refine
-edit_uri: edit/main/docs/
+docs_dir: .
+edit_uri: edit/main/
 theme:
   name: material
   feature:
@@ -13,6 +14,7 @@ extra:
     text: "Noto Sans JP"
     code: "Consolas"
 plugins:
+  - same-dir
   - search
 
 copyright: "Copyright &copy; 2021- Tier IV, Inc."
