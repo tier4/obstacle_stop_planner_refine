@@ -193,7 +193,7 @@ void ObstacleStopPlannerNode::pathCallback(
     return;
   }
 
-  if (!current_velocity_ptr_ && enable_slow_down_) {
+  if (!current_velocity_ptr_) {
     RCLCPP_WARN_THROTTLE(
       get_logger(), *get_clock(), std::chrono::milliseconds(1000).count(),
       "waiting for current velocity...");
@@ -208,7 +208,12 @@ void ObstacleStopPlannerNode::pathCallback(
     trajectory_set.decimate.header, pointcloud_header_,
     tf_buffer_);
 
-  const auto output_msg = planner_->updatePath(trajectory_set, self_pose, transform_stamped);
+  const auto output_msg = planner_->updatePath(
+    trajectory_set,
+    self_pose,
+    transform_stamped,
+    current_velocity_ptr_->twist.angular.x,
+    this->now());
 
   path_pub_->publish(output_msg);
   // debug_ptr_->publish();

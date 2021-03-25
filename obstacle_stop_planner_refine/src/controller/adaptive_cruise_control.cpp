@@ -53,16 +53,17 @@ AdaptiveCruiseController::insertAdaptiveCruiseVelocity(
   const Pose self_pose, const Point2d & nearest_collision_point,
   const rclcpp::Time nearest_collision_point_time,
   const autoware_perception_msgs::msg::DynamicObjectArray::SharedPtr object_ptr,
-  const geometry_msgs::msg::TwistStamped::SharedPtr current_velocity_ptr,
-  const Trajectory & input_trajectory)
+  const double current_velocity,
+  const Trajectory & input_trajectory,
+  const rclcpp::Time & current_time)
 {
   debug_values_.data.clear();
   debug_values_.data.resize(num_debug_values_, 0.0);
 
-  const double current_velocity = current_velocity_ptr->twist.linear.x;
   double point_velocity = current_velocity;
   bool success_estm_vel = false;
   auto output_trajectory = input_trajectory;
+  current_time_ = current_time;
 
   /*
   * calc distance to collision point
@@ -273,7 +274,7 @@ std::tuple<bool, double> AdaptiveCruiseController::estimatePointVelocityFromPcl(
 
 double AdaptiveCruiseController::estimateRoughPointVelocity(const double current_vel)
 {
-  const double p_dt = node_->now().seconds() - prev_collision_point_time_.seconds();
+  const double p_dt = current_time_.seconds() - prev_collision_point_time_.seconds();
   if (param_.valid_est_vel_diff_time >= p_dt) {
     // use previous estimated velocity
     return prev_target_velocity_;
@@ -368,13 +369,13 @@ double AdaptiveCruiseController::calcTargetVelocity_I(
 double AdaptiveCruiseController::calcTargetVelocity_D(
   const double target_dist, const double current_dist)
 {
-  if (node_->now().seconds() - prev_target_vehicle_time_ >= param_.d_coeff_valid_time) {
+  if (current_time_.seconds() - prev_target_vehicle_time_ >= param_.d_coeff_valid_time) {
     // invalid time(prev is too old)
     return 0.0;
   }
 
   double diff_vel = (target_dist - prev_target_vehicle_dist_) /
-    (node_->now().seconds() - prev_target_vehicle_time_);
+    (current_time_.seconds() - prev_target_vehicle_time_);
 
   if (std::fabs(diff_vel) >= param_.d_coeff_valid_diff_vel) {
     // invalid(discontinuous) diff_vel
@@ -388,7 +389,7 @@ double AdaptiveCruiseController::calcTargetVelocity_D(
 
   // add buffer
   prev_target_vehicle_dist_ = current_dist;
-  prev_target_vehicle_time_ = node_->now().seconds();
+  prev_target_vehicle_time_ = current_time_.seconds();
 
   return add_vel_d;
 }
@@ -397,7 +398,9 @@ double AdaptiveCruiseController::calcTargetVelocityByPID(
   const double current_vel, const double current_dist, const double obj_vel)
 {
   const double target_dist = calcBaseDistToForwardObstacle(current_vel, obj_vel);
-  // RCLCPP_DEBUG_STREAM(node_->get_logger(), "[adaptive cruise control] target_dist" << target_dist);
+  // RCLCPP_DEBUG_STREAM(
+  //   node_->get_logger(),
+  //   "[adaptive cruise control] target_dist" << target_dist);
 
   const double add_vel_p = calcTargetVelocity_P(target_dist, current_dist);
   //** I is not implemented **
@@ -470,7 +473,7 @@ void AdaptiveCruiseController::registerQueToVelocity(
   std::vector<int> delete_idxs;
   for (size_t i = 0; i < est_vel_que_.size(); i++) {
     if (
-      node_->now().seconds() - est_vel_que_.at(i).header.stamp.sec >
+      current_time_.seconds() - est_vel_que_.at(i).header.stamp.sec >
       param_.valid_vel_que_time)
     {
       delete_idxs.push_back(i);

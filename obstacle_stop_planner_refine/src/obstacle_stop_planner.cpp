@@ -115,7 +115,9 @@ TrajectorySet ObstacleStopPlanner::processTrajectory(
 Trajectory ObstacleStopPlanner::updatePath(
   const TrajectorySet & input_path,
   const Pose & self_pose,
-  const geometry_msgs::msg::TransformStamped & transform_stamped)
+  const geometry_msgs::msg::TransformStamped & transform_stamped,
+  const double current_velocity,
+  const rclcpp::Time & current_time)
 {
   const Trajectory base_path = input_path.orig;
   const Trajectory trajectory = input_path.decimate;
@@ -130,7 +132,7 @@ Trajectory ObstacleStopPlanner::updatePath(
   const auto search_radius = slow_down_param_.enable_slow_down ?
     slow_down_param_.slow_down_search_radius : stop_param_.stop_search_radius;
 
-  obstacle_pointcloud_->searchCandidateObstacle(
+  obstacle_candidate_pointcloud_ptr = obstacle_pointcloud_->searchCandidateObstacle(
     transform_stamped,
     trajectory,
     search_radius,
@@ -266,8 +268,9 @@ Trajectory ObstacleStopPlanner::updatePath(
       decimate_trajectory_collision_index,
       self_pose, nearest_collision_point,
       nearest_collision_point_time, object_ptr_,
-      current_velocity_ptr_,
-      output_msg);
+      current_velocity,
+      output_msg,
+      current_time);
   } else {
     need_to_stop = stop_control_->isCollision();
   }
@@ -293,7 +296,7 @@ Trajectory ObstacleStopPlanner::updatePath(
       base_path,
       nearest_slow_down_point,
       lateral_deviation,
-      current_velocity_ptr_->twist.angular.x,
+      current_velocity,
       vehicle_info_.vehicle_width,
       output_msg);
   }

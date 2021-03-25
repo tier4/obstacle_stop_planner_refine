@@ -72,7 +72,9 @@ public:
   Trajectory updatePath(
     const TrajectorySet & input_path,
     const Pose & self_pose,
-    const geometry_msgs::msg::TransformStamped & transform_stamped);
+    const geometry_msgs::msg::TransformStamped & transform_stamped,
+    const double current_velocity,
+    const rclcpp::Time & current_time);
 
   void updatePointCloud(const sensor_msgs::msg::PointCloud2::SharedPtr pc);
   void updateExpandStopRange(const double expand_stop_range);
@@ -94,9 +96,6 @@ private:
   std::unique_ptr<obstacle_stop_planner::AdaptiveCruiseController> acc_controller_;
   std::unique_ptr<obstacle_stop_planner::StopController> stop_control_;
   std::unique_ptr<obstacle_stop_planner::SlowDownController> slow_down_control_;
-  // rclcpp::Time prev_col_point_time_;
-  // pcl::PointXYZ prev_col_point_;
-  geometry_msgs::msg::TwistStamped::SharedPtr current_velocity_ptr_;
   autoware_perception_msgs::msg::DynamicObjectArray::SharedPtr object_ptr_;
 };
 }  // namespace obstacle_stop_planner

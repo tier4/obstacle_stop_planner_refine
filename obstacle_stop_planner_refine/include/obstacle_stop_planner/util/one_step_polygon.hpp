@@ -38,12 +38,13 @@ inline Polygon2d createOneStepPolygon(
 
     boost::geometry::strategy::transform::rotate_transformer<
       boost::geometry::radian, double, 2, 2> rotate(yaw);
-    autoware_utils::LinearRing2d transformed_footprint;
-    boost::geometry::transform(footprint, transformed_footprint, rotate);
+    autoware_utils::LinearRing2d rotate_footprint;
+    boost::geometry::transform(footprint, rotate_footprint, rotate);
 
     boost::geometry::strategy::transform::translate_transformer<double, 2, 2> translate(
       base_step_pose.position.x, base_step_pose.position.y);
-    boost::geometry::transform(transformed_footprint, transformed_footprint, translate);
+    autoware_utils::LinearRing2d transformed_footprint;
+    boost::geometry::transform(rotate_footprint, transformed_footprint, translate);
     one_step_move_vehicle_corner_points.outer() = transformed_footprint;
   }
   // next step
@@ -51,12 +52,13 @@ inline Polygon2d createOneStepPolygon(
     double yaw = getYawFromQuaternion(next_step_pose.orientation);
     boost::geometry::strategy::transform::rotate_transformer<
       boost::geometry::radian, double, 2, 2> rotate(yaw);
-    autoware_utils::LinearRing2d transformed_footprint;
-    boost::geometry::transform(footprint, transformed_footprint, rotate);
+    autoware_utils::LinearRing2d rotate_footprint;
+    boost::geometry::transform(footprint, rotate_footprint, rotate);
 
     boost::geometry::strategy::transform::translate_transformer<double, 2, 2> translate(
       base_step_pose.position.x, base_step_pose.position.y);
-    boost::geometry::transform(transformed_footprint, transformed_footprint, translate);
+    autoware_utils::LinearRing2d transformed_footprint;
+    boost::geometry::transform(rotate_footprint, transformed_footprint, translate);
     for (const auto & item : transformed_footprint) {
       one_step_move_vehicle_corner_points.outer().emplace_back(item);
     }

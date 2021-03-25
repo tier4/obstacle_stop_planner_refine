@@ -36,9 +36,9 @@ Point2d PointHelper::getBackwardPointFromBasePoint(
   const Point2d & line_point1, const Point2d & line_point2,
   const Point2d & base_point, const double backward_length) const
 {
-  const auto line_vec = Eigen::Vector2d(line_point2) - line_point1;
+  const auto line_vec = line_point2 - line_point1;
   const auto backward_vec = backward_length * line_vec.normalized();
-  const auto output_point = Eigen::Vector2d(base_point) + backward_vec;
+  const auto output_point = base_point + backward_vec;
   return Point2d(output_point.x(), output_point.y());
 }
 

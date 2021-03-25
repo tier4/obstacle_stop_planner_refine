@@ -52,4 +52,7 @@ build/
 install/
 log/
 
+# coverage result
+lcov/
+
 # Don't ignore src/ because full-text search won't work.

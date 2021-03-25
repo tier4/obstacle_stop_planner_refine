@@ -48,13 +48,15 @@ public:
     const Pose self_pose, const Point2d & nearest_collision_point,
     const rclcpp::Time nearest_collision_point_time,
     const autoware_perception_msgs::msg::DynamicObjectArray::SharedPtr object_ptr,
-    const geometry_msgs::msg::TwistStamped::SharedPtr current_velocity_ptr,
-    const Trajectory & input_trajectory);
+    const double current_velocity,
+    const Trajectory & input_trajectory,
+    const rclcpp::Time & current_time);
 
 private:
   // rclcpp::Publisher<autoware_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr pub_debug_;
 
-  rclcpp::Node * node_;
+  // rclcpp::Node * node_;
+  rclcpp::Time current_time_;
   /*
    * Parameter
    */

@@ -115,9 +115,9 @@ struct OBSTACLE_STOP_PLANNER_PUBLIC AdaptiveCruiseControlParameter
   //!< @brief coefficient D in PID control (used when delta_dist <0)
   double d_coeff_neg;
 
-  static constexpr double d_coeff_valid_time = 1.0;
-  static constexpr double d_coeff_valid_diff_vel = 20.0;
-  static constexpr double d_max_vel_norm = 3.0;
+  const double d_coeff_valid_time = 1.0;
+  const double d_coeff_valid_diff_vel = 20.0;
+  const double d_max_vel_norm = 3.0;
 };
 }  // namespace obstacle_stop_planner
 

@@ -16,12 +16,64 @@
 
 #include <memory>
 #include <chrono>
+#include <string>
+#include <vector>
 
 #include "gtest/gtest.h"
+#include "sensor_msgs/point_cloud2_iterator.hpp"
+#include "autoware_planning_msgs/msg/trajectory_point.hpp"
 
 using sensor_msgs::msg::PointCloud2;
 using autoware_planning_msgs::msg::Trajectory;
 
+
+void init_pcl_msg(
+  sensor_msgs::msg::PointCloud2 & msg,
+  const std::string & frame_id,
+  const std::size_t size)
+{
+  msg.height = 1U;
+  msg.is_bigendian = false;
+  msg.is_dense = false;
+  msg.header.frame_id = frame_id;
+  // set the fields
+  sensor_msgs::PointCloud2Modifier modifier(msg);
+  modifier.setPointCloud2Fields(
+    4U,
+    "x", 1U, sensor_msgs::msg::PointField::FLOAT32,
+    "y", 1U, sensor_msgs::msg::PointField::FLOAT32,
+    "z", 1U, sensor_msgs::msg::PointField::FLOAT32,
+    "intensity", 1U, sensor_msgs::msg::PointField::FLOAT32);
+  // allocate memory so that iterators can be used
+  modifier.resize(size);
+}
+
+Trajectory convertPointsToTrajectoryWithYaw(
+  const std::vector<Point3d> & points)
+{
+  Trajectory trajectory;
+  for (size_t i = 0; i < points.size(); i++) {
+    autoware_planning_msgs::msg::TrajectoryPoint traj_point;
+    traj_point.pose.position = autoware_utils::toMsg(points[i]);
+    double yaw = 0;
+    if (i > 0) {
+      const double dx = points[i].x() - points[i - 1].x();
+      const double dy = points[i].y() - points[i - 1].y();
+      yaw = std::atan2(dy, dx);
+    } else if (i == 0 && points.size() > 1) {
+      const double dx = points[i + 1].x() - points[i].x();
+      const double dy = points[i + 1].y() - points[i].y();
+      yaw = std::atan2(dy, dx);
+    }
+    const double roll = 0;
+    const double pitch = 0;
+    tf2::Quaternion quaternion;
+    quaternion.setRPY(roll, pitch, yaw);
+    traj_point.pose.orientation = tf2::toMsg(quaternion);
+    trajectory.points.push_back(traj_point);
+  }
+  return trajectory;
+}
 class ObstacleStopPlannerNodeTest : public ::testing::Test
 {
 public:
@@ -54,6 +106,16 @@ public:
 
     rclcpp::NodeOptions node_options{};
 
+    node_options.append_parameter_override("wheel_radius", 0.39F);
+    node_options.append_parameter_override("wheel_width", 0.42F);
+    node_options.append_parameter_override("wheel_base", 2.74F);
+    node_options.append_parameter_override("wheel_tread", 1.63F);
+    node_options.append_parameter_override("front_overhang", 1.0F);
+    node_options.append_parameter_override("rear_overhang", 1.03F);
+    node_options.append_parameter_override("left_overhang", 0.1F);
+    node_options.append_parameter_override("right_overhang", 0.1F);
+    node_options.append_parameter_override("vehicle_height", 2.5F);
+
     planner_ = std::make_shared<obstacle_stop_planner_nodes::ObstacleStopPlannerNode>(node_options);
   }
 
@@ -76,7 +138,32 @@ TEST_F(ObstacleStopPlannerNodeTest, plan_simple_trajectory)
   executor.add_node(planner_);
 
   // TODO(KS): Publish data
+  const uint32_t max_cloud_size = 10;
 
+  sensor_msgs::msg::PointCloud2 test_msg;
+  init_pcl_msg(test_msg, "base_link", max_cloud_size);
+  test_msg.header.stamp = fake_node_->now();
+  dummy_pointcloud_pub_->publish(test_msg);
+
+  // current velocity
+  geometry_msgs::msg::TwistStamped twist_msg;
+  twist_msg.twist.angular.x = 0.0F;
+  dummy_velocity_pub_->publish(twist_msg);
+
+  executor.spin_some();
+
+  // create trajectory
+  std::vector<Point3d> points;
+  points.emplace_back(0.0, 0.0, 0.0);
+  points.emplace_back(1.0, 0.0, 0.0);
+  points.emplace_back(2.0, 0.0, 0.0);
+  points.emplace_back(3.0, 0.0, 0.0);
+  points.emplace_back(4.0, 0.0, 0.0);
+  points.emplace_back(5.0, 0.0, 0.0);
+  auto trajectory = convertPointsToTrajectoryWithYaw(points);
+  trajectory.header.frame_id = "base_link";
+  trajectory.header.stamp = fake_node_->now();
+  dummy_path_pub_->publish(trajectory);
 
   using namespace std::chrono_literals;
   rclcpp::WallRate rate(100ms);
@@ -89,5 +176,7 @@ TEST_F(ObstacleStopPlannerNodeTest, plan_simple_trajectory)
   }
 
   // Check data
-  ASSERT_EQ(0, 1);
+  for (size_t i = 1; i < path_msg_.get().points.size(); i++) {
+    ASSERT_EQ(trajectory.points[i - 1], path_msg_.get().points[i]);
+  }
 }
