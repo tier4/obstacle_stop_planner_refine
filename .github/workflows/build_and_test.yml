@@ -25,7 +25,7 @@ jobs:
 
       - name: Run action-ros-ci
         id: action_ros_ci_step
-        uses: ros-tooling/action-ros-ci@v0.1
+        uses: ros-tooling/action-ros-ci@v0.2
         with:
           package-name: obstacle_stop_planner_refine
           target-ros2-distro: foxy
@@ -34,7 +34,7 @@ jobs:
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/1ddb69bedfd1f04c2f000e95452f7c24a4d6176b/index.yaml
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1.2.1
+        uses: codecov/codecov-action@v1
         with:
           files: ros_ws/lcov/total_coverage.info,ros_ws/coveragepy/.coverage
           flags: unittests
@@ -43,7 +43,7 @@ jobs:
           verbose: true
 
       - name: Upload colcon-logs
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: colcon-logs
           path: ${{ steps.action_ros_ci_step.outputs.ros-workspace-directory-name }}/log
