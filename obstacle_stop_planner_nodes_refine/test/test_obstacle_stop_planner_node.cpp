@@ -25,7 +25,7 @@
 
 using sensor_msgs::msg::PointCloud2;
 using autoware_planning_msgs::msg::Trajectory;
-
+using namespace std::chrono_literals;
 
 void init_pcl_msg(
   sensor_msgs::msg::PointCloud2 & msg,
@@ -131,13 +131,11 @@ public:
 
 TEST_F(ObstacleStopPlannerNodeTest, plan_simple_trajectory)
 {
-  using namespace std::chrono_literals;
-
   rclcpp::executors::SingleThreadedExecutor executor;
   executor.add_node(fake_node_);
   executor.add_node(planner_);
 
-  // TODO(KS): Publish data
+  // publish point cloud
   const uint32_t max_cloud_size = 10;
 
   sensor_msgs::msg::PointCloud2 test_msg;
@@ -179,4 +177,106 @@ TEST_F(ObstacleStopPlannerNodeTest, plan_simple_trajectory)
   for (size_t i = 1; i < path_msg_.get().points.size(); i++) {
     ASSERT_EQ(trajectory.points[i - 1], path_msg_.get().points[i]);
   }
+}
+
+TEST_F(ObstacleStopPlannerNodeTest, plan_stop_trajectory) {
+  // PCを置いてStopフラグを立てる。想定されるポイントでStopするかチェック
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(fake_node_);
+  executor.add_node(planner_);
+
+  // publish point cloud
+  const uint32_t max_cloud_size = 10;
+
+  sensor_msgs::msg::PointCloud2 test_msg;
+  init_pcl_msg(test_msg, "base_link", max_cloud_size);
+  test_msg.header.stamp = fake_node_->now();
+  dummy_pointcloud_pub_->publish(test_msg);
+
+  // current velocity
+  geometry_msgs::msg::TwistStamped twist_msg;
+  twist_msg.twist.angular.x = 0.0F;
+  dummy_velocity_pub_->publish(twist_msg);
+
+  executor.spin_some();
+
+  // create trajectory
+  std::vector<Point3d> points;
+  points.emplace_back(0.0, 0.0, 0.0);
+  points.emplace_back(1.0, 0.0, 0.0);
+  points.emplace_back(2.0, 0.0, 0.0);
+  points.emplace_back(3.0, 0.0, 0.0);
+  points.emplace_back(4.0, 0.0, 0.0);
+  points.emplace_back(5.0, 0.0, 0.0);
+  auto trajectory = convertPointsToTrajectoryWithYaw(points);
+  trajectory.header.frame_id = "base_link";
+  trajectory.header.stamp = fake_node_->now();
+  dummy_path_pub_->publish(trajectory);
+
+  using namespace std::chrono_literals;
+  rclcpp::WallRate rate(100ms);
+  while (rclcpp::ok()) {
+    executor.spin_some();
+    if (path_msg_.has_value()) {
+      break;
+    }
+    rate.sleep();
+  }
+
+  // Check data
+  // for (size_t i = 1; i < path_msg_.get().points.size(); i++) {
+  //   ASSERT_EQ(trajectory.points[i - 1], path_msg_.get().points[i]);
+  // }
+  ASSERT_EQ(1, 1);
+}
+
+TEST_F(ObstacleStopPlannerNodeTest, plan_slow_down_trajectory) {
+  // PCを置いてStopフラグを立てる。想定されるポイントでStopするかチェック
+    rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(fake_node_);
+  executor.add_node(planner_);
+
+  // publish point cloud
+  const uint32_t max_cloud_size = 10;
+
+  sensor_msgs::msg::PointCloud2 test_msg;
+  init_pcl_msg(test_msg, "base_link", max_cloud_size);
+  test_msg.header.stamp = fake_node_->now();
+  dummy_pointcloud_pub_->publish(test_msg);
+
+  // current velocity
+  geometry_msgs::msg::TwistStamped twist_msg;
+  twist_msg.twist.angular.x = 0.0F;
+  dummy_velocity_pub_->publish(twist_msg);
+
+  executor.spin_some();
+
+  // create trajectory
+  std::vector<Point3d> points;
+  points.emplace_back(0.0, 0.0, 0.0);
+  points.emplace_back(1.0, 0.0, 0.0);
+  points.emplace_back(2.0, 0.0, 0.0);
+  points.emplace_back(3.0, 0.0, 0.0);
+  points.emplace_back(4.0, 0.0, 0.0);
+  points.emplace_back(5.0, 0.0, 0.0);
+  auto trajectory = convertPointsToTrajectoryWithYaw(points);
+  trajectory.header.frame_id = "base_link";
+  trajectory.header.stamp = fake_node_->now();
+  dummy_path_pub_->publish(trajectory);
+
+  using namespace std::chrono_literals;
+  rclcpp::WallRate rate(100ms);
+  while (rclcpp::ok()) {
+    executor.spin_some();
+    if (path_msg_.has_value()) {
+      break;
+    }
+    rate.sleep();
+  }
+
+  // Check data
+  // for (size_t i = 1; i < path_msg_.get().points.size(); i++) {
+  //   ASSERT_EQ(trajectory.points[i - 1], path_msg_.get().points[i]);
+  // }
+  ASSERT_EQ(1, 1);
 }

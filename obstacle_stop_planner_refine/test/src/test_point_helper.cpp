@@ -38,6 +38,10 @@ TEST(getNearestPoint, returnValue) {
   point.y = 10.0;
   point.z = 10.0;
   pc.points.push_back(point);
+  point.x = 20.0;
+  point.y = 20.0;
+  point.z = 20.0;
+  pc.points.push_back(point);
   PointHelper point_helper;
   auto ret = point_helper.getNearestPoint(pc, base_pose);
   EXPECT_EQ(10.0, ret.point.x());
