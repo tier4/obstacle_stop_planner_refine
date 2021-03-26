@@ -40,6 +40,18 @@ jobs:
           publish_dir: ./public
           keep_files: true
 
+      - name: Comment PR
+        if: ${{ github.event.action == 'opened' }}
+        uses: thollander/actions-comment-pull-request@master
+        with:
+          message: |
+            ### :bar_chart: Code Metrics Report
+            Branch | Metrics
+            ------------ | -------------
+            This PR | [code-metrics.html](https://tier4.github.io/obstacle_stop_planner_refine/pr-check/pr${{ steps.plum.outputs.PULL_NUMBER }}/code-metrics.html)
+            main | [code-metrics.html](https://tier4.github.io/obstacle_stop_planner_refine/pr-check/main/code-metrics.html)
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   create-index-page:
     needs: code-metrics
     runs-on: ubuntu-latest
