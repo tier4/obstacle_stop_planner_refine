@@ -6,6 +6,7 @@ on:
 
 jobs:
   comment-report:
+    needs: code-metrics
     runs-on: ubuntu-latest
     steps:
       - name: Set environment variable
@@ -14,7 +15,6 @@ jobs:
 
       - name: Comment PR
         uses: thollander/actions-comment-pull-request@master
-        needs: code-metrics
         with:
           message: |
             ### :bar_chart: Code Metrics Report
