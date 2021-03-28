@@ -2,7 +2,6 @@ name: Measure code metrics for PR
 
 on:
   pull_request:
-  workflow_dispatch:
 
 env:
   GITHUB_PAGES_URL: https://tier4.github.io/obstacle_stop_planner_refine
