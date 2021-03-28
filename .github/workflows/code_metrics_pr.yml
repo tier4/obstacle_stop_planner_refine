@@ -1,4 +1,4 @@
-name: Measure code metrics
+name: Measure code metrics for PR
 
 on:
   pull_request:
