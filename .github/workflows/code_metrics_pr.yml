@@ -26,10 +26,10 @@ jobs:
           git diff origin/$GITHUB_HEAD_REF..origin/$GITHUB_BASE_REF \
             --diff-filter=AM \
             --name-only -- '*.hpp' '*.cpp' '*.py' > file_list.txt
-          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" -f file_list.txt \
+          python3 lizard/lizard.py -l cpp -l python -x "*test*" -f file_list.txt \
             --CCN 20 -T nloc=200 --arguments 6 \
             --html > public/pr-check/code-metrics.html || true
-          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" -f file_list.txt \
+          python3 lizard/lizard.py -l cpp -l python -x "*test*" -f file_list.txt \
             --CCN 20 -T nloc=200 --arguments 6 || true
 
       - name: Rename file
