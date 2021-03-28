@@ -6,6 +6,9 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  GITHUB_PAGES_URL: https://tier4.github.io/obstacle_stop_planner_refine
+
 jobs:
   code-metrics:
     runs-on: ubuntu-latest
@@ -42,7 +45,7 @@ jobs:
       - name: Create index page
         run: |
           cd pr-check
-          tree -H 'https://tier4.github.io/obstacle_stop_planner_refine/pr-check' \
+          tree -H '$GITHUB_PAGES_URL/pr-check' \
             -L 2 --noreport --charset utf-8 -T 'Index of code metrics' \
             -P "*.html" > index.html
 

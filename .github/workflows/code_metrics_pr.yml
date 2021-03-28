@@ -4,6 +4,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+env:
+  GITHUB_PAGES_URL: https://tier4.github.io/obstacle_stop_planner_refine
+
 jobs:
   code-metrics:
     runs-on: ubuntu-latest
@@ -50,8 +53,8 @@ jobs:
             ### :bar_chart: Code Metrics Report
             Branch  | Metrics
             ------- | -------
-            This PR | [code-metrics.html](https://tier4.github.io/obstacle_stop_planner_refine/pr-check/pr${{ steps.set_env.outputs.PULL_NUMBER }}/code-metrics.html)
-            main    | [code-metrics.html](https://tier4.github.io/obstacle_stop_planner_refine/pr-check/main/code-metrics.html)
+            This PR | [code-metrics.html]($GITHUB_PAGES_URL/pr-check/pr${{ steps.set_env.outputs.PULL_NUMBER }}/code-metrics.html)
+            main    | [code-metrics.html]($GITHUB_PAGES_URL/pr-check/main/code-metrics.html)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   create-index-page:
@@ -66,7 +69,7 @@ jobs:
       - name: Create index page
         run: |
           cd pr-check
-          tree -H 'https://tier4.github.io/obstacle_stop_planner_refine/pr-check' \
+          tree -H '$GITHUB_PAGES_URL/pr-check' \
             -L 2 --noreport --charset utf-8 -T 'Index of code metrics' \
             -P "*.html" > index.html
 
