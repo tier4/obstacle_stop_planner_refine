@@ -30,7 +30,15 @@ jobs:
           package-name: obstacle_stop_planner_refine
           target-ros2-distro: foxy
           vcs-repo-file-url: build_depends.repos
-          colcon-mixin-name: coverage-gcc coverage-pytest
+          colcon-defaults: |
+            {
+              "build": {
+                "mixin": ["coverage-gcc", "coverage-pytest"]
+              },
+              "test": {
+                "mixin": ["coverage-pytest"]
+              }
+            }
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/1ddb69bedfd1f04c2f000e95452f7c24a4d6176b/index.yaml
 
       - name: Upload coverage to Codecov
