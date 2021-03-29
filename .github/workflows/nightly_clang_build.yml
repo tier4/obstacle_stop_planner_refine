@@ -26,6 +26,18 @@ jobs:
           package-name: obstacle_stop_planner_refine
           target-ros2-distro: foxy
           vcs-repo-file-url: build_depends.repos
-          colcon-mixin-name: clang-libcxx
+          colcon-defaults: |
+            {
+              "build": {
+                "mixin": ["release", "compile-commands"],
+                "cmake-args": [
+                  "-DCMAKE_C_COMPILER=clang",
+                  "-DCMAKE_CXX_COMPILER=clang++",
+                  "-DCMAKE_CXX_FLAGS='-Wthread-safety'",
+                  "-DFORCE_BUILD_VENDOR_PKG=ON"
+                ],
+                "continue-on-error": true
+              }
+            }
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/1ddb69bedfd1f04c2f000e95452f7c24a4d6176b/index.yaml
           extra-cmake-args: -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
