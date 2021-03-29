@@ -15,8 +15,7 @@
 #include "gtest/gtest.h"
 #include "obstacle_stop_planner/util/create_vehicle_footprint.hpp"
 
-namespace obstacle_stop_planner
-{
+
 TEST(createVehicleFootprint, returnValue) {
   VehicleInfo vehicle_info;
   vehicle_info.front_overhang = 0.5;
@@ -26,9 +25,8 @@ TEST(createVehicleFootprint, returnValue) {
   vehicle_info.left_overhang = 0.2;
   vehicle_info.right_overhang = 0.2;
 
-  const auto ring2d = createVehicleFootprint(vehicle_info);
-  EXPECT_EQ(ring2d.size(), 5);
+  const auto ring2d = obstacle_stop_planner::createVehicleFootprint(vehicle_info);
+  EXPECT_EQ(ring2d.size(), 5U);
   EXPECT_EQ(ring2d.at(0).x(), 2.5);
   EXPECT_EQ(ring2d.at(0).y(), 0.25);
 }
-}  // namespace obstacle_stop_planner

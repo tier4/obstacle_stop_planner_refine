@@ -15,12 +15,8 @@
 #include "gtest/gtest.h"
 #include "obstacle_stop_planner/util.hpp"
 
-namespace obstacle_stop_planner
-{
+
 TEST(getYawFromQuaternion, returnValue) {
   geometry_msgs::msg::Quaternion quat;
   EXPECT_EQ(0.0, getYawFromQuaternion(quat));
 }
-
-
-}  // namespace obstacle_stop_planner

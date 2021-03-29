@@ -26,7 +26,6 @@
 #include "rclcpp/logger.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
-#include "obstacle_stop_planner/param.hpp"
 
 namespace obstacle_stop_planner
 {
@@ -56,16 +55,17 @@ inline sensor_msgs::msg::PointCloud2::ConstSharedPtr updatePointCloud(
 inline static pcl::PointCloud<pcl::PointXYZ>::Ptr searchPointcloudNearTrajectory(
   const autoware_planning_msgs::msg::Trajectory & trajectory,
   const pcl::PointCloud<pcl::PointXYZ>::Ptr input_pointcloud_ptr,
-  const Param & param)
+  const double search_radius,
+  const VehicleInfo & param)
 {
   pcl::PointCloud<pcl::PointXYZ>::Ptr output_pointcloud_ptr(
     new pcl::PointCloud<pcl::PointXYZ>);
-  const double squared_radius = getSearchRadius(param) * getSearchRadius(param);
+  const double squared_radius = search_radius * search_radius;
   for (const auto & trajectory_point : trajectory.points) {
     const auto center_pose = getVehicleCenterFromBase(
       trajectory_point.pose,
-      param.vehicle_info.vehicle_length,
-      param.vehicle_info.rear_overhang);
+      param.vehicle_length,
+      param.rear_overhang);
 
     for (const auto & point : input_pointcloud_ptr->points) {
       const double x = center_pose.position.x - point.x;
@@ -81,7 +81,8 @@ inline pcl::PointCloud<pcl::PointXYZ>::Ptr searchCandidateObstacle(
   const sensor_msgs::msg::PointCloud2::ConstSharedPtr & obstacle_ros_pointcloud_ptr,
   const tf2_ros::Buffer & tf_buffer,
   const autoware_planning_msgs::msg::Trajectory & trajectory,
-  const Param & param,
+  const double search_radius,
+  const VehicleInfo & param,
   const rclcpp::Logger & logger)
 {
   // transform pointcloud
@@ -114,6 +115,7 @@ inline pcl::PointCloud<pcl::PointXYZ>::Ptr searchCandidateObstacle(
   // search obstacle candidate pointcloud to reduce calculation cost
   auto obstacle_candidate_pointcloud_ptr = searchPointcloudNearTrajectory(
     trajectory, transformed_obstacle_pointcloud_ptr,
+    search_radius,
     param);
   obstacle_candidate_pointcloud_ptr->header = transformed_obstacle_pointcloud_ptr->header;
   return obstacle_candidate_pointcloud_ptr;

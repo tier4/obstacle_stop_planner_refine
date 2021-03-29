@@ -19,7 +19,6 @@
 #include <tuple>
 #include "autoware_planning_msgs/msg/trajectory.hpp"
 #include "geometry_msgs/msg/pose.hpp"
-#include "obstacle_stop_planner/param.hpp"
 
 namespace obstacle_stop_planner
 {
@@ -35,8 +34,7 @@ autoware_planning_msgs::msg::Trajectory extendTrajectory(
   const autoware_planning_msgs::msg::Trajectory & input_trajectory,
   const double extend_distance);
 DecimateTrajectoryMap decimateTrajectory(
-  const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
-  const Param & param);
+  const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length);
 std::tuple<autoware_planning_msgs::msg::Trajectory, size_t> trimTrajectoryWithIndexFromSelfPose(
   const autoware_planning_msgs::msg::Trajectory & input_trajectory,
   const geometry_msgs::msg::Pose & self_pose);

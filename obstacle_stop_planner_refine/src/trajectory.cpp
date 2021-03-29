@@ -45,8 +45,7 @@ autoware_planning_msgs::msg::Trajectory extendTrajectory(
 }
 
 DecimateTrajectoryMap decimateTrajectory(
-  const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length,
-  const Param & /*param*/)
+  const autoware_planning_msgs::msg::Trajectory & input_trajectory, const double step_length)
 {
   DecimateTrajectoryMap output;
   output.orig_trajectory = input_trajectory;

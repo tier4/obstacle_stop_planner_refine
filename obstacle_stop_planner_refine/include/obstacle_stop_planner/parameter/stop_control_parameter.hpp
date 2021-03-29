@@ -12,41 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBSTACLE_STOP_PLANNER__PARAM_HPP_
-#define OBSTACLE_STOP_PLANNER__PARAM_HPP_
+#ifndef OBSTACLE_STOP_PLANNER__PARAMETER__STOP_CONTROL_PARAMETER_HPP_
+#define OBSTACLE_STOP_PLANNER__PARAMETER__STOP_CONTROL_PARAMETER_HPP_
 
-#include "autoware_utils/autoware_utils.hpp"
+#include <obstacle_stop_planner/visibility_control.hpp>
 
 namespace obstacle_stop_planner
 {
-
-struct Param
+struct OBSTACLE_STOP_PLANNER_PUBLIC StopControlParameter
 {
-  VehicleInfo vehicle_info;
   double stop_margin;
   double min_behavior_stop_margin;
   double step_length;
   double extend_distance;
   double expand_stop_range;
-  double slow_down_margin;
-  double expand_slow_down_range;
-  double max_slow_down_vel;
-  double min_slow_down_vel;
-  double max_deceleration;
-  bool enable_slow_down;
   double stop_search_radius;
-  double slow_down_search_radius;
 };
-
-inline double getSearchRadius(const Param & param)
-{
-  if (param.enable_slow_down) {
-    return param.slow_down_search_radius;
-  } else {
-    return param.stop_search_radius;
-  }
-}
-
 }  // namespace obstacle_stop_planner
 
-#endif  // OBSTACLE_STOP_PLANNER__PARAM_HPP_
+#endif  // OBSTACLE_STOP_PLANNER__PARAMETER__STOP_CONTROL_PARAMETER_HPP_

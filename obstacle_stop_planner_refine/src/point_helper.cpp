@@ -30,9 +30,9 @@ Point2d PointHelper::getBackwardPointFromBasePoint(
   const Point2d & line_point1, const Point2d & line_point2,
   const Point2d & base_point, const double backward_length)
 {
-  const auto line_vec = Eigen::Vector2d(line_point2) - line_point1;
+  const auto line_vec = line_point2 - line_point1;
   const auto backward_vec = backward_length * line_vec.normalized();
-  const auto output_point = Eigen::Vector2d(base_point) + backward_vec;
+  const auto output_point = base_point + backward_vec;
   return Point2d{output_point.x(), output_point.y()};
 }
 
@@ -111,14 +111,15 @@ PointHelper::insertStopPoint(
 
 StopPoint PointHelper::searchInsertPoint(
   const size_t idx, const autoware_planning_msgs::msg::Trajectory & base_path,
-  const Point2d & trajectory_vec, const Point2d & collision_point_vec) const
+  const Point2d & trajectory_vec, const Point2d & collision_point_vec,
+  const StopControlParameter & param) const
 {
   const auto max_dist_stop_point =
     createTargetPoint(
-    idx, param_.stop_margin, trajectory_vec, collision_point_vec,
+    idx, param.stop_margin, trajectory_vec, collision_point_vec,
     base_path);
   const auto min_dist_stop_point = createTargetPoint(
-    idx, param_.min_behavior_stop_margin, trajectory_vec, collision_point_vec, base_path);
+    idx, param.min_behavior_stop_margin, trajectory_vec, collision_point_vec, base_path);
 
   // check if stop point is already inserted by behavior planner
   bool is_inserted_already_stop_point = false;
@@ -168,7 +169,8 @@ SlowDownPoint PointHelper::createSlowDownStartPoint(
   const int idx, const double margin, const double slow_down_target_vel,
   const Point2d & trajectory_vec, const Point2d & slow_down_point_vec,
   const autoware_planning_msgs::msg::Trajectory & base_path,
-  const double current_velocity_x) const
+  const double current_velocity_x,
+  const SlowDownControlParameter & param) const
 {
   double length_sum = 0.0;
   length_sum += trajectory_vec.normalized().dot(slow_down_point_vec);
@@ -197,7 +199,7 @@ SlowDownPoint PointHelper::createSlowDownStartPoint(
 
   slow_down_point.velocity = std::max(
     std::sqrt(
-      slow_down_target_vel * slow_down_target_vel + 2 * param_.max_deceleration *
+      slow_down_target_vel * slow_down_target_vel + 2 * param.max_deceleration *
       length_sum),
     current_velocity_x);
   return slow_down_point;

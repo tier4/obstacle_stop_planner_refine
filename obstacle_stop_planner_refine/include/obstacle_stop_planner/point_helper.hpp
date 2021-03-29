@@ -24,11 +24,8 @@
 #include "geometry_msgs/msg/pose.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
 #include "obstacle_stop_planner/util.hpp"
-#include "obstacle_stop_planner/param.hpp"
-
-#define EIGEN_MPL2_ONLY
-#include "eigen3/Eigen/Core"
-#include "eigen3/Eigen/Geometry"
+#include "obstacle_stop_planner/parameter/slow_down_control_parameter.hpp"
+#include "obstacle_stop_planner/parameter/stop_control_parameter.hpp"
 
 
 namespace obstacle_stop_planner
@@ -62,9 +59,6 @@ struct PointDeviation
 class PointHelper
 {
 public:
-  explicit PointHelper(const Param & param)
-  : param_(param) {}
-
   static Point2d getBackwardPointFromBasePoint(
     const Point2d & line_point1, const Point2d & line_point2,
     const Point2d & base_point, const double backward_length);
@@ -83,7 +77,8 @@ public:
 
   StopPoint searchInsertPoint(
     const size_t idx, const autoware_planning_msgs::msg::Trajectory & base_path,
-    const Point2d & trajectory_vec, const Point2d & collision_point_vec) const;
+    const Point2d & trajectory_vec, const Point2d & collision_point_vec,
+    const StopControlParameter & param) const;
 
   static StopPoint createTargetPoint(
     const size_t idx, const double margin, const Point2d & trajectory_vec,
@@ -94,7 +89,8 @@ public:
     const int idx, const double margin, const double slow_down_target_vel,
     const Point2d & trajectory_vec, const Point2d & slow_down_point_vec,
     const autoware_planning_msgs::msg::Trajectory & base_path,
-    const double current_velocity_x) const;
+    const double current_velocity_x,
+    const SlowDownControlParameter & param) const;
 
   static std::tuple<autoware_planning_msgs::msg::TrajectoryPoint,
     autoware_planning_msgs::msg::Trajectory>
@@ -105,9 +101,6 @@ public:
 
   static autoware_planning_msgs::msg::TrajectoryPoint getExtendTrajectoryPoint(
     double extend_distance, const autoware_planning_msgs::msg::TrajectoryPoint & goal_point);
-
-private:
-  const Param param_;
 };
 }  // namespace obstacle_stop_planner
 

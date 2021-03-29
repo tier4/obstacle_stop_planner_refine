@@ -27,6 +27,7 @@
 #include "autoware_perception_msgs/msg/dynamic_object_array.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
 #include "autoware_utils/autoware_utils.hpp"
+#include "obstacle_stop_planner/parameter/adaptive_cruise_control_parameter.hpp"
 
 namespace obstacle_stop_planner
 {
@@ -40,8 +41,9 @@ class AdaptiveCruiseController
 {
 public:
   AdaptiveCruiseController(
-    rclcpp::Node * node, const double vehicle_width, const double vehicle_length,
-    const double wheel_base, const double front_overhang);
+    rclcpp::Node * node,
+    const VehicleInfo & vehicle_info,
+    const AdaptiveCruiseControlParameter & acc_param);
 
   std::tuple<bool, autoware_planning_msgs::msg::Trajectory> insertAdaptiveCruiseVelocity(
     const autoware_planning_msgs::msg::Trajectory & trajectory,
@@ -59,10 +61,8 @@ private:
   /*
    * Parameter
    */
-  double vehicle_width_;
-  double vehicle_length_;
-  double wheel_base_;
-  double front_overhang_;
+  VehicleInfo vehicle_info_;
+  AdaptiveCruiseControlParameter param_;
 
   rclcpp::Time prev_collision_point_time_;
   Point2d prev_collision_point_;
@@ -72,111 +72,7 @@ private:
   bool prev_collision_point_valid_ = false;
   std::vector<geometry_msgs::msg::TwistStamped> est_vel_que_;
   double prev_upper_velocity_ = 0.0;
-
-  struct Param
-  {
-    double stop_margin;
-    double min_behavior_stop_margin;
-
-    //!< @brief use tracking objects for estimating object velocity or not
-    bool use_object_to_est_vel;
-
-    //!< @brief use pcl for estimating object velocity or not
-    bool use_pcl_to_est_vel;
-
-    //!< @brief consider forward vehicle velocity to self upper velocity or not
-    bool consider_obj_velocity;
-
-    //!< @brief The distance to extend the polygon length the object in pointcloud-object matching
-    double object_polygon_length_margin;
-
-    //!< @brief The distance to extend the polygon width the object in pointcloud-object matching
-    double object_polygon_width_margin;
-
-    //!< @breif Maximum time difference treated as continuous points in speed estimation using a
-    // point cloud
-    double valid_est_vel_diff_time;
-
-    //!< @brief Time width of information used for speed estimation in speed estimation using a
-    // point cloud
-    double valid_vel_que_time;
-
-    //!< @brief Maximum value of valid speed estimation results in speed estimation using a point
-    // cloud
-    double valid_est_vel_max;
-
-    //!< @brief Minimum value of valid speed estimation results in speed estimation using a point
-    // cloud
-    double valid_est_vel_min;
-
-    //!< @brief Embed a stop line if the maximum speed calculated by ACC is lower than this speed
-    double thresh_vel_to_stop;
-
-    /* parameter for acc */
-    //!< @brief threshold of forward obstacle velocity to insert stop line (to stop acc)
-    double obstacle_stop_velocity_thresh;
-
-    //!< @brief supposed minimum acceleration in emergency stop
-    double emergency_stop_acceleration;
-
-    //!< @brief supposed minimum acceleration of forward vehicle in emergency stop
-    double obstacle_emergency_stop_acceleration;
-
-    //!< @brief supposed idling time to start emergency stop
-    double emergency_stop_idling_time;
-
-    //!< @brief minimum distance of emergency stop
-    double min_dist_stop;
-
-    //!< @brief supposed maximum acceleration in active cruise control
-    double max_standard_acceleration;
-
-    //!< @brief supposed minimum acceleration(deceleration) in active cruise control
-    double min_standard_acceleration;
-
-    //!< @brief supposed idling time to react object in active cruise control
-    double standard_idling_time;
-
-    //!< @brief minimum distance in active cruise control
-    double min_dist_standard;
-
-    //!< @brief supposed minimum acceleration of forward obstacle
-    double obstacle_min_standard_acceleration;
-
-    //!< @brief margin to insert upper velocity
-    double margin_rate_to_change_vel;
-
-    //!< @brief use time-compensation to calculate distance to forward vehicle
-    bool use_time_compensation_to_dist;
-
-    //!< @brief gain of lowpass filter of upper velocity
-    double lowpass_gain_;
-
-    //!< @brief when failed to estimate velocity, use rough velocity estimation or not
-    bool use_rough_est_vel;
-
-    //!< @brief in rough velocity estimation, front car velocity is
-    //!< estimated as self current velocity * this value
-    double rough_velocity_rate;
-
-    /* parameter for pid used in acc */
-    //!< @brief coefficient P in PID control (used when target dist -current_dist >=0)
-    double p_coeff_pos;
-
-    //!< @brief coefficient P in PID control (used when target dist -current_dist <0)
-    double p_coeff_neg;
-
-    //!< @brief coefficient D in PID control (used when delta_dist >=0)
-    double d_coeff_pos;
-
-    //!< @brief coefficient D in PID control (used when delta_dist <0)
-    double d_coeff_neg;
-
-    static constexpr double d_coeff_valid_time = 1.0;
-    static constexpr double d_coeff_valid_diff_vel = 20.0;
-    static constexpr double d_max_vel_norm = 3.0;
-  };
-  Param param_;
+  double min_behavior_stop_margin_ = 0.0;
 
   double getMedianVel(const std::vector<geometry_msgs::msg::TwistStamped> & vel_que);
   static double lowpass_filter(
