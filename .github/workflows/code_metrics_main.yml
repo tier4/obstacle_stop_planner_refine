@@ -12,6 +12,7 @@ env:
 jobs:
   code-metrics:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out repo
         uses: actions/checkout@v2
@@ -36,6 +37,7 @@ jobs:
   create-index-page:
     needs: code-metrics
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out repo
         uses: actions/checkout@v2

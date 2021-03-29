@@ -10,7 +10,6 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    container: ubuntu:focal
 
     steps:
       - name: Check out repo

@@ -9,6 +9,7 @@ env:
 jobs:
   code-metrics:
     runs-on: ubuntu-latest
+
     steps:
       - name: Set environment variable
         id: set_env
@@ -59,6 +60,7 @@ jobs:
   create-index-page:
     needs: code-metrics
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out repo
         uses: actions/checkout@v2

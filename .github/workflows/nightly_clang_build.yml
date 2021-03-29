@@ -8,7 +8,6 @@ on:
 jobs:
   build-using-clang:
     runs-on: ubuntu-latest
-    container: ubuntu:focal
 
     steps:
       - name: Check out repo
