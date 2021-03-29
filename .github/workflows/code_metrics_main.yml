@@ -45,7 +45,7 @@ jobs:
       - name: Create index page
         run: |
           cd pr-check
-          tree -H '$GITHUB_PAGES_URL/pr-check' \
+          tree -H "$GITHUB_PAGES_URL/pr-check" \
             -L 2 --noreport --charset utf-8 -T 'Index of code metrics' \
             -P "*.html" > index.html
 
