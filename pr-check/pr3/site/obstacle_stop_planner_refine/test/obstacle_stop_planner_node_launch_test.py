@@ -17,13 +17,13 @@
 import os
 import unittest
 
-import launch_testing
-import pytest
 from ament_index_python import get_package_share_directory
 from launch.launch_description import LaunchDescription
 from launch_ros.actions import Node
+import launch_testing
 from launch_testing.actions import ReadyToTest
 from launch_testing.asserts import assertExitCodes
+import pytest
 
 
 @pytest.mark.launch_test
