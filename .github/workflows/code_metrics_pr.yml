@@ -1,15 +1,18 @@
-name: Measure code metrics
+name: Measure code metrics for PR
 
 on:
   pull_request:
-  workflow_dispatch:
+
+env:
+  GITHUB_PAGES_URL: https://tier4.github.io/obstacle_stop_planner_refine
 
 jobs:
   code-metrics:
     runs-on: ubuntu-latest
+
     steps:
       - name: Set environment variable
-        id: plum
+        id: set_env
         run: echo "::set-output name=PULL_NUMBER::$(jq --raw-output .pull_request.number $GITHUB_EVENT_PATH)"
 
       - name: Check out repo
@@ -23,17 +26,17 @@ jobs:
           mkdir -p public/pr-check
           git diff origin/$GITHUB_HEAD_REF..origin/$GITHUB_BASE_REF \
             --diff-filter=AM \
-            --name-only -- '*.hpp' '*.cpp' '*.py' > file_list.txt
-          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" -f file_list.txt \
+            --name-only -- '*.hpp' '*.cpp' '*.py' > changed_file_list.txt
+          python3 lizard/lizard.py -l cpp -l python -x "*test*" -f changed_file_list.txt \
             --CCN 20 -T nloc=200 --arguments 6 \
             --html > public/pr-check/code-metrics.html || true
-          python3 lizard/lizard.py obstacle_stop_planner_refine/ -l cpp -l python -x"*test*" -f file_list.txt \
+          python3 lizard/lizard.py -l cpp -l python -x "*test*" -f changed_file_list.txt \
             --CCN 20 -T nloc=200 --arguments 6 || true
 
       - name: Rename file
         run: |
-          mkdir public/pr-check/pr${{ steps.plum.outputs.PULL_NUMBER }}
-          mv public/pr-check/code-metrics.html public/pr-check/pr${{ steps.plum.outputs.PULL_NUMBER }}/code-metrics.html
+          mkdir public/pr-check/pr${{ steps.set_env.outputs.PULL_NUMBER }}
+          mv public/pr-check/code-metrics.html public/pr-check/pr${{ steps.set_env.outputs.PULL_NUMBER }}/code-metrics.html
 
       - name: Deploy measurement result page to gh-pages
         uses: peaceiris/actions-gh-pages@v3
@@ -50,13 +53,14 @@ jobs:
             ### :bar_chart: Code Metrics Report
             Branch  | Metrics
             ------- | -------
-            This PR | [code-metrics.html](https://tier4.github.io/obstacle_stop_planner_refine/pr-check/pr${{ steps.plum.outputs.PULL_NUMBER }}/code-metrics.html)
-            main    | [code-metrics.html](https://tier4.github.io/obstacle_stop_planner_refine/pr-check/main/code-metrics.html)
+            This PR | [code-metrics.html]($GITHUB_PAGES_URL/pr-check/pr${{ steps.set_env.outputs.PULL_NUMBER }}/code-metrics.html)
+            main    | [code-metrics.html]($GITHUB_PAGES_URL/pr-check/main/code-metrics.html)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   create-index-page:
     needs: code-metrics
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out repo
         uses: actions/checkout@v2
@@ -66,7 +70,7 @@ jobs:
       - name: Create index page
         run: |
           cd pr-check
-          tree -H 'https://tier4.github.io/obstacle_stop_planner_refine/pr-check' \
+          tree -H "$GITHUB_PAGES_URL/pr-check" \
             -L 2 --noreport --charset utf-8 -T 'Index of code metrics' \
             -P "*.html" > index.html
 

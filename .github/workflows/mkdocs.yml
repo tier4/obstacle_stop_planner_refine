@@ -5,23 +5,25 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Set environment variable
-        id: plum
+        id: set_env
         run: echo "::set-output name=PULL_NUMBER::$(jq --raw-output .pull_request.number $GITHUB_EVENT_PATH)"
 
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.8'
+          python-version: "3.8"
 
       - name: Build MkDocs
         run: |
@@ -31,8 +33,8 @@ jobs:
 
       - name: Change directory structure
         run: |
-          mkdir -p public/pr-check/pr${{ steps.plum.outputs.PULL_NUMBER }}
-          mv site public/pr-check/pr${{ steps.plum.outputs.PULL_NUMBER }}/
+          mkdir -p public/pr-check/pr${{ steps.set_env.outputs.PULL_NUMBER }}
+          mv site public/pr-check/pr${{ steps.set_env.outputs.PULL_NUMBER }}/
 
       - name: Deploy MkDocs to gh-pages
         uses: peaceiris/actions-gh-pages@v3
