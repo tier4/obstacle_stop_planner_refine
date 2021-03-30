@@ -44,7 +44,7 @@ if(BUILD_TESTING)
 
   find_package(ament_cmake_auto_gtest REQUIRED)
   ament_auto_add_gtest(test_obstacle_stop_planner
-    test/
+    DIRECTORY "test/"
   )
 endif()
 

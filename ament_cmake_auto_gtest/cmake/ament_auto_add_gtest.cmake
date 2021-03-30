@@ -63,16 +63,10 @@
 #
 macro(ament_auto_add_gtest target)
   cmake_parse_arguments(ARG
-    # ament_add_gtest flags
-    "SKIP_LINKING_MAIN_LIBRARIES;SKIP_TEST"
-    "RUNNER;TIMEOUT;WORKING_DIRECTORY"
-    "APPEND_ENV;APPEND_LIBRARY_DIRS;ENV"
-    # ament_add_executable flags
-    "WIN32;MACOSX_BUNDLE;EXCLUDE_FROM_ALL;NO_TARGET_LINK_LIBRARIES"
-    # ament_auto_add_gtest flags
-    "DIRECTORY"
-    ""
-    ${ARGN})
+  "WIN32;MACOSX_BUNDLE;EXCLUDE_FROM_ALL;NO_TARGET_LINK_LIBRARIES;SKIP_LINKING_MAIN_LIBRARIES;SKIP_TEST"
+  "RUNNER;TIMEOUT;WORKING_DIRECTORY;DIRECTORY"
+  "APPEND_ENV;APPEND_LIBRARY_DIRS;ENV"
+  ${ARGN})
   if(NOT ARG_DIRECTORY AND NOT ARG_UNPARSED_ARGUMENTS)
     message(FATAL_ERROR "ament_auto_add_executable() called without any "
       "source files and without a DIRECTORY argument")
