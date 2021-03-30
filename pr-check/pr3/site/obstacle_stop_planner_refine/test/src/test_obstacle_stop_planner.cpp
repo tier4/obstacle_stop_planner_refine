@@ -108,8 +108,3 @@ AdaptiveCruiseControlParameter createAccParam()
 //   }
 //   std::shared_ptr<ObstacleStopPlanner> planner_;
 // };
-
-// TEST_F(ObstacleStopPlannerTest, example)
-// {
-//   EXPECT_EQ(1, 1);
-// }
