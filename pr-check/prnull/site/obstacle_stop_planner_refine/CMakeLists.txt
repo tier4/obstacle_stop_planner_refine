@@ -7,7 +7,7 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic -O3)
+  add_compile_options(-Wall -Wextra -Wpedantic)
   add_compile_options(-Wno-unused-parameter)
 endif()
 
@@ -15,30 +15,37 @@ find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
 find_package(Eigen3 REQUIRED)
-find_package(OpenCV REQUIRED)
-find_package(PCL REQUIRED)
 
-ament_auto_add_executable(obstacle_stop_planner_node
-  src/debug_marker.cpp
-  src/node.cpp
-  src/main.cpp
-  src/adaptive_cruise_control.cpp
+file(GLOB_RECURSE OBSTACLE_STOP_PLANNER_NODES_NODE_SRC
+  src/*
+)
+file(GLOB_RECURSE OBSTACLE_STOP_PLANNER_NODES_NODE_HEADERS
+  include/obstacle_stop_planner/*
 )
 
-target_include_directories(obstacle_stop_planner_node
-  PUBLIC
-    ${OpenCV_INCLUDE_DIRS}
-    ${PCL_INCLUDE_DIRS}
+# generate component node library
+ament_auto_add_library(obstacle_stop_planner_node SHARED
+  ${OBSTACLE_STOP_PLANNER_NODES_NODE_SRC}
+  ${OBSTACLE_STOP_PLANNER_NODES_NODE_HEADERS}
 )
-
-target_link_libraries(obstacle_stop_planner_node
-    ${OpenCV_LIBRARIES}
-    ${PCL_LIBRARIES}
+rclcpp_components_register_node(obstacle_stop_planner_node
+  PLUGIN "obstacle_stop_planner::ObstacleStopPlannerNode"
+  EXECUTABLE obstacle_stop_planner_node_exe
 )
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+
+  add_ros_test(
+    test/obstacle_stop_planner_node_launch_test.py
+    TIMEOUT "30"
+  )
+
+  find_package(ament_cmake_auto_gtest REQUIRED)
+  ament_auto_add_gtest(test_obstacle_stop_planner
+    DIRECTORY "test/"
+  )
 endif()
 
 ament_auto_package(
