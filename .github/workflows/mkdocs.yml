@@ -43,6 +43,11 @@ jobs:
           mkdir -p public/pr-check/main
           mv site public/pr-check/main/
 
+      - uses: actions/checkout@v2
+        with:
+          clean: false
+          fetch-depth: 0
+
       - name: Deploy MkDocs to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
