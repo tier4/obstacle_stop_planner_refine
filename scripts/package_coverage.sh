@@ -14,7 +14,7 @@
 #  limitations under the License.
 
 # Original script: https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/blob/master/tools/coverage/package_coverage.sh
-# NOTE: I modified original script for this (and Autoware.iv) project.
+# NOTE: The script has been slightly modified from the original one to adopt in this (and Autoware.iv) project.
 
 usage_exit() {
 	echo "Usage: ${0} PACKAGE_NAME" 1>&2
