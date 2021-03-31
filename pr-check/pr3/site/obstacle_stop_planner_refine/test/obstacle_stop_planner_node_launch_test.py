@@ -41,7 +41,7 @@ def generate_test_description():
                 'config/adaptive_cruise_control.param.yaml'),
             os.path.join(
                 get_package_share_directory('obstacle_stop_planner_refine'),
-                'config/vehicle_info.param.yaml')
+                'config/test_vehicle_info.param.yaml')
         ])
 
     context = {'obstacle_stop_planner_node': obstacle_stop_planner_node}
