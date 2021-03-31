@@ -21,10 +21,10 @@ jobs:
         run: |
           git clone https://github.com/terryyin/lizard.git
           mkdir -p public/pr-check/main
-          python3 lizard/lizard.py -l cpp -l python -x "*test*" \
+          python3 lizard/lizard.py -l cpp -l python -x "*test*" -x "*lizard*" \
             --CCN 20 -T nloc=200 --arguments 6 \
             --html > public/pr-check/main/code-metrics.html || true
-          python3 lizard/lizard.py -l cpp -l python -x "*test*" \
+          python3 lizard/lizard.py -l cpp -l python -x "*test*" -x "*lizard*" \
             --CCN 20 -T nloc=200 --arguments 6 || true
 
       - name: Deploy measurement result page to gh-pages

@@ -31,10 +31,22 @@ jobs:
           scripts/install_mkdocs.sh
           mkdocs build -f mkdocs.yml --verbose --clean
 
-      - name: Change directory structure
+      - name: Change directory structure for PR
+        if : steps.set_env.outputs.PULL_NUMBER != null
         run: |
           mkdir -p public/pr-check/pr${{ steps.set_env.outputs.PULL_NUMBER }}
           mv site public/pr-check/pr${{ steps.set_env.outputs.PULL_NUMBER }}/
+
+      - name: Change directory structure for main
+        if : steps.set_env.outputs.PULL_NUMBER == null
+        run: |
+          mkdir -p public/pr-check/main
+          mv site public/pr-check/main/
+
+      - uses: actions/checkout@v2
+        with:
+          clean: false
+          fetch-depth: 0
 
       - name: Deploy MkDocs to gh-pages
         uses: peaceiris/actions-gh-pages@v3
