@@ -46,7 +46,8 @@ ObstacleStopPlanner::ObstacleStopPlanner(
   const StopControlParameter & stop_param,
   const SlowDownControlParameter & slow_down_param,
   const AdaptiveCruiseControlParameter & acc_param)
-: node_(node),
+: processing_time_publisher_(node),
+  node_(node),
   vehicle_info_(vehicle_info),
   stop_param_(stop_param),
   slow_down_param_(slow_down_param),
@@ -72,6 +73,10 @@ autoware_planning_msgs::msg::Trajectory ObstacleStopPlanner::pathCallback(
   const autoware_planning_msgs::msg::Trajectory::ConstSharedPtr input_msg,
   tf2_ros::Buffer & tf_buffer)
 {
+  std::map<std::string, double> processing_time_map;
+  autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch;
+  stop_watch.tic("Total");
+
   /*
    * extend trajectory to consider obstacles after the goal
    */
@@ -98,6 +103,8 @@ autoware_planning_msgs::msg::Trajectory ObstacleStopPlanner::pathCallback(
   autoware_planning_msgs::msg::Trajectory & trajectory =
     decimate_trajectory_map.decimate_trajectory;
 
+  processing_time_map["PathCallback: createTrajectory"] = stop_watch.toc(true);
+
   /*
    * search candidate obstacle pointcloud
    */
@@ -115,6 +122,8 @@ autoware_planning_msgs::msg::Trajectory ObstacleStopPlanner::pathCallback(
     search_radius,
     vehicle_info_,
     node_->get_logger());
+
+  processing_time_map["PathCallback: searchCandidateObstacle"] = stop_watch.toc(true);
 
   /*
    * check collision, slow_down
@@ -222,6 +231,8 @@ autoware_planning_msgs::msg::Trajectory ObstacleStopPlanner::pathCallback(
     }
   }
 
+  processing_time_map["PathCallback: searchCollisionPoint"] = stop_watch.toc(true);
+
   /*
    * insert max velocity and judge if there is a need to stop
    */
@@ -236,6 +247,8 @@ autoware_planning_msgs::msg::Trajectory ObstacleStopPlanner::pathCallback(
       output_msg);
   }
 
+  processing_time_map["PathCallback: insertAdaptiveCruiseVelocity"] = stop_watch.toc(true);
+
   /*
    * insert stop point
    */
@@ -247,6 +260,8 @@ autoware_planning_msgs::msg::Trajectory ObstacleStopPlanner::pathCallback(
       nearest_collision_point.to_2d(),
       output_msg);
   }
+
+  processing_time_map["PathCallback: insertStopPoint"] = stop_watch.toc(true);
 
   /*
    * insert slow_down point
@@ -260,7 +275,14 @@ autoware_planning_msgs::msg::Trajectory ObstacleStopPlanner::pathCallback(
       slow_down_param_.slow_down_margin,
       output_msg);
   }
+
+  processing_time_map["PathCallback: insertSlowDownPoint"] = stop_watch.toc(true);
+
   debug_ptr_->publish();
+
+  processing_time_map["PathCallback: Total"] = stop_watch.toc("Total");
+  processing_time_publisher_.publish(processing_time_map);
+
   return output_msg;
 }
 

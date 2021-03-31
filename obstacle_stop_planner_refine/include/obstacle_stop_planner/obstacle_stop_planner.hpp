@@ -63,6 +63,8 @@ public:
   void externalExpandStopRangeCallback(
     const autoware_planning_msgs::msg::ExpandStopRange::ConstSharedPtr input_msg);
 
+  autoware_utils::ProcessingTimePublisher processing_time_publisher_;
+
 private:
   rclcpp::Node * node_;
   std::shared_ptr<ObstacleStopPlannerDebugNode> debug_ptr_;
