@@ -79,7 +79,7 @@ using Polygon = bg::model::polygon<Point, false>;
 using Line = bg::model::linestring<Point>;
 
 ObstacleStopPlannerNode::ObstacleStopPlannerNode()
-: Node("obstacle_stop_planner"), tf_buffer_(this->get_clock()), tf_listener_(tf_buffer_)
+: Node("obstacle_stop_planner"), tf_buffer_(this->get_clock()), tf_listener_(tf_buffer_), processing_time_publisher_(this)
 {
   // Vehicle Parameters
   auto vehicle_info(vehicle_info_util::VehicleInfo::create(*this));
@@ -184,6 +184,10 @@ void ObstacleStopPlannerNode::pathCallback(
     return;
   }
 
+  std::map<std::string, double> processing_time_map;
+  autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch;
+  stop_watch.tic("Total");
+
   /*
    * extend trajectory to consider obstacles after the goal
    */
@@ -212,6 +216,8 @@ void ObstacleStopPlannerNode::pathCallback(
     trim_trajectory, step_length_, decimate_trajectory, decimate_trajectory_index_map);
 
   autoware_planning_msgs::msg::Trajectory & trajectory = decimate_trajectory;
+
+  processing_time_map["PathCallback: createTrajectory"] = stop_watch.toc(true);
 
   /*
    * search candidate obstacle pointcloud
@@ -252,6 +258,8 @@ void ObstacleStopPlannerNode::pathCallback(
       obstacle_candidate_pointcloud_ptr);
     obstacle_candidate_pointcloud_ptr->header = transformed_obstacle_pointcloud_ptr->header;
   }
+
+  processing_time_map["PathCallback: searchCandidateObstacle"] = stop_watch.toc(true);
 
   /*
    * check collision, slow_down
@@ -382,6 +390,8 @@ void ObstacleStopPlannerNode::pathCallback(
     }
   }
 
+  processing_time_map["PathCallback: searchCollisionPoint"] = stop_watch.toc(true);
+
   /*
    * insert max velocity and judge if there is a need to stop
    */
@@ -391,6 +401,8 @@ void ObstacleStopPlannerNode::pathCallback(
       decimate_trajectory, decimate_trajectory_collision_index, self_pose, nearest_collision_point,
       nearest_collision_point_time, object_ptr_, current_velocity_ptr_, &need_to_stop, &output_msg);
   }
+
+  processing_time_map["PathCallback: insertAdaptiveCruiseVelocity"] = stop_watch.toc(true);
 
   /*
    * insert stop point
@@ -423,6 +435,8 @@ void ObstacleStopPlannerNode::pathCallback(
       }
     }
   }
+
+  processing_time_map["PathCallback: insertStopPoint"] = stop_watch.toc(true);
 
   /*
    * insert slow_down point
@@ -460,9 +474,15 @@ void ObstacleStopPlannerNode::pathCallback(
       }
     }
   }
+  processing_time_map["PathCallback: insertSlowDownPoint"] = stop_watch.toc(true);
+
+  debug_ptr_->publish();
+
+  processing_time_map["PathCallback: Total"] = stop_watch.toc("Total");
+  processing_time_publisher_.publish(processing_time_map);
+
   path_pub_->publish(output_msg);
   stop_reason_diag_pub_->publish(stop_reason_diag);
-  debug_ptr_->publish();
 }
 
 void ObstacleStopPlannerNode::externalExpandStopRangeCallback(

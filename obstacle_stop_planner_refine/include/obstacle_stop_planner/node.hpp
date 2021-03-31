@@ -38,6 +38,7 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "obstacle_stop_planner/adaptive_cruise_control.hpp"
 #include "obstacle_stop_planner/debug_marker.hpp"
+#include "autoware_utils/autoware_utils.hpp"
 
 namespace motion_planning
 {
@@ -60,6 +61,7 @@ public:
   ObstacleStopPlannerNode();
 
 private:
+  autoware_utils::ProcessingTimePublisher processing_time_publisher_;
   /*
    * ROS
    */
