@@ -22,6 +22,10 @@ jobs:
         with:
           required-ros-distributions: foxy
 
+      - name: Concat build_depends.repos
+        run: |
+          curl -sSL https://raw.githubusercontent.com/tier4/AutowareArchitectureProposal.iv/ros2/build_depends.repos | sed '1d' >> build_depends.repos
+
       - name: Run action-ros-ci
         id: action_ros_ci_step
         uses: ros-tooling/action-ros-ci@v0.2

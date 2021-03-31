@@ -1,4 +1,4 @@
-// Copyright 2019 Autoware Foundation
+// Copyright 2021 Tier IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,15 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
+#include "gtest/gtest.h"
+#include "obstacle_stop_planner/util.hpp"
 
-#include "rclcpp/rclcpp.hpp"
-#include "obstacle_stop_planner/node.hpp"
 
-int main(int argc, char ** argv)
-{
-  rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<motion_planning::ObstacleStopPlannerNode>());
-  rclcpp::shutdown();
-  return 0;
+TEST(getYawFromQuaternion, returnValue) {
+  geometry_msgs::msg::Quaternion quat;
+  EXPECT_EQ(0.0, getYawFromQuaternion(quat));
 }
