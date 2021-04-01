@@ -132,28 +132,15 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   // polygon
   if (!vehicle_polygons_.empty()) {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "map";
-    marker.header.stamp = current_time;
-    marker.ns = "detection_polygons";
-    marker.id = 0;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.5);
-    marker.type = visualization_msgs::msg::Marker::LINE_LIST;
-    marker.action = visualization_msgs::msg::Marker::ADD;
-    marker.pose.position.x = 0.0;
-    marker.pose.position.y = 0.0;
-    marker.pose.position.z = 0.0;
-    marker.pose.orientation.x = 0.0;
-    marker.pose.orientation.y = 0.0;
-    marker.pose.orientation.z = 0.0;
-    marker.pose.orientation.w = 1.0;
-    marker.scale.x = 0.01;
-    marker.scale.y = 0.0;
-    marker.scale.z = 0.0;
-    marker.color.a = 0.999;  // Don't forget to set the alpha!
-    marker.color.r = 0.0;
-    marker.color.g = 1.0;
-    marker.color.b = 0.0;
+    auto marker = autoware_utils::createDefaultMarker(
+      "map",
+      current_time,
+      "detection_polygons",
+      0,
+      visualization_msgs::msg::Marker::LINE_LIST,
+      autoware_utils::createMarkerScale(0.01, 0.0, 0.0),
+      autoware_utils::createMarkerColor(0.0, 1.0, 0.0, 0.999));
+
     for (auto & vehicle_polygon : vehicle_polygons_) {
       for (size_t j = 0; j < vehicle_polygon.outer().size(); ++j) {
         {
@@ -179,28 +166,15 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
   }
 
   if (!collision_polygons_.empty()) {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "map";
-    marker.header.stamp = current_time;
-    marker.ns = "collision_polygons";
-    marker.id = 0;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.5);
-    marker.type = visualization_msgs::msg::Marker::LINE_LIST;
-    marker.action = visualization_msgs::msg::Marker::ADD;
-    marker.pose.position.x = 0.0;
-    marker.pose.position.y = 0.0;
-    marker.pose.position.z = 0.0;
-    marker.pose.orientation.x = 0.0;
-    marker.pose.orientation.y = 0.0;
-    marker.pose.orientation.z = 0.0;
-    marker.pose.orientation.w = 1.0;
-    marker.scale.x = 0.05;
-    marker.scale.y = 0.0;
-    marker.scale.z = 0.0;
-    marker.color.a = 0.999;  // Don't forget to set the alpha!
-    marker.color.r = 1.0;
-    marker.color.g = 0.0;
-    marker.color.b = 0.0;
+    auto marker = autoware_utils::createDefaultMarker(
+      "map",
+      current_time,
+      "collision_polygons",
+      0,
+      visualization_msgs::msg::Marker::LINE_LIST,
+      autoware_utils::createMarkerScale(0.05, 0.0, 0.0),
+      autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.999));
+
     for (auto & collision_polygon : collision_polygons_) {
       for (size_t j = 0; j < collision_polygon.outer().size(); ++j) {
         {
@@ -224,28 +198,15 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
   }
 
   if (!slow_down_range_polygons_.empty()) {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "map";
-    marker.header.stamp = current_time;
-    marker.ns = "slow_down_detection_polygons";
-    marker.id = 0;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.5);
-    marker.type = visualization_msgs::msg::Marker::LINE_LIST;
-    marker.action = visualization_msgs::msg::Marker::ADD;
-    marker.pose.position.x = 0.0;
-    marker.pose.position.y = 0.0;
-    marker.pose.position.z = 0.0;
-    marker.pose.orientation.x = 0.0;
-    marker.pose.orientation.y = 0.0;
-    marker.pose.orientation.z = 0.0;
-    marker.pose.orientation.w = 1.0;
-    marker.scale.x = 0.01;
-    marker.scale.y = 0.0;
-    marker.scale.z = 0.0;
-    marker.color.a = 0.999;  // Don't forget to set the alpha!
-    marker.color.r = 0.0;
-    marker.color.g = 1.0;
-    marker.color.b = 0.0;
+    auto marker = autoware_utils::createDefaultMarker(
+      "map",
+      current_time,
+      "slow_down_detection_polygons",
+      0,
+      visualization_msgs::msg::Marker::LINE_LIST,
+      autoware_utils::createMarkerScale(0.01, 0.0, 0.0),
+      autoware_utils::createMarkerColor(0.0, 1.0, 0.0, 0.999));
+
     for (auto & slow_down_range_polygon : slow_down_range_polygons_) {
       for (size_t j = 0; j < slow_down_range_polygon.outer().size(); ++j) {
         {
@@ -269,28 +230,15 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
   }
 
   if (!slow_down_polygons_.empty()) {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "map";
-    marker.header.stamp = current_time;
-    marker.ns = "slow_down_polygons";
-    marker.id = 0;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.5);
-    marker.type = visualization_msgs::msg::Marker::LINE_LIST;
-    marker.action = visualization_msgs::msg::Marker::ADD;
-    marker.pose.position.x = 0.0;
-    marker.pose.position.y = 0.0;
-    marker.pose.position.z = 0.0;
-    marker.pose.orientation.x = 0.0;
-    marker.pose.orientation.y = 0.0;
-    marker.pose.orientation.z = 0.0;
-    marker.pose.orientation.w = 1.0;
-    marker.scale.x = 0.05;
-    marker.scale.y = 0.0;
-    marker.scale.z = 0.0;
-    marker.color.a = 0.999;  // Don't forget to set the alpha!
-    marker.color.r = 1.0;
-    marker.color.g = 1.0;
-    marker.color.b = 0.0;
+    auto marker = autoware_utils::createDefaultMarker(
+      "map",
+      current_time,
+      "slow_down_polygons",
+      0,
+      visualization_msgs::msg::Marker::LINE_LIST,
+      autoware_utils::createMarkerScale(0.05, 0.0, 0.0),
+      autoware_utils::createMarkerColor(1.0, 1.0, 0.0, 0.999));
+
     for (auto & slow_down_polygon : slow_down_polygons_) {
       for (size_t j = 0; j < slow_down_polygon.outer().size(); ++j) {
         {
@@ -314,249 +262,199 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
   }
 
   if (stop_pose_ptr_ != nullptr) {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "map";
-    marker.header.stamp = current_time;
-    marker.ns = "virtual_wall/stop";
-    marker.id = 0;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.5);
-    marker.type = visualization_msgs::msg::Marker::CUBE;
-    marker.action = visualization_msgs::msg::Marker::ADD;
+    auto marker = autoware_utils::createDefaultMarker(
+      "map",
+      current_time,
+      "virtual_wall/stop",
+      0,
+      visualization_msgs::msg::Marker::CUBE,
+      autoware_utils::createMarkerScale(0.1, 5.0, 2.0),
+      autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.5));
+
     tf2::Transform tf_map2base_link;
     tf2::fromMsg(*stop_pose_ptr_, tf_map2base_link);
     tf2::Transform tf_map2front = tf_map2base_link * tf_base_link2front;
     tf2::toMsg(tf_map2front, marker.pose);
     marker.pose.position.z += 1.0;
-    marker.scale.x = 0.1;
-    marker.scale.y = 5.0;
-    marker.scale.z = 2.0;
-    marker.color.a = 0.5;  // Don't forget to set the alpha!
-    marker.color.r = 1.0;
-    marker.color.g = 0.0;
-    marker.color.b = 0.0;
+
     msg.markers.push_back(marker);
   }
 
   if (stop_pose_ptr_ != nullptr) {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "map";
-    marker.header.stamp = current_time;
-    marker.ns = "factor_text/stop";
-    marker.id = 0;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.5);
-    marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
-    marker.action = visualization_msgs::msg::Marker::ADD;
+    auto marker = autoware_utils::createDefaultMarker(
+      "map",
+      current_time,
+      "factor_text/stop",
+      0,
+      visualization_msgs::msg::Marker::TEXT_VIEW_FACING,
+      autoware_utils::createMarkerScale(0.0, 0.0, 1.0),
+      autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.999));
+
     tf2::Transform tf_map2base_link;
     tf2::fromMsg(*stop_pose_ptr_, tf_map2base_link);
     tf2::Transform tf_map2front = tf_map2base_link * tf_base_link2front;
     tf2::toMsg(tf_map2front, marker.pose);
     marker.pose.position.z += 2.0;
-    marker.scale.x = 0.0;
-    marker.scale.y = 0.0;
-    marker.scale.z = 1.0;
-    marker.color.a = 0.999;  // Don't forget to set the alpha!
-    marker.color.r = 1.0;
-    marker.color.g = 1.0;
-    marker.color.b = 1.0;
     marker.text = "obstacle";
+
     msg.markers.push_back(marker);
   }
 
   if (slow_down_start_pose_ptr_ != nullptr) {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "map";
-    marker.header.stamp = current_time;
-    marker.ns = "virtual_wall/slow_down_start";
-    marker.id = 0;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.5);
-    marker.type = visualization_msgs::msg::Marker::CUBE;
-    marker.action = visualization_msgs::msg::Marker::ADD;
+    auto marker = autoware_utils::createDefaultMarker(
+      "map",
+      current_time,
+      "virtual_wall/slow_down_start",
+      0,
+      visualization_msgs::msg::Marker::CUBE,
+      autoware_utils::createMarkerScale(0.1, 5.0, 2.0),
+      autoware_utils::createMarkerColor(1.0, 1.0, 0.0, 0.5));
+
     tf2::Transform tf_map2base_link;
     tf2::fromMsg(*slow_down_start_pose_ptr_, tf_map2base_link);
     tf2::Transform tf_map2front = tf_map2base_link * tf_base_link2front;
     tf2::toMsg(tf_map2front, marker.pose);
     marker.pose.position.z += 1.0;
-    marker.scale.x = 0.1;
-    marker.scale.y = 5.0;
-    marker.scale.z = 2.0;
-    marker.color.a = 0.5;  // Don't forget to set the alpha!
-    marker.color.r = 1.0;
-    marker.color.g = 1.0;
-    marker.color.b = 0.0;
+
     msg.markers.push_back(marker);
   }
 
   if (slow_down_start_pose_ptr_ != nullptr) {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "map";
-    marker.header.stamp = current_time;
-    marker.ns = "factor_text/slow_down_start";
-    marker.id = 0;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.5);
-    marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
-    marker.action = visualization_msgs::msg::Marker::ADD;
+    auto marker = autoware_utils::createDefaultMarker(
+      "map",
+      current_time,
+      "factor_text/slow_down_start",
+      0,
+      visualization_msgs::msg::Marker::TEXT_VIEW_FACING,
+      autoware_utils::createMarkerScale(0.0, 0.0, 1.0),
+      autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.999));
+
     tf2::Transform tf_map2base_link;
     tf2::fromMsg(*slow_down_start_pose_ptr_, tf_map2base_link);
     tf2::Transform tf_map2front = tf_map2base_link * tf_base_link2front;
     tf2::toMsg(tf_map2front, marker.pose);
     marker.pose.position.z += 2.0;
-    marker.scale.x = 0.0;
-    marker.scale.y = 0.0;
-    marker.scale.z = 1.0;
-    marker.color.a = 0.999;  // Don't forget to set the alpha!
-    marker.color.r = 1.0;
-    marker.color.g = 1.0;
-    marker.color.b = 1.0;
     marker.text = "slow down\nstart";
+
     msg.markers.push_back(marker);
   }
 
   if (slow_down_end_pose_ptr_ != nullptr) {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "map";
-    marker.header.stamp = current_time;
-    marker.ns = "virtual_wall/slow_down_end";
-    marker.id = 0;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.5);
-    marker.type = visualization_msgs::msg::Marker::CUBE;
-    marker.action = visualization_msgs::msg::Marker::ADD;
+    auto marker = autoware_utils::createDefaultMarker(
+      "map",
+      current_time,
+      "virtual_wall/slow_down_end",
+      0,
+      visualization_msgs::msg::Marker::CUBE,
+      autoware_utils::createMarkerScale(0.1, 5.0, 2.0),
+      autoware_utils::createMarkerColor(1.0, 1.0, 0.0, 0.5));
+
     tf2::Transform tf_map2base_link;
     tf2::fromMsg(*slow_down_end_pose_ptr_, tf_map2base_link);
     tf2::Transform tf_map2front = tf_map2base_link * tf_base_link2front;
     tf2::toMsg(tf_map2front, marker.pose);
     marker.pose.position.z += 1.0;
-    marker.scale.x = 0.1;
-    marker.scale.y = 5.0;
-    marker.scale.z = 2.0;
-    marker.color.a = 0.5;  // Don't forget to set the alpha!
-    marker.color.r = 1.0;
-    marker.color.g = 1.0;
-    marker.color.b = 0.0;
+
     msg.markers.push_back(marker);
   }
 
   if (slow_down_end_pose_ptr_ != nullptr) {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "map";
-    marker.header.stamp = current_time;
-    marker.ns = "factor_text/slow_down_end";
-    marker.id = 0;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.5);
-    marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
-    marker.action = visualization_msgs::msg::Marker::ADD;
+    auto marker = autoware_utils::createDefaultMarker(
+      "map",
+      current_time,
+      "factor_text/slow_down_end",
+      0,
+      visualization_msgs::msg::Marker::TEXT_VIEW_FACING,
+      autoware_utils::createMarkerScale(0.0, 0.0, 1.0),
+      autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.999));
+
     tf2::Transform tf_map2base_link;
     tf2::fromMsg(*slow_down_end_pose_ptr_, tf_map2base_link);
     tf2::Transform tf_map2front = tf_map2base_link * tf_base_link2front;
     tf2::toMsg(tf_map2front, marker.pose);
     marker.pose.position.z += 2.0;
-    marker.scale.x = 0.0;
-    marker.scale.y = 0.0;
-    marker.scale.z = 1.0;
-    marker.color.a = 0.999;  // Don't forget to set the alpha!
-    marker.color.r = 1.0;
-    marker.color.g = 1.0;
-    marker.color.b = 1.0;
     marker.text = "slow down\nend";
+
     msg.markers.push_back(marker);
   }
 
   if (stop_obstacle_point_ptr_ != nullptr) {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "map";
-    marker.header.stamp = current_time;
-    marker.ns = "stop_obstacle_point";
-    marker.id = 0;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.5);
-    marker.type = visualization_msgs::msg::Marker::SPHERE;
-    marker.action = visualization_msgs::msg::Marker::ADD;
+    auto marker = autoware_utils::createDefaultMarker(
+      "map",
+      current_time,
+      "stop_obstacle_point",
+      0,
+      visualization_msgs::msg::Marker::SPHERE,
+      autoware_utils::createMarkerScale(0.25, 0.25, 0.25),
+      autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.999));
+
     marker.pose.position = *stop_obstacle_point_ptr_;
     marker.pose.orientation.x = 0.0;
     marker.pose.orientation.y = 0.0;
     marker.pose.orientation.z = 0.0;
     marker.pose.orientation.w = 1.0;
-    marker.scale.x = 0.25;
-    marker.scale.y = 0.25;
-    marker.scale.z = 0.25;
-    marker.color.a = 0.999;  // Don't forget to set the alpha!
-    marker.color.r = 1.0;
-    marker.color.g = 0.0;
-    marker.color.b = 0.0;
+
     msg.markers.push_back(marker);
   }
 
   if (stop_obstacle_point_ptr_ != nullptr) {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "map";
-    marker.header.stamp = current_time;
-    marker.ns = "stop_obstacle_text";
-    marker.id = 0;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.5);
-    marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
-    marker.action = visualization_msgs::msg::Marker::ADD;
+    auto marker = autoware_utils::createDefaultMarker(
+      "map",
+      current_time,
+      "stop_obstacle_text",
+      0,
+      visualization_msgs::msg::Marker::TEXT_VIEW_FACING,
+      autoware_utils::createMarkerScale(0.0, 0.0, 1.0),
+      autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.999));
+
     marker.pose.position = *stop_obstacle_point_ptr_;
     marker.pose.position.z += 2.0;
     marker.pose.orientation.x = 0.0;
     marker.pose.orientation.y = 0.0;
     marker.pose.orientation.z = 0.0;
     marker.pose.orientation.w = 1.0;
-    marker.scale.x = 0.0;
-    marker.scale.y = 0.0;
-    marker.scale.z = 1.0;
-    marker.color.a = 0.999;  // Don't forget to set the alpha!
-    marker.color.r = 1.0;
-    marker.color.g = 1.0;
-    marker.color.b = 1.0;
     marker.text = "!";
+
     msg.markers.push_back(marker);
   }
 
   if (slow_down_obstacle_point_ptr_ != nullptr) {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "map";
-    marker.header.stamp = current_time;
-    marker.ns = "slow_down_obstacle_point";
-    marker.id = 0;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.5);
-    marker.type = visualization_msgs::msg::Marker::SPHERE;
-    marker.action = visualization_msgs::msg::Marker::ADD;
+    auto marker = autoware_utils::createDefaultMarker(
+      "map",
+      current_time,
+      "slow_down_obstacle_point",
+      0,
+      visualization_msgs::msg::Marker::SPHERE,
+      autoware_utils::createMarkerScale(0.25, 0.25, 0.25),
+      autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.999));
+
     marker.pose.position = *slow_down_obstacle_point_ptr_;
     marker.pose.orientation.x = 0.0;
     marker.pose.orientation.y = 0.0;
     marker.pose.orientation.z = 0.0;
     marker.pose.orientation.w = 1.0;
-    marker.scale.x = 0.25;
-    marker.scale.y = 0.25;
-    marker.scale.z = 0.25;
-    marker.color.a = 0.999;  // Don't forget to set the alpha!
-    marker.color.r = 1.0;
-    marker.color.g = 0.0;
-    marker.color.b = 0.0;
+
     msg.markers.push_back(marker);
   }
 
   if (slow_down_obstacle_point_ptr_ != nullptr) {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "map";
-    marker.header.stamp = current_time;
-    marker.ns = "slow_down_obstacle_text";
-    marker.id = 0;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.5);
-    marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
-    marker.action = visualization_msgs::msg::Marker::ADD;
+    auto marker = autoware_utils::createDefaultMarker(
+      "map",
+      current_time,
+      "slow_down_obstacle_text",
+      0,
+      visualization_msgs::msg::Marker::TEXT_VIEW_FACING,
+      autoware_utils::createMarkerScale(0.0, 0.0, 1.0),
+      autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.999));
+
     marker.pose.position = *slow_down_obstacle_point_ptr_;
     marker.pose.position.z += 2.0;
     marker.pose.orientation.x = 0.0;
     marker.pose.orientation.y = 0.0;
     marker.pose.orientation.z = 0.0;
     marker.pose.orientation.w = 1.0;
-    marker.scale.x = 0.0;
-    marker.scale.y = 0.0;
-    marker.scale.z = 1.0;
-    marker.color.a = 0.999;  // Don't forget to set the alpha!
-    marker.color.r = 1.0;
-    marker.color.g = 1.0;
-    marker.color.b = 1.0;
     marker.text = "!";
+
     msg.markers.push_back(marker);
   }
 
