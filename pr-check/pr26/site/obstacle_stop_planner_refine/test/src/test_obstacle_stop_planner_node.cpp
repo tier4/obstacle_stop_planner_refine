@@ -106,6 +106,7 @@ public:
 
     rclcpp::NodeOptions node_options{};
 
+    node_options.append_parameter_override("ready_vehicle_info_param", true);
     node_options.append_parameter_override("wheel_radius", 0.39F);
     node_options.append_parameter_override("wheel_width", 0.42F);
     node_options.append_parameter_override("wheel_base", 2.74F);
@@ -174,10 +175,6 @@ TEST_F(ObstacleStopPlannerNodeTest, plan_simple_trajectory)
       break;
     }
     rate.sleep();
-    // re-publish
-    dummy_pointcloud_pub_->publish(test_msg);
-    dummy_velocity_pub_->publish(twist_msg);
-    dummy_path_pub_->publish(trajectory);
   }
 
   // Check data
