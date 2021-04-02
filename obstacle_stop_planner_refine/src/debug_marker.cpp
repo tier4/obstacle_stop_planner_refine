@@ -389,10 +389,6 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
       autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.999));
 
     marker.pose.position = *stop_obstacle_point_ptr_;
-    marker.pose.orientation.x = 0.0;
-    marker.pose.orientation.y = 0.0;
-    marker.pose.orientation.z = 0.0;
-    marker.pose.orientation.w = 1.0;
 
     msg.markers.push_back(marker);
   }
@@ -409,10 +405,6 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
     marker.pose.position = *stop_obstacle_point_ptr_;
     marker.pose.position.z += 2.0;
-    marker.pose.orientation.x = 0.0;
-    marker.pose.orientation.y = 0.0;
-    marker.pose.orientation.z = 0.0;
-    marker.pose.orientation.w = 1.0;
     marker.text = "!";
 
     msg.markers.push_back(marker);
@@ -429,10 +421,6 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
       autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.999));
 
     marker.pose.position = *slow_down_obstacle_point_ptr_;
-    marker.pose.orientation.x = 0.0;
-    marker.pose.orientation.y = 0.0;
-    marker.pose.orientation.z = 0.0;
-    marker.pose.orientation.w = 1.0;
 
     msg.markers.push_back(marker);
   }
@@ -449,10 +437,6 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
     marker.pose.position = *slow_down_obstacle_point_ptr_;
     marker.pose.position.z += 2.0;
-    marker.pose.orientation.x = 0.0;
-    marker.pose.orientation.y = 0.0;
-    marker.pose.orientation.z = 0.0;
-    marker.pose.orientation.w = 1.0;
     marker.text = "!";
 
     msg.markers.push_back(marker);
