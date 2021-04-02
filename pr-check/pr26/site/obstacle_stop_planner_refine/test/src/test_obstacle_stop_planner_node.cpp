@@ -174,6 +174,10 @@ TEST_F(ObstacleStopPlannerNodeTest, plan_simple_trajectory)
       break;
     }
     rate.sleep();
+    // re-publish
+    dummy_pointcloud_pub_->publish(test_msg);
+    dummy_velocity_pub_->publish(twist_msg);
+    dummy_path_pub_->publish(trajectory);
   }
 
   // Check data
