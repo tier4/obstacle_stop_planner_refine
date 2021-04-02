@@ -133,10 +133,7 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
   // polygon
   if (!vehicle_polygons_.empty()) {
     auto marker = autoware_utils::createDefaultMarker(
-      "map",
-      current_time,
-      "detection_polygons",
-      0,
+      "map", current_time, "detection_polygons", 0,
       visualization_msgs::msg::Marker::LINE_LIST,
       autoware_utils::createMarkerScale(0.01, 0.0, 0.0),
       autoware_utils::createMarkerColor(0.0, 1.0, 0.0, 0.999));
@@ -167,10 +164,7 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   if (!collision_polygons_.empty()) {
     auto marker = autoware_utils::createDefaultMarker(
-      "map",
-      current_time,
-      "collision_polygons",
-      0,
+      "map", current_time, "collision_polygons", 0,
       visualization_msgs::msg::Marker::LINE_LIST,
       autoware_utils::createMarkerScale(0.05, 0.0, 0.0),
       autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.999));
@@ -199,10 +193,7 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   if (!slow_down_range_polygons_.empty()) {
     auto marker = autoware_utils::createDefaultMarker(
-      "map",
-      current_time,
-      "slow_down_detection_polygons",
-      0,
+      "map", current_time, "slow_down_detection_polygons", 0,
       visualization_msgs::msg::Marker::LINE_LIST,
       autoware_utils::createMarkerScale(0.01, 0.0, 0.0),
       autoware_utils::createMarkerColor(0.0, 1.0, 0.0, 0.999));
@@ -231,10 +222,7 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   if (!slow_down_polygons_.empty()) {
     auto marker = autoware_utils::createDefaultMarker(
-      "map",
-      current_time,
-      "slow_down_polygons",
-      0,
+      "map", current_time, "slow_down_polygons", 0,
       visualization_msgs::msg::Marker::LINE_LIST,
       autoware_utils::createMarkerScale(0.05, 0.0, 0.0),
       autoware_utils::createMarkerColor(1.0, 1.0, 0.0, 0.999));
@@ -263,10 +251,7 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   if (stop_pose_ptr_ != nullptr) {
     auto marker = autoware_utils::createDefaultMarker(
-      "map",
-      current_time,
-      "virtual_wall/stop",
-      0,
+      "map", current_time, "virtual_wall/stop", 0,
       visualization_msgs::msg::Marker::CUBE,
       autoware_utils::createMarkerScale(0.1, 5.0, 2.0),
       autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.5));
@@ -282,10 +267,7 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   if (stop_pose_ptr_ != nullptr) {
     auto marker = autoware_utils::createDefaultMarker(
-      "map",
-      current_time,
-      "factor_text/stop",
-      0,
+      "map", current_time, "factor_text/stop", 0,
       visualization_msgs::msg::Marker::TEXT_VIEW_FACING,
       autoware_utils::createMarkerScale(0.0, 0.0, 1.0),
       autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.999));
@@ -302,10 +284,7 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   if (slow_down_start_pose_ptr_ != nullptr) {
     auto marker = autoware_utils::createDefaultMarker(
-      "map",
-      current_time,
-      "virtual_wall/slow_down_start",
-      0,
+      "map", current_time, "virtual_wall/slow_down_start", 0,
       visualization_msgs::msg::Marker::CUBE,
       autoware_utils::createMarkerScale(0.1, 5.0, 2.0),
       autoware_utils::createMarkerColor(1.0, 1.0, 0.0, 0.5));
@@ -321,10 +300,7 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   if (slow_down_start_pose_ptr_ != nullptr) {
     auto marker = autoware_utils::createDefaultMarker(
-      "map",
-      current_time,
-      "factor_text/slow_down_start",
-      0,
+      "map", current_time, "factor_text/slow_down_start", 0,
       visualization_msgs::msg::Marker::TEXT_VIEW_FACING,
       autoware_utils::createMarkerScale(0.0, 0.0, 1.0),
       autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.999));
@@ -341,10 +317,7 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   if (slow_down_end_pose_ptr_ != nullptr) {
     auto marker = autoware_utils::createDefaultMarker(
-      "map",
-      current_time,
-      "virtual_wall/slow_down_end",
-      0,
+      "map", current_time, "virtual_wall/slow_down_end", 0,
       visualization_msgs::msg::Marker::CUBE,
       autoware_utils::createMarkerScale(0.1, 5.0, 2.0),
       autoware_utils::createMarkerColor(1.0, 1.0, 0.0, 0.5));
@@ -360,10 +333,7 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   if (slow_down_end_pose_ptr_ != nullptr) {
     auto marker = autoware_utils::createDefaultMarker(
-      "map",
-      current_time,
-      "factor_text/slow_down_end",
-      0,
+      "map", current_time, "factor_text/slow_down_end", 0,
       visualization_msgs::msg::Marker::TEXT_VIEW_FACING,
       autoware_utils::createMarkerScale(0.0, 0.0, 1.0),
       autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.999));
@@ -380,10 +350,7 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   if (stop_obstacle_point_ptr_ != nullptr) {
     auto marker = autoware_utils::createDefaultMarker(
-      "map",
-      current_time,
-      "stop_obstacle_point",
-      0,
+      "map", current_time, "stop_obstacle_point", 0,
       visualization_msgs::msg::Marker::SPHERE,
       autoware_utils::createMarkerScale(0.25, 0.25, 0.25),
       autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.999));
@@ -395,10 +362,7 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   if (stop_obstacle_point_ptr_ != nullptr) {
     auto marker = autoware_utils::createDefaultMarker(
-      "map",
-      current_time,
-      "stop_obstacle_text",
-      0,
+      "map", current_time, "stop_obstacle_text", 0,
       visualization_msgs::msg::Marker::TEXT_VIEW_FACING,
       autoware_utils::createMarkerScale(0.0, 0.0, 1.0),
       autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.999));
@@ -412,10 +376,7 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   if (slow_down_obstacle_point_ptr_ != nullptr) {
     auto marker = autoware_utils::createDefaultMarker(
-      "map",
-      current_time,
-      "slow_down_obstacle_point",
-      0,
+      "map", current_time, "slow_down_obstacle_point", 0,
       visualization_msgs::msg::Marker::SPHERE,
       autoware_utils::createMarkerScale(0.25, 0.25, 0.25),
       autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.999));
@@ -427,10 +388,7 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   if (slow_down_obstacle_point_ptr_ != nullptr) {
     auto marker = autoware_utils::createDefaultMarker(
-      "map",
-      current_time,
-      "slow_down_obstacle_text",
-      0,
+      "map", current_time, "slow_down_obstacle_text", 0,
       visualization_msgs::msg::Marker::TEXT_VIEW_FACING,
       autoware_utils::createMarkerScale(0.0, 0.0, 1.0),
       autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.999));
