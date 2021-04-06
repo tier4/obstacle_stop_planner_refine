@@ -106,6 +106,7 @@ public:
 
     rclcpp::NodeOptions node_options{};
 
+    node_options.append_parameter_override("ready_vehicle_info_param", true);
     node_options.append_parameter_override("wheel_radius", 0.39F);
     node_options.append_parameter_override("wheel_width", 0.42F);
     node_options.append_parameter_override("wheel_base", 2.74F);
