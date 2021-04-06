@@ -35,8 +35,8 @@ jobs:
 
       - name: Rename file
         run: |
-          mkdir public/pr-check/pr${{ steps.set_env.outputs.PULL_NUMBER }}
-          mv public/pr-check/code-metrics.html public/pr-check/pr${{ steps.set_env.outputs.PULL_NUMBER }}/code-metrics.html
+          mkdir public/pr-check/pr-${{ steps.set_env.outputs.PULL_NUMBER }}
+          mv public/pr-check/code-metrics.html public/pr-check/pr-${{ steps.set_env.outputs.PULL_NUMBER }}/code-metrics.html
 
       - name: Deploy measurement result page to gh-pages
         uses: peaceiris/actions-gh-pages@v3
@@ -53,7 +53,7 @@ jobs:
             ### :bar_chart: Code Metrics Report
             Branch  | Metrics
             ------- | -------
-            This PR | [code-metrics.html](${{ env.GITHUB_PAGES_URL }}/pr-check/pr${{ steps.set_env.outputs.PULL_NUMBER }}/code-metrics.html)
+            This PR | [code-metrics.html](${{ env.GITHUB_PAGES_URL }}/pr-check/pr-${{ steps.set_env.outputs.PULL_NUMBER }}/code-metrics.html)
             main    | [code-metrics.html](${{ env.GITHUB_PAGES_URL }}/pr-check/main/code-metrics.html)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
