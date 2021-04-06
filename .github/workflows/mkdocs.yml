@@ -34,8 +34,8 @@ jobs:
       - name: Change directory structure for PR
         if : steps.set_env.outputs.PULL_NUMBER != null
         run: |
-          mkdir -p public/pr-check/pr${{ steps.set_env.outputs.PULL_NUMBER }}
-          mv site public/pr-check/pr${{ steps.set_env.outputs.PULL_NUMBER }}/
+          mkdir -p public/pr-check/pr-${{ steps.set_env.outputs.PULL_NUMBER }}
+          mv site public/pr-check/pr-${{ steps.set_env.outputs.PULL_NUMBER }}/
 
       - name: Change directory structure for main
         if : steps.set_env.outputs.PULL_NUMBER == null
