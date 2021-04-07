@@ -27,7 +27,7 @@ namespace obstacle_stop_planner
 {
 inline Polygon2d createOneStepPolygon(
   const geometry_msgs::msg::Pose & base_step_pose, const geometry_msgs::msg::Pose & next_step_pose,
-  const double expand_width, const VehicleInfo & vehicle_info)
+  const double expand_width, const vehicle_info_util::VehicleInfo & vehicle_info)
 {
   Polygon2d one_step_move_vehicle_corner_points;
   const auto footprint = createVehicleFootprint(vehicle_info, 0.0, expand_width);

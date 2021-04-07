@@ -27,29 +27,29 @@ using obstacle_stop_planner::ObstacleStopPlanner;
 using autoware_planning_msgs::msg::Trajectory;
 using autoware_planning_msgs::msg::TrajectoryPoint;
 
-VehicleInfo createVehicleParam()
-{
-  VehicleInfo i;
-  i.wheel_radius = 1.0F;
-  i.wheel_width = 1.0F;
-  i.wheel_base = 1.0F;
-  i.wheel_tread = 1.0F;
-  i.front_overhang = 1.0F;
-  i.rear_overhang = 1.0F;
-  i.left_overhang = 1.0F;
-  i.rear_overhang = 1.0F;
-  i.vehicle_height = 1.0F;
+// vehicle_info_util::VehicleInfo createVehicleParam()
+// {
+//   vehicle_info_util::VehicleInfo i;
+//   i.wheel_radius = 1.0F;
+//   i.wheel_width = 1.0F;
+//   i.wheel_base = 1.0F;
+//   i.wheel_tread = 1.0F;
+//   i.front_overhang = 1.0F;
+//   i.rear_overhang = 1.0F;
+//   i.left_overhang = 1.0F;
+//   i.rear_overhang = 1.0F;
+//   i.vehicle_height = 1.0F;
 
-  i.vehicle_length = 1.0F;
-  i.vehicle_width = 1.0F;
-  i.min_longitudinal_offset = 1.0F;
-  i.max_longitudinal_offset = 2.0F;
-  i.min_lateral_offset = 1.0F;
-  i.max_lateral_offset = 2.0F;
-  i.min_height_offset = 1.0F;
-  i.max_height_offset = 2.0F;
-  return i;
-}
+//   i.vehicle_length = 1.0F;
+//   i.vehicle_width = 1.0F;
+//   i.min_longitudinal_offset = 1.0F;
+//   i.max_longitudinal_offset = 2.0F;
+//   i.min_lateral_offset = 1.0F;
+//   i.max_lateral_offset = 2.0F;
+//   i.min_height_offset = 1.0F;
+//   i.max_height_offset = 2.0F;
+//   return i;
+// }
 
 StopControlParameter createStopParam()
 {

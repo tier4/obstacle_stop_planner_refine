@@ -1,5 +1,5 @@
 repositories:
   autoware/AutowareArchitectureProposal.iv:
     type: git
-    url: https://github.com/tier4/AutowareArchitectureProposal.iv.git
-    version: ros2
+    url: https://github.com/tier4/autoware.proj.git
+    version: main

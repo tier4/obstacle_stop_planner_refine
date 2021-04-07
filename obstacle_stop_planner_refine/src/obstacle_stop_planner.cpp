@@ -42,7 +42,7 @@ namespace obstacle_stop_planner
 {
 ObstacleStopPlanner::ObstacleStopPlanner(
   rclcpp::Node * node,
-  const VehicleInfo & vehicle_info,
+  const vehicle_info_util::VehicleInfo & vehicle_info,
   const StopControlParameter & stop_param,
   const SlowDownControlParameter & slow_down_param,
   const AdaptiveCruiseControlParameter & acc_param)
@@ -54,8 +54,8 @@ ObstacleStopPlanner::ObstacleStopPlanner(
 {
   debug_ptr_ = std::make_shared<ObstacleStopPlannerDebugNode>(
     node_,
-    vehicle_info_.wheel_base +
-    vehicle_info_.front_overhang);
+    vehicle_info_.wheel_base_m_ +
+    vehicle_info_.front_overhang_m_);
 
   // Initializer
   acc_controller_ = std::make_unique<obstacle_stop_planner::AdaptiveCruiseController>(
@@ -138,12 +138,12 @@ autoware_planning_msgs::msg::Trajectory ObstacleStopPlanner::pathCallback(
      */
     const auto prev_center_pose = getVehicleCenterFromBase(
       trajectory.points.at(i).pose,
-      vehicle_info_.vehicle_length,
-      vehicle_info_.rear_overhang);
+      vehicle_info_.vehicle_length_m_,
+      vehicle_info_.rear_overhang_m_);
     const auto next_center_pose = getVehicleCenterFromBase(
       trajectory.points.at(i + 1).pose,
-      vehicle_info_.vehicle_length,
-      vehicle_info_.rear_overhang);
+      vehicle_info_.vehicle_length_m_,
+      vehicle_info_.rear_overhang_m_);
 
     Point2d prev_center_point = autoware_utils::fromMsg(prev_center_pose.position).to_2d();
     Point2d next_center_point = autoware_utils::fromMsg(next_center_pose.position).to_2d();
@@ -419,8 +419,8 @@ void ObstacleStopPlanner::externalExpandStopRangeCallback(
   stop_param_.expand_stop_range = input_msg->expand_stop_range;
   stop_param_.stop_search_radius =
     stop_param_.step_length + std::hypot(
-    vehicle_info_.vehicle_width / 2.0 + stop_param_.expand_stop_range,
-    vehicle_info_.vehicle_length / 2.0);
+    vehicle_info_.vehicle_width_m_ / 2.0 + stop_param_.expand_stop_range,
+    vehicle_info_.vehicle_length_m_ / 2.0);
 }
 
 autoware_planning_msgs::msg::Trajectory ObstacleStopPlanner::insertSlowDownVelocity(
@@ -459,7 +459,7 @@ double ObstacleStopPlanner::calcSlowDownTargetVel(const double lateral_deviation
 {
   return slow_down_param_.min_slow_down_vel +
          (slow_down_param_.max_slow_down_vel - slow_down_param_.min_slow_down_vel) *
-         std::max(lateral_deviation - vehicle_info_.vehicle_width / 2, 0.0) /
+         std::max(lateral_deviation - vehicle_info_.vehicle_width_m_ / 2, 0.0) /
          slow_down_param_.expand_slow_down_range;
 }
 

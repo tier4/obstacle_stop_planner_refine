@@ -26,6 +26,7 @@
 #include "rclcpp/logger.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
+#include "vehicle_info_util/vehicle_info.hpp"
 
 namespace obstacle_stop_planner
 {
@@ -56,7 +57,7 @@ inline static pcl::PointCloud<pcl::PointXYZ>::Ptr searchPointcloudNearTrajectory
   const autoware_planning_msgs::msg::Trajectory & trajectory,
   const pcl::PointCloud<pcl::PointXYZ>::Ptr input_pointcloud_ptr,
   const double search_radius,
-  const VehicleInfo & param)
+  const vehicle_info_util::VehicleInfo & param)
 {
   pcl::PointCloud<pcl::PointXYZ>::Ptr output_pointcloud_ptr(
     new pcl::PointCloud<pcl::PointXYZ>);
@@ -64,8 +65,8 @@ inline static pcl::PointCloud<pcl::PointXYZ>::Ptr searchPointcloudNearTrajectory
   for (const auto & trajectory_point : trajectory.points) {
     const auto center_pose = getVehicleCenterFromBase(
       trajectory_point.pose,
-      param.vehicle_length,
-      param.rear_overhang);
+      param.vehicle_length_m_,
+      param.rear_overhang_m_);
 
     for (const auto & point : input_pointcloud_ptr->points) {
       const double x = center_pose.position.x - point.x;
@@ -82,7 +83,7 @@ inline pcl::PointCloud<pcl::PointXYZ>::Ptr searchCandidateObstacle(
   const tf2_ros::Buffer & tf_buffer,
   const autoware_planning_msgs::msg::Trajectory & trajectory,
   const double search_radius,
-  const VehicleInfo & param,
+  const vehicle_info_util::VehicleInfo & param,
   const rclcpp::Logger & logger)
 {
   // transform pointcloud

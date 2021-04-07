@@ -17,13 +17,7 @@
 
 
 TEST(createVehicleFootprint, returnValue) {
-  VehicleInfo vehicle_info;
-  vehicle_info.front_overhang = 0.5;
-  vehicle_info.rear_overhang = 0.3;
-  vehicle_info.wheel_base = 2.0;
-  vehicle_info.wheel_tread = 0.1;
-  vehicle_info.left_overhang = 0.2;
-  vehicle_info.right_overhang = 0.2;
+  vehicle_info_util::VehicleInfo vehicle_info{0, 0, 2.0, 0.1, 0.5, 0.3, 0.2, 0.2, 0};
 
   const auto ring2d = obstacle_stop_planner::createVehicleFootprint(vehicle_info);
   EXPECT_EQ(ring2d.size(), 5U);

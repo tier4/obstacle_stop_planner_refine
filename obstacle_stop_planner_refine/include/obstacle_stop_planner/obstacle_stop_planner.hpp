@@ -47,7 +47,7 @@ class OBSTACLE_STOP_PLANNER_PUBLIC ObstacleStopPlanner
 public:
   ObstacleStopPlanner(
     rclcpp::Node * node,
-    const VehicleInfo & vehicle_info,
+    const vehicle_info_util::VehicleInfo & vehicle_info,
     const StopControlParameter & stop_param,
     const SlowDownControlParameter & slow_down_param,
     const AdaptiveCruiseControlParameter & acc_param);
@@ -69,7 +69,7 @@ private:
   // tf2_ros::Buffer tf_buffer_;
   // tf2_ros::TransformListener tf_listener_;
   sensor_msgs::msg::PointCloud2::ConstSharedPtr obstacle_pointcloud_ptr_;
-  VehicleInfo vehicle_info_;
+  vehicle_info_util::VehicleInfo vehicle_info_;
   StopControlParameter stop_param_;
   SlowDownControlParameter slow_down_param_;
   AdaptiveCruiseControlParameter acc_param_;
