@@ -17,7 +17,7 @@
 
 
 TEST(createVehicleFootprint, returnValue) {
-  vehicle_info_util::VehicleInfo vehicle_info{0, 0, 2.0, 0.1, 0.5, 0.3, 0.2, 0.2, 0};
+  vehicle_info_util::VehicleInfo vehicle_info{0.0, 0.0, 2.0, 0.1, 0.5, 0.3, 0.2, 0.2, 0.0};
 
   const auto ring2d = obstacle_stop_planner::createVehicleFootprint(vehicle_info);
   EXPECT_EQ(ring2d.size(), 5U);
