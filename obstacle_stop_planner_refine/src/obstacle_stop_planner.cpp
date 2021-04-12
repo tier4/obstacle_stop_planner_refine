@@ -23,8 +23,6 @@
 
 #include "autoware_utils/geometry/geometry.hpp"
 #include "pcl/filters/voxel_grid.h"
-#include "tf2/utils.h"
-#include "tf2_eigen/tf2_eigen.h"
 #include "boost/assert.hpp"
 #include "boost/assign/list_of.hpp"
 #include "boost/format.hpp"
@@ -52,6 +50,22 @@ ObstacleStopPlanner::ObstacleStopPlanner(
   slow_down_param_(slow_down_param),
   acc_param_(acc_param)
 {
+  {
+    const auto & i = vehicle_info;
+
+    // TODO: move to other place
+    stop_param_.stop_margin += i.wheel_base_m_ + i.front_overhang_m_;
+    stop_param_.min_behavior_stop_margin +=
+      i.wheel_base_m_ + i.front_overhang_m_;
+    slow_down_param_.slow_down_margin += i.wheel_base_m_ + i.front_overhang_m_;
+    stop_param_.stop_search_radius = stop_param.step_length + std::hypot(
+      i.vehicle_width_m_ / 2.0 + stop_param.expand_stop_range,
+      i.vehicle_length_m_ / 2.0);
+    slow_down_param_.slow_down_search_radius = stop_param.step_length + std::hypot(
+      i.vehicle_width_m_ / 2.0 + slow_down_param.expand_slow_down_range,
+      i.vehicle_length_m_ / 2.0);
+  }
+
   debug_ptr_ = std::make_shared<ObstacleStopPlannerDebugNode>(
     node_,
     vehicle_info_.wheel_base_m +
@@ -68,9 +82,23 @@ void ObstacleStopPlanner::obstaclePointcloudCallback(
   obstacle_pointcloud_ptr_ = updatePointCloud(input_msg);
 }
 
+Output ObstacleStopPlanner::processTrajectory(const Input & input)
+{
+  // Do process1
+
+  // Do process2
+  adaptive_cruise();
+
+  if (!adaptive_cruise_success) {
+    slow_down();
+    obstacle_stop();
+  }
+  // return trajectory;
+}
+
 autoware_planning_msgs::msg::Trajectory ObstacleStopPlanner::pathCallback(
   const autoware_planning_msgs::msg::Trajectory::ConstSharedPtr input_msg,
-  tf2_ros::Buffer & tf_buffer)
+  const geometry_msgs::msg::Pose & self_pose)
 {
   /*
    * extend trajectory to consider obstacles after the goal
@@ -83,7 +111,6 @@ autoware_planning_msgs::msg::Trajectory ObstacleStopPlanner::pathCallback(
   /*
    * trim trajectory from self pose
    */
-  auto self_pose = getSelfPose(input_msg->header, tf_buffer);
   autoware_planning_msgs::msg::Trajectory trim_trajectory;
   size_t trajectory_trim_index = 0;
   std::tie(trim_trajectory, trajectory_trim_index) =
@@ -413,16 +440,6 @@ autoware_planning_msgs::msg::Trajectory ObstacleStopPlanner::insertStopPoint(
   return output_msg;
 }
 
-void ObstacleStopPlanner::externalExpandStopRangeCallback(
-  const autoware_planning_msgs::msg::ExpandStopRange::ConstSharedPtr input_msg)
-{
-  stop_param_.expand_stop_range = input_msg->expand_stop_range;
-  stop_param_.stop_search_radius =
-    stop_param_.step_length + std::hypot(
-    vehicle_info_.vehicle_width_m / 2.0 + stop_param_.expand_stop_range,
-    vehicle_info_.vehicle_length_m / 2.0);
-}
-
 autoware_planning_msgs::msg::Trajectory ObstacleStopPlanner::insertSlowDownVelocity(
   const size_t slow_down_start_point_idx, const double slow_down_target_vel, double slow_down_vel,
   const autoware_planning_msgs::msg::Trajectory & input_path)
@@ -473,24 +490,5 @@ void ObstacleStopPlanner::currentVelocityCallback(
   const geometry_msgs::msg::TwistStamped::ConstSharedPtr input_msg)
 {
   current_velocity_ptr_ = input_msg;
-}
-
-geometry_msgs::msg::Pose ObstacleStopPlanner::getSelfPose(
-  const std_msgs::msg::Header & header, const tf2_ros::Buffer & tf_buffer)
-{
-  geometry_msgs::msg::Pose self_pose;
-  try {
-    geometry_msgs::msg::TransformStamped transform;
-    transform =
-      tf_buffer.lookupTransform(
-      header.frame_id, "base_link", header.stamp, rclcpp::Duration::from_seconds(
-        0.1));
-    self_pose = autoware_utils::transform2pose(transform.transform);
-  } catch (tf2::TransformException & ex) {
-    RCLCPP_WARN_THROTTLE(
-      node_->get_logger(), *node_->get_clock(), std::chrono::milliseconds(1000).count(),
-      "could not get self pose from tf_buffer.");
-  }
-  return self_pose;
 }
 }  // namespace obstacle_stop_planner
