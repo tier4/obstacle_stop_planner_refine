@@ -30,9 +30,21 @@ namespace {
   T declare_parameter(
     rclcpp::node_interfaces::NodeParametersInterface::SharedPtr & node,
     const std::string & name,
-    const T & value)
+    const T & default_value)
   {
-    return node.declare_parameter(name, rclcpp::ParameterValue(value)).get<T>();
+    return node.declare_parameter(name, rclcpp::ParameterValue(default_value)).get<T>();
+  }
+
+  template <typename T>
+  void update_parameter(
+    const std::vector<rclcpp::Parameter> & parameters, const std::string & name, T & value)
+  {
+    auto it = std::find_if(
+      parameters.cbegin(), parameters.cend(),
+      [&name](const rclcpp::Parameter & parameter) { return parameter.get_name() == name; });
+    if (it != parameters.cend()) {
+      value = it->template get_value<T>();
+    }
   }
 }
 
@@ -59,12 +71,21 @@ private:
   rclcpp::Publisher<StopReasonArray>::SharedPtr pub_stop_reason_;
   rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr pub_acc_debug_;
 
-
   // Subscriber
   rclcpp::Subscription<Trajectory>::SharedPtr sub_path_;
   rclcpp::Subscription<PointCloud2>::SharedPtr sub_obstacle_pointcloud_;
   rclcpp::Subscription<TwistStamped>::SharedPtr sub_current_velocity_;
   rclcpp::Subscription<DynamicObjectArray>::SharedPtr sub_dynamic_object_;
+
+  // Parameter callback
+  OnSetParametersCallbackHandle::SharedPtr set_param_res_;
+  rcl_interfaces::msg::SetParametersResult onParameter(
+  const std::vector<rclcpp::Parameter> & parameters);
+
+  // Parameter
+  StopControlParameter stop_param_;
+  SlowDownControlParameter slow_down_param_;
+  AdaptiveCruiseControlParameter acc_param_;
 
   autoware_utils::SelfPoseListener self_pose_listener_;
   TransformListener transform_listener_;

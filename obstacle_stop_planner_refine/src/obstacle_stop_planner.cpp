@@ -45,15 +45,32 @@ ObstacleStopPlanner::ObstacleStopPlanner(
   const SlowDownControlParameter & slow_down_param,
   const AdaptiveCruiseControlParameter & acc_param)
 : node_(node),
-  vehicle_info_(vehicle_info),
-  stop_param_(stop_param),
-  slow_down_param_(slow_down_param),
-  acc_param_(acc_param)
+  vehicle_info_(vehicle_info)
 {
-  {
-    const auto & i = vehicle_info;
+  updateParameters(stop_param, slow_down_param, acc_param);
 
-    // TODO: move to other place
+  debug_ptr_ = std::make_shared<ObstacleStopPlannerDebugNode>(
+    node_,
+    vehicle_info_.wheel_base_m_ +
+    vehicle_info_.front_overhang_m_);
+
+  // Initializer
+  acc_controller_ = std::make_unique<obstacle_stop_planner::AdaptiveCruiseController>(
+    node_, vehicle_info_, acc_param_);
+}
+
+void ObstacleStopPlanner::updateParameters(
+  const StopControlParameter & stop_param,
+  const SlowDownControlParameter & slow_down_param,
+  const AdaptiveCruiseControlParameter & acc_param)
+{
+  stop_param_ = stop_param;
+  slow_down_param_ = slow_down_param;
+  acc_param_ = acc_param;
+
+  {
+    const auto & i = vehicle_info_;
+
     stop_param_.stop_margin += i.wheel_base_m_ + i.front_overhang_m_;
     stop_param_.min_behavior_stop_margin +=
       i.wheel_base_m_ + i.front_overhang_m_;
@@ -65,15 +82,6 @@ ObstacleStopPlanner::ObstacleStopPlanner(
       i.vehicle_width_m_ / 2.0 + slow_down_param.expand_slow_down_range,
       i.vehicle_length_m_ / 2.0);
   }
-
-  debug_ptr_ = std::make_shared<ObstacleStopPlannerDebugNode>(
-    node_,
-    vehicle_info_.wheel_base_m +
-    vehicle_info_.front_overhang_m);
-
-  // Initializer
-  acc_controller_ = std::make_unique<obstacle_stop_planner::AdaptiveCruiseController>(
-    node_, vehicle_info_, acc_param_);
 }
 
 Output ObstacleStopPlanner::processTrajectory(const Input & input)
