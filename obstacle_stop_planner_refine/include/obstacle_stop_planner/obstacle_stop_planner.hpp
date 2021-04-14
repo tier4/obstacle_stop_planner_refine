@@ -39,21 +39,31 @@
 
 namespace obstacle_stop_planner
 {
+using Trajectory = autoware_planning_msgs::msg::Trajectory;
+using Point3d = autoware_utils::Point3d;
+using LinearRing2d = autoware_utils::LinearRing2d;
 struct Input
 {
   geometry_msgs::msg::Pose current_pose;
-  sensor_msgs::msg::PointCloud2 obstacle_pointcloud;
+  std::vector<Point3d> obstacle_pointcloud;
+  rclcpp::Time pointcloud_header_time;
   geometry_msgs::msg::TwistStamped current_velocity;
   autoware_perception_msgs::msg::DynamicObjectArray object_array;
-  autoware_planning_msgs::msg::Trajectory input_trajectory;
+  Trajectory input_trajectory;
 };
 
 struct Output
 {
-  autoware_planning_msgs::msg::Trajectory output_trajectory;
+  Trajectory output_trajectory;
   visualization_msgs::msg::MarkerArray debug_viz_msg;
   autoware_planning_msgs::msg::StopReasonArray stop_reason;
   autoware_debug_msgs::msg::Float32MultiArrayStamped acc_debug_msg;
+};
+
+struct Collision
+{
+  size_t trajectory_index;
+  Point2d obstacle_point;
 };
 
 class OBSTACLE_STOP_PLANNER_PUBLIC ObstacleStopPlanner
@@ -67,12 +77,6 @@ public:
     const AdaptiveCruiseControlParameter & acc_param);
 
   Output processTrajectory(const Input & input);
-
-private:
-  void obstaclePointcloudCallback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr input_msg);
-  void dynamicObjectCallback(
-    const autoware_perception_msgs::msg::DynamicObjectArray::ConstSharedPtr input_msg);
-  void currentVelocityCallback(const geometry_msgs::msg::TwistStamped::ConstSharedPtr input_msg);
 
 private:
   rclcpp::Node * node_;
@@ -93,6 +97,30 @@ private:
   pcl::PointXYZ prev_col_point_;
 
 private:
+  std::vector<Point3d> searchCandidateObstacle(
+    const Trajectory & trajectory, const std::vector<Point3d> & obstacle_pointcloud);
+
+  boost::optional<Collision> findCollisionPoint(
+    const Trajectory & trajectory, const std::vector<Point3d> & obstacle_points);
+
+  std::vector<LinearRing2d> createVehicleFootprints(const Trajectory & trajectory);
+
+  std::vector<LinearRing2d> createVehiclePassingAreas(
+  const std::vector<LinearRing2d> & vehicle_footprints);
+
+  LinearRing2d createHullFromFootprints(
+  const LinearRing2d & area1, const LinearRing2d & area2);
+
+  boost::optional<Point3d> findCollisionParticle(const LinearRing2d & area, const std::vector<Point3d> & obstacle_points, const Point2d & base_point);
+
+  boost::optional<Trajectory> adaptiveCruise(const Input & input, const Collision & collision);
+
+  Trajectory slowDown(const Trajectory & trajectory, const Collision & collision);
+
+  Trajectory obstacleStop(const Trajectory & trajectory, const Collision & collision);
+
+
+
   geometry_msgs::msg::Pose getSelfPose(
     const std_msgs::msg::Header & header, const tf2_ros::Buffer & tf_buffer);
   autoware_planning_msgs::msg::Trajectory insertSlowDownVelocity(

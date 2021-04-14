@@ -20,6 +20,7 @@
 #include "obstacle_stop_planner/parameter/stop_control_parameter.hpp"
 #include "obstacle_stop_planner/parameter/slow_down_control_parameter.hpp"
 #include "obstacle_stop_planner/parameter/adaptive_cruise_control_parameter.hpp"
+#include "obstacle_stop_planner/obstacle_point_cloud.hpp"
 
 namespace {
   obstacle_stop_planner::StopControlParameter createStopParameter(rclcpp::node_interfaces::NodeParametersInterface::SharedPtr & node)
@@ -108,7 +109,8 @@ namespace obstacle_stop_planner
 {
 ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & node_options)
 : Node{"obstacle_stop_planner", node_options},
-  self_pose_listener_(this)
+  self_pose_listener_(this),
+  transform_listener_(this)
 {
   // Parameters
   auto parameter_interface = this->get_node_parameters_interface();
@@ -167,6 +169,31 @@ bool ObstacleStopPlannerNode::isDataReady()
   return true;
 }
 
+Input ObstacleStopPlannerNode::createInputData(const Trajectory & trajectory)
+{
+  Input input;
+  input.current_pose = self_pose_listener_.getCurrentPose()->pose;
+  input.current_velocity = *current_velocity_;
+  input.input_trajectory = trajectory;
+  input.object_array = *object_array_;
+  input.pointcloud_header_time = obstacle_pointcloud_->header.stamp;
+
+  // Transform pointcloud
+  const auto pointcloud = updatePointCloud(obstacle_pointcloud_);
+  const auto transform = transform_listener_.getTransform(
+    trajectory.header.frame_id,
+    pointcloud->header.frame_id,
+    pointcloud->header.stamp,
+    rclcpp::Duration::from_seconds(0.5));
+  const auto transformed_pointcloud = transformObstacle(pointcloud, *transform);
+  input.obstacle_pointcloud.reserve(transformed_pointcloud->points.size());
+  for (const auto & point : transformed_pointcloud->points) {
+    input.obstacle_pointcloud.emplace_back(Point3d {point.x, point.y, point.z});
+  }
+
+  return input;
+}
+
 void ObstacleStopPlannerNode::onTrajectory(
   const Trajectory::ConstSharedPtr input_msg)
 {
@@ -174,12 +201,7 @@ void ObstacleStopPlannerNode::onTrajectory(
     return;
   }
 
-  Input input;
-  input.current_pose = self_pose_listener_.getCurrentPose()->pose;
-  input.current_velocity = *current_velocity_;
-  input.input_trajectory = *input_msg;
-  input.object_array = *object_array_;
-  input.obstacle_pointcloud = *obstacle_pointcloud_;
+  const auto input = createInputData(*input_msg);
 
   const auto output = planner_->processTrajectory(input);
 

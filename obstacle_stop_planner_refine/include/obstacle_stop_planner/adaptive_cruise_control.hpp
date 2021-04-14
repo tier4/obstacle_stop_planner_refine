@@ -46,14 +46,13 @@ public:
     const vehicle_info_util::VehicleInfo & vehicle_info,
     const AdaptiveCruiseControlParameter & acc_param);
 
-  std::tuple<bool, autoware_planning_msgs::msg::Trajectory> insertAdaptiveCruiseVelocity(
+  boost::optional<autoware_planning_msgs::msg::Trajectory> insertAdaptiveCruiseVelocity(
     const autoware_planning_msgs::msg::Trajectory & trajectory,
     const int nearest_collision_point_idx,
-    const geometry_msgs::msg::Pose self_pose, const Point2d & nearest_collision_point,
+    const geometry_msgs::msg::Pose & self_pose, const Point2d & nearest_collision_point,
     const rclcpp::Time & nearest_collision_point_time,
-    const autoware_perception_msgs::msg::DynamicObjectArray::ConstSharedPtr object_ptr,
-    const geometry_msgs::msg::TwistStamped::ConstSharedPtr current_velocity_ptr,
-    const autoware_planning_msgs::msg::Trajectory & input_trajectory);
+    const autoware_perception_msgs::msg::DynamicObjectArray & object,
+    const geometry_msgs::msg::TwistStamped & current_velocity_twist);
 
 private:
   rclcpp::Publisher<autoware_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr pub_debug_;

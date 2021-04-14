@@ -76,25 +76,238 @@ ObstacleStopPlanner::ObstacleStopPlanner(
     node_, vehicle_info_, acc_param_);
 }
 
-void ObstacleStopPlanner::obstaclePointcloudCallback(
-  const sensor_msgs::msg::PointCloud2::ConstSharedPtr input_msg)
-{
-  obstacle_pointcloud_ptr_ = updatePointCloud(input_msg);
-}
-
 Output ObstacleStopPlanner::processTrajectory(const Input & input)
 {
-  // Do process1
+  // Search obstacles near vehicle
+  const auto obstacles = searchCandidateObstacle(input.input_trajectory, input.obstacle_pointcloud);
 
-  // Do process2
-  adaptive_cruise();
+  // Find collision point
+  const auto nearest_collision = findCollisionPoint(input.input_trajectory, obstacles);
 
-  if (!adaptive_cruise_success) {
-    slow_down();
-    obstacle_stop();
+  Output output;
+
+  // Limit trajectory for adaptive cruise control
+  if (nearest_collision.has_value()) {
+    const auto acc_trajectory = adaptiveCruise(input, nearest_collision.value());
+
+    if (acc_trajectory.has_value()) {
+      // Set adaptive cruise trajectory as output
+      output.output_trajectory = acc_trajectory.value();
+    } else {
+      // Slow down if obstacle is in the detection area
+      const auto slowdown_trajectory = slowDown(input.input_trajectory, nearest_collision.value());
+      // Stop if obstacle is in the detection area
+      output.output_trajectory = obstacleStop(slowdown_trajectory, nearest_collision.value());
+    }
+  } else {
+    // Set input trajectory as output
+    output.output_trajectory = input.input_trajectory;
   }
-  // return trajectory;
+
+  return output;
 }
+
+// search obstacle candidate pointcloud to reduce calculation cost
+std::vector<Point3d> ObstacleStopPlanner::searchCandidateObstacle(
+  const Trajectory & trajectory, const std::vector<Point3d> & obstacle_pointcloud)
+{
+  std::vector<Point3d> filtered_points;
+  const auto search_radius = slow_down_param_.enable_slow_down ?
+    slow_down_param_.slow_down_search_radius : stop_param_.stop_search_radius;
+
+  for (const auto & trajectory_point : trajectory.points) {
+    const auto center_pose = getVehicleCenterFromBase(
+      trajectory_point.pose,
+      vehicle_info_.vehicle_length_m_,
+      vehicle_info_.rear_overhang_m_);
+    const auto center_point = autoware_utils::fromMsg(center_pose.position);
+
+    for (const auto & point : obstacle_pointcloud) {
+      const auto diff = center_point - point;
+      const double distance = std::hypot(diff.x(), diff.y());
+      if (distance < search_radius) {
+        filtered_points.emplace_back(point);
+      }
+    }
+  }
+
+  return filtered_points;
+}
+
+boost::optional<Collision> ObstacleStopPlanner::findCollisionPoint(
+  const Trajectory & trajectory, const std::vector<Point3d> & obstacle_points)
+{
+  // Create footprint vector
+  const auto footprints = createVehicleFootprints(trajectory);
+  const auto passing_areas = createVehiclePassingAreas(footprints);
+
+  // Loop for each trajectory point and areas
+  //  passing_area.size() is trajectory.size() - 1
+  for (size_t i = 0; i < passing_areas.size(); ++i) {
+    // Check whether obstacle is inside passing area
+    const auto base_point = autoware_utils::fromMsg(
+      autoware_utils::getPoint(trajectory.points.at(i)));
+
+    const auto collision_particle = findCollisionParticle(
+      passing_areas.at(i),
+      obstacle_points,
+      base_point.to_2d());
+    if (collision_particle.has_value()) {
+      Collision collision;
+      collision.trajectory_index = i;
+      collision.obstacle_point = collision_particle.value().to_2d();
+      return collision;
+    }
+  }
+  return boost::none;
+}
+
+std::vector<LinearRing2d> ObstacleStopPlanner::createVehicleFootprints(const Trajectory & trajectory)
+{
+  // Create vehicle footprint in base_link coordinate
+  const auto local_vehicle_footprint =
+    createVehicleFootprint(vehicle_info_, 0.0, stop_param_.expand_stop_range);
+
+  // Create vehicle footprint on each TrajectoryPoint
+  std::vector<LinearRing2d> vehicle_footprints;
+  for (const auto & p : trajectory.points) {
+    vehicle_footprints.push_back(
+      transformVector(local_vehicle_footprint, autoware_utils::pose2transform(p.pose)));
+  }
+
+  return vehicle_footprints;
+}
+
+std::vector<LinearRing2d> ObstacleStopPlanner::createVehiclePassingAreas(
+  const std::vector<LinearRing2d> & vehicle_footprints)
+{
+  // Create hull from two adjacent vehicle footprints
+  std::vector<LinearRing2d> areas;
+  areas.reserve(vehicle_footprints.size() - 1);
+  for (size_t i = 0; i < vehicle_footprints.size() - 1; ++i) {
+    const auto & footprint1 = vehicle_footprints.at(i);
+    const auto & footprint2 = vehicle_footprints.at(i + 1);
+    areas.emplace_back(createHullFromFootprints(footprint1, footprint2));
+  }
+
+  return areas;
+}
+
+LinearRing2d ObstacleStopPlanner::createHullFromFootprints(
+  const LinearRing2d & area1, const LinearRing2d & area2)
+{
+  autoware_utils::MultiPoint2d combined;
+  combined.reserve(area1.size() + area2.size());
+  for (const auto & p : area1) {
+    combined.emplace_back(p);
+  }
+  for (const auto & p : area2) {
+    combined.emplace_back(p);
+  }
+
+  LinearRing2d hull;
+  boost::geometry::convex_hull(combined, hull);
+
+  return hull;
+}
+
+boost::optional<Point3d> ObstacleStopPlanner::findCollisionParticle(const LinearRing2d & area, const std::vector<Point3d> & obstacle_points, const Point2d & base_point)
+{
+  // Search all obstacle inside area
+  std::vector<Point3d> collision_points;
+  for (const auto & point : obstacle_points) {
+    if (boost::geometry::within(area, point)) {
+      collision_points.emplace_back(point);
+    }
+  }
+  if (collision_points.empty()) {
+    return boost::none;
+  }
+
+  // Get nearest point
+  std::vector<double> distances;
+  distances.reserve(collision_points.size());
+  std::transform(
+    collision_points.cbegin(), collision_points.cend(),
+    std::back_inserter(distances),
+    [&](const Point3d & p) {
+      return boost::geometry::distance(p.to_2d(), base_point);
+    });
+
+  const auto min_itr = std::min_element(distances.cbegin(), distances.cend());
+  const auto min_idx = static_cast<size_t>(std::distance(distances.cbegin(), min_itr));
+
+  return collision_points.at(min_idx);
+}
+
+// Create adaptive cruise trajectory
+//   Follow front vehicle adaptively
+// Input
+//   input trajectory
+//   collision
+//   object array
+//   vehicle's current velocity
+// Output
+//   output trajectory
+boost::optional<Trajectory> ObstacleStopPlanner::adaptiveCruise(const Input & input, const Collision & collision)
+{
+  return acc_controller_->insertAdaptiveCruiseVelocity(
+    input.input_trajectory,
+    collision.trajectory_index,
+    input.current_pose,
+    collision.obstacle_point,
+    input.pointcloud_header_time,
+    input.object_array,
+    input.current_velocity);
+}
+
+// Create Stop trajectory
+//   All velocity in trajectory set to minimum velcity after slow_down_index.
+// Input
+//   input trajectory
+//   slow_down_index
+// Output
+//   output trajectory
+Trajectory ObstacleStopPlanner::slowDown(const Trajectory & trajectory, const Collision & collision)
+{
+  // get lateral deviation
+  // TODO: use candidate_pointcloud instead of collision point
+  const auto lateral_deviation = autoware_utils::calcLateralDeviation(trajectory.points.at(collision.trajectory_index).pose, autoware_utils::toMsg(collision.obstacle_point.to_3d()));
+
+  const auto target_velocity = calcSlowDownTargetVel(lateral_deviation);
+
+  // TODO: This is very simple logic. The output should be the same as the existing logic.
+  Trajectory limited_trajectory = trajectory;
+  for (size_t i = collision.trajectory_index; i < limited_trajectory.points.size(); ++i) {
+    limited_trajectory.points.at(i).twist.linear.x = target_velocity;
+  }
+
+  return limited_trajectory;
+}
+
+// Create Stop trajectory
+//   All velocity in trajectory set to 0 after stop_index.
+// Input
+//   input trajectory
+//   stop_index
+// Output
+//   output trajectory
+Trajectory ObstacleStopPlanner::obstacleStop(const Trajectory & trajectory, const Collision & collision)
+{
+  // TODO: This is very simple logic. The output should be the same as the existing logic.
+  Trajectory limited_trajectory = trajectory;
+  for (size_t i = collision.trajectory_index; i < limited_trajectory.points.size(); ++i) {
+    limited_trajectory.points.at(i).twist.linear.x = 0.0;
+  }
+
+  return limited_trajectory;
+}
+
+////////////////////////////////////////////////////////////////
+// MEMO:
+// The following is a past implementation.
+// I plan to remove it when I replace all the features.
+////////////////////////////////////////////////////////////////
 
 autoware_planning_msgs::msg::Trajectory ObstacleStopPlanner::pathCallback(
   const autoware_planning_msgs::msg::Trajectory::ConstSharedPtr input_msg,
@@ -480,15 +693,4 @@ double ObstacleStopPlanner::calcSlowDownTargetVel(const double lateral_deviation
          slow_down_param_.expand_slow_down_range;
 }
 
-void ObstacleStopPlanner::dynamicObjectCallback(
-  const autoware_perception_msgs::msg::DynamicObjectArray::ConstSharedPtr input_msg)
-{
-  object_ptr_ = input_msg;
-}
-
-void ObstacleStopPlanner::currentVelocityCallback(
-  const geometry_msgs::msg::TwistStamped::ConstSharedPtr input_msg)
-{
-  current_velocity_ptr_ = input_msg;
-}
 }  // namespace obstacle_stop_planner

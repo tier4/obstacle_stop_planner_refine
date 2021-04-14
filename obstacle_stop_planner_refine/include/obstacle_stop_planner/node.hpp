@@ -45,6 +45,7 @@ using DynamicObjectArray = autoware_perception_msgs::msg::DynamicObjectArray;
 using MarkerArray = visualization_msgs::msg::MarkerArray;
 using StopReasonArray = autoware_planning_msgs::msg::StopReasonArray;
 using Float32MultiArrayStamped = autoware_debug_msgs::msg::Float32MultiArrayStamped;
+using Point3d = autoware_utils::Point3d;
 
 class OBSTACLE_STOP_PLANNER_PUBLIC ObstacleStopPlannerNode : public rclcpp::Node
 {
@@ -66,6 +67,7 @@ private:
   rclcpp::Subscription<DynamicObjectArray>::SharedPtr sub_dynamic_object_;
 
   autoware_utils::SelfPoseListener self_pose_listener_;
+  TransformListener transform_listener_;
 
   PointCloud2::ConstSharedPtr obstacle_pointcloud_;
   TwistStamped::ConstSharedPtr current_velocity_;
@@ -74,6 +76,7 @@ private:
   std::unique_ptr<obstacle_stop_planner::ObstacleStopPlanner> planner_;
 
   bool isDataReady();
+  Input createInputData(const Trajectory & trajectory);
   void onTrajectory(const Trajectory::ConstSharedPtr input_msg);
 };
 }  // namespace obstacle_stop_planner
