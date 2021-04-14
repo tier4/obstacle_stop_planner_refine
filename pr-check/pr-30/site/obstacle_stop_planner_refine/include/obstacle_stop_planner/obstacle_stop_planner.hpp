@@ -76,6 +76,12 @@ public:
     const SlowDownControlParameter & slow_down_param,
     const AdaptiveCruiseControlParameter & acc_param);
 
+  // Update Parameters
+  void updateParameters(
+    const StopControlParameter & stop_param,
+    const SlowDownControlParameter & slow_down_param,
+    const AdaptiveCruiseControlParameter & acc_param);
+
   Output processTrajectory(const Input & input);
 
 private:
