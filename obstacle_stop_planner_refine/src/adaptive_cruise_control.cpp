@@ -51,7 +51,7 @@ AdaptiveCruiseController::insertAdaptiveCruiseVelocity(
   const autoware_planning_msgs::msg::Trajectory & trajectory, const int nearest_collision_point_idx,
   const geometry_msgs::msg::Pose & self_pose, const Point2d & nearest_collision_point,
   const rclcpp::Time & nearest_collision_point_time,
-  const autoware_perception_msgs::msg::DynamicObjectArray & object,
+  const autoware_perception_msgs::msg::DynamicObjectArray & object_array,
   const geometry_msgs::msg::TwistStamped & current_velocity_twist)
 {
   debug_values_.data.clear();
@@ -86,7 +86,7 @@ AdaptiveCruiseController::insertAdaptiveCruiseVelocity(
 
   if (param_.use_object_to_est_vel) {
     const auto velocity = estimatePointVelocityFromObject(
-      object, traj_yaw, nearest_collision_point);
+      object_array, traj_yaw, nearest_collision_point);
     if (velocity) {
       point_velocity = velocity.get();
     }
@@ -198,7 +198,7 @@ double AdaptiveCruiseController::calcTrajYaw(
 }
 
 optional<double> AdaptiveCruiseController::estimatePointVelocityFromObject(
-  const autoware_perception_msgs::msg::DynamicObjectArray::ConstSharedPtr object_ptr,
+  const autoware_perception_msgs::msg::DynamicObjectArray & object_array,
   const double traj_yaw,
   const Point2d & nearest_collision_point)
 {
@@ -206,7 +206,7 @@ optional<double> AdaptiveCruiseController::estimatePointVelocityFromObject(
   bool get_obj = false;
   double obj_vel = 0.0;
   double obj_yaw = 0.0;
-  for (const auto & obj : object_ptr->objects) {
+  for (const auto & obj : object_array.objects) {
     const auto obj_poly = getPolygon(
       obj.state.pose_covariance.pose, obj.shape.dimensions, 0.0,
       param_.object_polygon_length_margin, param_.object_polygon_width_margin);

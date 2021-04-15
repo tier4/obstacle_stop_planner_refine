@@ -32,7 +32,7 @@ namespace {
     const std::string & name,
     const T & default_value)
   {
-    return node.declare_parameter(name, rclcpp::ParameterValue(default_value)).get<T>();
+    return node->declare_parameter(name, rclcpp::ParameterValue(default_value)).get<T>();
   }
 
   template <typename T>

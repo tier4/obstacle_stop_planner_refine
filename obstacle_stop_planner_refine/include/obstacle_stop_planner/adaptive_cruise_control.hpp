@@ -85,7 +85,7 @@ private:
   static double calcTrajYaw(
     const autoware_planning_msgs::msg::Trajectory & trajectory, const int collision_point_idx);
   optional<double> estimatePointVelocityFromObject(
-    const autoware_perception_msgs::msg::DynamicObjectArray::ConstSharedPtr object_ptr,
+    const autoware_perception_msgs::msg::DynamicObjectArray & object_array,
     const double traj_yaw,
     const Point2d & nearest_collision_point);
   optional<double> estimatePointVelocityFromPcl(

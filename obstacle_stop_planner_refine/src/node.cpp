@@ -116,11 +116,11 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
   auto parameter_interface = this->get_node_parameters_interface();
   stop_param_ = createStopParameter(parameter_interface);
   slow_down_param_ = createSlowDownParameter(parameter_interface);
-  acc_param_ = createStopParameter(parameter_interface);
+  acc_param_ = createAccParameter(parameter_interface);
 
   // Parameter Callback
   set_param_res_ =
-    add_on_set_parameters_callback(std::bind(&ObstacleStopPlannerNode::onParameter, this, _1));
+    add_on_set_parameters_callback(std::bind(&ObstacleStopPlannerNode::onParameter, this, std::placeholders::_1));
 
   // Vehicle Info
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
