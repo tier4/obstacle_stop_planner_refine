@@ -26,11 +26,6 @@
 #include "autoware_planning_msgs/msg/trajectory.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "autoware_debug_msgs/msg/float32_stamped.hpp"
-#include "pcl/point_types.h"
-#include "pcl_conversions/pcl_conversions.h"
-#include "pcl/point_cloud.h"
-#include "pcl/common/transforms.h"
-#include "sensor_msgs/msg/point_cloud2.hpp"
 #include "obstacle_stop_planner/adaptive_cruise_control.hpp"
 #include "obstacle_stop_planner/debug_marker.hpp"
 #include "obstacle_stop_planner/obstacle_point_cloud.hpp"
@@ -62,7 +57,7 @@ struct Output
 
 struct Collision
 {
-  size_t trajectory_index;
+  size_t segment_index;
   Point2d obstacle_point;
 };
 
@@ -71,38 +66,33 @@ class OBSTACLE_STOP_PLANNER_PUBLIC ObstacleStopPlanner
 public:
   ObstacleStopPlanner(
     rclcpp::Node * node,
-    const vehicle_info_util::VehicleInfo & vehicle_info,
-    const StopControlParameter & stop_param,
-    const SlowDownControlParameter & slow_down_param,
-    const AdaptiveCruiseControlParameter & acc_param);
+    const std::shared_ptr<vehicle_info_util::VehicleInfo> & vehicle_info,
+    const std::shared_ptr<StopControlParameter> & stop_param,
+    const std::shared_ptr<SlowDownControlParameter> & slow_down_param,
+    const std::shared_ptr<AdaptiveCruiseControlParameter> & acc_param);
 
   // Update Parameters
   void updateParameters(
-    const StopControlParameter & stop_param,
-    const SlowDownControlParameter & slow_down_param,
-    const AdaptiveCruiseControlParameter & acc_param);
+    const std::shared_ptr<StopControlParameter> & stop_param,
+    const std::shared_ptr<SlowDownControlParameter> & slow_down_param,
+    const std::shared_ptr<AdaptiveCruiseControlParameter> & acc_param);
 
   Output processTrajectory(const Input & input);
 
 private:
   rclcpp::Node * node_;
   std::shared_ptr<ObstacleStopPlannerDebugNode> debug_ptr_;
-  sensor_msgs::msg::PointCloud2::ConstSharedPtr obstacle_pointcloud_ptr_;
-  vehicle_info_util::VehicleInfo vehicle_info_;
-  StopControlParameter stop_param_;
-  SlowDownControlParameter slow_down_param_;
-  AdaptiveCruiseControlParameter acc_param_;
+  std::unique_ptr<obstacle_stop_planner::AdaptiveCruiseController> acc_controller_;
 
   /*
    * Parameter
    */
-  std::unique_ptr<obstacle_stop_planner::AdaptiveCruiseController> acc_controller_;
-  geometry_msgs::msg::TwistStamped::ConstSharedPtr current_velocity_ptr_;
-  autoware_perception_msgs::msg::DynamicObjectArray::ConstSharedPtr object_ptr_;
-  rclcpp::Time prev_col_point_time_;
-  pcl::PointXYZ prev_col_point_;
+  std::shared_ptr<vehicle_info_util::VehicleInfo> vehicle_info_;
+  std::shared_ptr<StopControlParameter> stop_param_;
+  std::shared_ptr<SlowDownControlParameter> slow_down_param_;
+  std::shared_ptr<AdaptiveCruiseControlParameter> acc_param_;
 
-private:
+public:
   std::vector<Point3d> searchCandidateObstacle(
     const Trajectory & trajectory, const std::vector<Point3d> & obstacle_pointcloud);
 
@@ -111,19 +101,19 @@ private:
 
   std::vector<LinearRing2d> createVehicleFootprints(const Trajectory & trajectory);
 
-  std::vector<LinearRing2d> createVehiclePassingAreas(
+  std::vector<Polygon2d> createVehiclePassingAreas(
   const std::vector<LinearRing2d> & vehicle_footprints);
 
-  LinearRing2d createHullFromFootprints(
+  Polygon2d createHullFromFootprints(
   const LinearRing2d & area1, const LinearRing2d & area2);
 
-  boost::optional<Point3d> findCollisionParticle(const LinearRing2d & area, const std::vector<Point3d> & obstacle_points, const Point2d & base_point);
+  boost::optional<Point3d> findCollisionParticle(const Polygon2d & area, const std::vector<Point3d> & obstacle_points, const Point2d & base_point);
 
-  boost::optional<Trajectory> adaptiveCruise(const Input & input, const Collision & collision);
+  boost::optional<Trajectory> planAdaptiveCruise(const Input & input, const Collision & collision);
 
-  Trajectory slowDown(const Trajectory & trajectory, const Collision & collision);
+  Trajectory planSlowDown(const Trajectory & trajectory, const Collision & collision);
 
-  Trajectory obstacleStop(const Trajectory & trajectory, const Collision & collision);
+  Trajectory planObstacleStop(const Trajectory & trajectory, const Collision & collision);
 
 
 
@@ -157,13 +147,13 @@ private:
     const autoware_planning_msgs::msg::Trajectory & base_path,
     const Point2d & nearest_collision_point,
     const autoware_planning_msgs::msg::Trajectory & input_msg);
-  autoware_planning_msgs::msg::Trajectory insertSlowDownPoint(
-    const size_t search_start_index,
-    const autoware_planning_msgs::msg::Trajectory & base_path,
-    const Point2d & nearest_slow_down_point,
-    const double slow_down_target_vel,
-    const double slow_down_margin,
-    const autoware_planning_msgs::msg::Trajectory & input_msg);
+  // autoware_planning_msgs::msg::Trajectory insertSlowDownPoint(
+  //   const size_t search_start_index,
+  //   const autoware_planning_msgs::msg::Trajectory & base_path,
+  //   const Point2d & nearest_slow_down_point,
+  //   const double slow_down_target_vel,
+  //   const double slow_down_margin,
+  //   const autoware_planning_msgs::msg::Trajectory & input_msg);
 };
 }  // namespace obstacle_stop_planner
 
