@@ -38,21 +38,31 @@ using autoware_utils::Polygon2d;
 using autoware_utils::Polygon3d;
 using boost::optional;
 
+namespace adaptive_cruise_controller
+{
+struct Input {
+  autoware_planning_msgs::msg::Trajectory trajectory;
+  size_t nearest_collision_point_idx;
+  geometry_msgs::msg::Pose self_pose;
+  Point2d nearest_collision_point;
+  rclcpp::Time nearest_collision_point_time;
+  autoware_perception_msgs::msg::DynamicObjectArray object_array;
+  geometry_msgs::msg::TwistStamped current_velocity;
+};
+}  // namespace adaptive_cruise_controller
+
 class AdaptiveCruiseController
 {
 public:
   AdaptiveCruiseController(
     rclcpp::Node * node,
-    const vehicle_info_util::VehicleInfo & vehicle_info,
-    const AdaptiveCruiseControlParameter & acc_param);
+    const std::shared_ptr<vehicle_info_util::VehicleInfo> & vehicle_info,
+    const std::shared_ptr<AdaptiveCruiseControlParameter> & acc_param);
+
+  void updateParameter(const std::shared_ptr<AdaptiveCruiseControlParameter> & acc_param);
 
   boost::optional<autoware_planning_msgs::msg::Trajectory> insertAdaptiveCruiseVelocity(
-    const autoware_planning_msgs::msg::Trajectory & trajectory,
-    const int nearest_collision_point_idx,
-    const geometry_msgs::msg::Pose & self_pose, const Point2d & nearest_collision_point,
-    const rclcpp::Time & nearest_collision_point_time,
-    const autoware_perception_msgs::msg::DynamicObjectArray & object,
-    const geometry_msgs::msg::TwistStamped & current_velocity_twist);
+    const adaptive_cruise_controller::Input & input);
 
 private:
   rclcpp::Publisher<autoware_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr pub_debug_;
@@ -61,8 +71,8 @@ private:
   /*
    * Parameter
    */
-  vehicle_info_util::VehicleInfo vehicle_info_;
-  AdaptiveCruiseControlParameter param_;
+  std::shared_ptr<vehicle_info_util::VehicleInfo> vehicle_info_;
+  std::shared_ptr<AdaptiveCruiseControlParameter> param_;
 
   rclcpp::Time prev_collision_point_time_;
   Point2d prev_collision_point_;

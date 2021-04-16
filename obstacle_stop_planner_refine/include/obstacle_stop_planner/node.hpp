@@ -24,29 +24,7 @@
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "autoware_perception_msgs/msg/dynamic_object_array.hpp"
 #include "obstacle_stop_planner/obstacle_stop_planner.hpp"
-
-namespace {
-  template<typename T>
-  T declare_parameter(
-    rclcpp::node_interfaces::NodeParametersInterface::SharedPtr & node,
-    const std::string & name,
-    const T & default_value)
-  {
-    return node->declare_parameter(name, rclcpp::ParameterValue(default_value)).get<T>();
-  }
-
-  template <typename T>
-  void update_parameter(
-    const std::vector<rclcpp::Parameter> & parameters, const std::string & name, T & value)
-  {
-    auto it = std::find_if(
-      parameters.cbegin(), parameters.cend(),
-      [&name](const rclcpp::Parameter & parameter) { return parameter.get_name() == name; });
-    if (it != parameters.cend()) {
-      value = it->template get_value<T>();
-    }
-  }
-}
+#include "obstacle_stop_planner/util/parameter_helper.hpp"
 
 namespace obstacle_stop_planner
 {
@@ -66,13 +44,13 @@ public:
 
 private:
   // Publisher
-  rclcpp::Publisher<Trajectory>::SharedPtr pub_path_;
-  rclcpp::Publisher<MarkerArray>::SharedPtr pub_debug_viz_;
+  rclcpp::Publisher<Trajectory>::SharedPtr pub_trajectory_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr pub_debug_marker_array_;
   rclcpp::Publisher<StopReasonArray>::SharedPtr pub_stop_reason_;
-  rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr pub_acc_debug_;
+  rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr pub_debug_acc_;
 
   // Subscriber
-  rclcpp::Subscription<Trajectory>::SharedPtr sub_path_;
+  rclcpp::Subscription<Trajectory>::SharedPtr sub_trajectory_;
   rclcpp::Subscription<PointCloud2>::SharedPtr sub_obstacle_pointcloud_;
   rclcpp::Subscription<TwistStamped>::SharedPtr sub_current_velocity_;
   rclcpp::Subscription<DynamicObjectArray>::SharedPtr sub_dynamic_object_;
@@ -83,11 +61,11 @@ private:
   const std::vector<rclcpp::Parameter> & parameters);
 
   // Parameter
-  StopControlParameter stop_param_;
-  SlowDownControlParameter slow_down_param_;
-  AdaptiveCruiseControlParameter acc_param_;
+  std::shared_ptr<StopControlParameter> stop_param_;
+  std::shared_ptr<SlowDownControlParameter> slow_down_param_;
+  std::shared_ptr<AdaptiveCruiseControlParameter> acc_param_;
 
-  autoware_utils::SelfPoseListener self_pose_listener_;
+  autoware_utils::SelfPoseListener self_pose_listener_ {this};
   TransformListener transform_listener_;
 
   PointCloud2::ConstSharedPtr obstacle_pointcloud_;
@@ -97,6 +75,7 @@ private:
   std::unique_ptr<obstacle_stop_planner::ObstacleStopPlanner> planner_;
 
   bool isDataReady();
+  bool isTransformReady(const Trajectory & trajectory);
   Input createInputData(const Trajectory & trajectory);
   void onTrajectory(const Trajectory::ConstSharedPtr input_msg);
 };

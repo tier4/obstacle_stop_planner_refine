@@ -57,7 +57,7 @@ struct Output
 
 struct Collision
 {
-  size_t trajectory_index;
+  size_t segment_index;
   Point2d obstacle_point;
 };
 
@@ -66,16 +66,16 @@ class OBSTACLE_STOP_PLANNER_PUBLIC ObstacleStopPlanner
 public:
   ObstacleStopPlanner(
     rclcpp::Node * node,
-    const vehicle_info_util::VehicleInfo & vehicle_info,
-    const StopControlParameter & stop_param,
-    const SlowDownControlParameter & slow_down_param,
-    const AdaptiveCruiseControlParameter & acc_param);
+    const std::shared_ptr<vehicle_info_util::VehicleInfo> & vehicle_info,
+    const std::shared_ptr<StopControlParameter> & stop_param,
+    const std::shared_ptr<SlowDownControlParameter> & slow_down_param,
+    const std::shared_ptr<AdaptiveCruiseControlParameter> & acc_param);
 
   // Update Parameters
   void updateParameters(
-    const StopControlParameter & stop_param,
-    const SlowDownControlParameter & slow_down_param,
-    const AdaptiveCruiseControlParameter & acc_param);
+    const std::shared_ptr<StopControlParameter> & stop_param,
+    const std::shared_ptr<SlowDownControlParameter> & slow_down_param,
+    const std::shared_ptr<AdaptiveCruiseControlParameter> & acc_param);
 
   Output processTrajectory(const Input & input);
 
@@ -87,10 +87,10 @@ private:
   /*
    * Parameter
    */
-  vehicle_info_util::VehicleInfo vehicle_info_;
-  StopControlParameter stop_param_;
-  SlowDownControlParameter slow_down_param_;
-  AdaptiveCruiseControlParameter acc_param_;
+  std::shared_ptr<vehicle_info_util::VehicleInfo> vehicle_info_;
+  std::shared_ptr<StopControlParameter> stop_param_;
+  std::shared_ptr<SlowDownControlParameter> slow_down_param_;
+  std::shared_ptr<AdaptiveCruiseControlParameter> acc_param_;
 
 public:
   std::vector<Point3d> searchCandidateObstacle(
@@ -109,11 +109,11 @@ public:
 
   boost::optional<Point3d> findCollisionParticle(const Polygon2d & area, const std::vector<Point3d> & obstacle_points, const Point2d & base_point);
 
-  boost::optional<Trajectory> adaptiveCruise(const Input & input, const Collision & collision);
+  boost::optional<Trajectory> planAdaptiveCruise(const Input & input, const Collision & collision);
 
-  Trajectory slowDown(const Trajectory & trajectory, const Collision & collision);
+  Trajectory planSlowDown(const Trajectory & trajectory, const Collision & collision);
 
-  Trajectory obstacleStop(const Trajectory & trajectory, const Collision & collision);
+  Trajectory planObstacleStop(const Trajectory & trajectory, const Collision & collision);
 
 
 

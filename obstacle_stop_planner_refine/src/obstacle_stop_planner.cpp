@@ -39,48 +39,50 @@ namespace obstacle_stop_planner
 {
 ObstacleStopPlanner::ObstacleStopPlanner(
   rclcpp::Node * node,
-  const vehicle_info_util::VehicleInfo & vehicle_info,
-  const StopControlParameter & stop_param,
-  const SlowDownControlParameter & slow_down_param,
-  const AdaptiveCruiseControlParameter & acc_param)
+  const std::shared_ptr<vehicle_info_util::VehicleInfo> & vehicle_info,
+  const std::shared_ptr<StopControlParameter> & stop_param,
+  const std::shared_ptr<SlowDownControlParameter> & slow_down_param,
+  const std::shared_ptr<AdaptiveCruiseControlParameter> & acc_param)
 : node_(node),
   vehicle_info_(vehicle_info)
 {
-  updateParameters(stop_param, slow_down_param, acc_param);
-
   debug_ptr_ = std::make_shared<ObstacleStopPlannerDebugNode>(
     node_,
-    vehicle_info_.wheel_base_m_ +
-    vehicle_info_.front_overhang_m_);
+    vehicle_info_->wheel_base_m_ +
+    vehicle_info_->front_overhang_m_);
 
   // Initializer
   acc_controller_ = std::make_unique<obstacle_stop_planner::AdaptiveCruiseController>(
     node_, vehicle_info_, acc_param_);
+
+  updateParameters(stop_param, slow_down_param, acc_param);
 }
 
 void ObstacleStopPlanner::updateParameters(
-  const StopControlParameter & stop_param,
-  const SlowDownControlParameter & slow_down_param,
-  const AdaptiveCruiseControlParameter & acc_param)
+  const std::shared_ptr<StopControlParameter> & stop_param,
+  const std::shared_ptr<SlowDownControlParameter> & slow_down_param,
+  const std::shared_ptr<AdaptiveCruiseControlParameter> & acc_param)
 {
   stop_param_ = stop_param;
   slow_down_param_ = slow_down_param;
   acc_param_ = acc_param;
 
   {
-    const auto & i = vehicle_info_;
+    const auto & i = *vehicle_info_;
 
-    stop_param_.stop_margin += i.wheel_base_m_ + i.front_overhang_m_;
-    stop_param_.min_behavior_stop_margin +=
+    stop_param_->stop_margin += i.wheel_base_m_ + i.front_overhang_m_;
+    stop_param_->min_behavior_stop_margin +=
       i.wheel_base_m_ + i.front_overhang_m_;
-    slow_down_param_.slow_down_margin += i.wheel_base_m_ + i.front_overhang_m_;
-    stop_param_.stop_search_radius = stop_param.step_length + std::hypot(
-      i.vehicle_width_m_ / 2.0 + stop_param.expand_stop_range,
+    slow_down_param_->slow_down_margin += i.wheel_base_m_ + i.front_overhang_m_;
+    stop_param_->stop_search_radius = stop_param->step_length + std::hypot(
+      i.vehicle_width_m_ / 2.0 + stop_param->expand_stop_range,
       i.vehicle_length_m_ / 2.0);
-    slow_down_param_.slow_down_search_radius = stop_param.step_length + std::hypot(
-      i.vehicle_width_m_ / 2.0 + slow_down_param.expand_slow_down_range,
+    slow_down_param_->slow_down_search_radius = stop_param->step_length + std::hypot(
+      i.vehicle_width_m_ / 2.0 + slow_down_param->expand_slow_down_range,
       i.vehicle_length_m_ / 2.0);
   }
+
+  acc_controller_->updateParameter(acc_param_);
 }
 
 Output ObstacleStopPlanner::processTrajectory(const Input & input)
@@ -95,23 +97,24 @@ Output ObstacleStopPlanner::processTrajectory(const Input & input)
 
   // Limit trajectory for adaptive cruise control
   if (nearest_collision.has_value()) {
-    const auto acc_trajectory = adaptiveCruise(input, nearest_collision.value());
+    const auto acc_trajectory = planAdaptiveCruise(input, nearest_collision.value());
 
     if (acc_trajectory.has_value()) {
       // Set adaptive cruise trajectory as output
       output.output_trajectory = acc_trajectory.value();
+      return output;
     } else {
       // Slow down if obstacle is in the detection area
-      const auto slowdown_trajectory = slowDown(input.input_trajectory, nearest_collision.value());
+      const auto slowdown_trajectory = planSlowDown(input.input_trajectory, nearest_collision.value());
       // Stop if obstacle is in the detection area
-      output.output_trajectory = obstacleStop(slowdown_trajectory, nearest_collision.value());
+      output.output_trajectory = planObstacleStop(slowdown_trajectory, nearest_collision.value());
+      return output;
     }
   } else {
     // Set input trajectory as output
     output.output_trajectory = input.input_trajectory;
+    return output;
   }
-
-  return output;
 }
 
 // search obstacle candidate pointcloud to reduce calculation cost
@@ -119,14 +122,14 @@ std::vector<Point3d> ObstacleStopPlanner::searchCandidateObstacle(
   const Trajectory & trajectory, const std::vector<Point3d> & obstacle_pointcloud)
 {
   std::vector<Point3d> filtered_points;
-  const auto search_radius = slow_down_param_.enable_slow_down ?
-    slow_down_param_.slow_down_search_radius : stop_param_.stop_search_radius;
+  const auto search_radius = slow_down_param_->enable_slow_down ?
+    slow_down_param_->slow_down_search_radius : stop_param_->stop_search_radius;
 
   for (const auto & trajectory_point : trajectory.points) {
     const auto center_pose = getVehicleCenterFromBase(
       trajectory_point.pose,
-      vehicle_info_.vehicle_length_m_,
-      vehicle_info_.rear_overhang_m_);
+      vehicle_info_->vehicle_length_m_,
+      vehicle_info_->rear_overhang_m_);
     const auto center_point = autoware_utils::fromMsg(center_pose.position);
 
     for (const auto & point : obstacle_pointcloud) {
@@ -161,19 +164,19 @@ boost::optional<Collision> ObstacleStopPlanner::findCollisionPoint(
       base_point.to_2d());
     if (collision_particle.has_value()) {
       Collision collision;
-      collision.trajectory_index = i;
+      collision.segment_index = i;
       collision.obstacle_point = collision_particle.value().to_2d();
       return collision;
     }
   }
-  return boost::none;
+  return {};
 }
 
 std::vector<LinearRing2d> ObstacleStopPlanner::createVehicleFootprints(const Trajectory & trajectory)
 {
   // Create vehicle footprint in base_link coordinate
   const auto local_vehicle_footprint =
-    createVehicleFootprint(vehicle_info_, 0.0, stop_param_.expand_stop_range);
+    createVehicleFootprint(*vehicle_info_, 0.0, stop_param_->expand_stop_range);
 
   // Create vehicle footprint on each TrajectoryPoint
   std::vector<LinearRing2d> vehicle_footprints;
@@ -228,7 +231,7 @@ boost::optional<Point3d> ObstacleStopPlanner::findCollisionParticle(const Polygo
     }
   }
   if (collision_points.empty()) {
-    return boost::none;
+    return {};
   }
 
   // Get nearest point
@@ -256,16 +259,19 @@ boost::optional<Point3d> ObstacleStopPlanner::findCollisionParticle(const Polygo
 //   vehicle's current velocity
 // Output
 //   output trajectory
-boost::optional<Trajectory> ObstacleStopPlanner::adaptiveCruise(const Input & input, const Collision & collision)
+boost::optional<Trajectory> ObstacleStopPlanner::planAdaptiveCruise(const Input & input, const Collision & collision)
 {
-  return acc_controller_->insertAdaptiveCruiseVelocity(
+  adaptive_cruise_controller::Input acc_input {
     input.input_trajectory,
-    collision.trajectory_index,
+    collision.segment_index,
     input.current_pose,
     collision.obstacle_point,
     input.pointcloud_header_time,
     input.object_array,
-    input.current_velocity);
+    input.current_velocity,
+  };
+
+  return acc_controller_->insertAdaptiveCruiseVelocity(acc_input);
 }
 
 // Create Stop trajectory
@@ -275,17 +281,17 @@ boost::optional<Trajectory> ObstacleStopPlanner::adaptiveCruise(const Input & in
 //   slow_down_index
 // Output
 //   output trajectory
-Trajectory ObstacleStopPlanner::slowDown(const Trajectory & trajectory, const Collision & collision)
+Trajectory ObstacleStopPlanner::planSlowDown(const Trajectory & trajectory, const Collision & collision)
 {
   // get lateral deviation
   // TODO: use candidate_pointcloud instead of collision point
-  const auto lateral_deviation = autoware_utils::calcLateralDeviation(trajectory.points.at(collision.trajectory_index).pose, autoware_utils::toMsg(collision.obstacle_point.to_3d()));
+  const auto lateral_deviation = autoware_utils::calcLateralDeviation(trajectory.points.at(collision.segment_index).pose, autoware_utils::toMsg(collision.obstacle_point.to_3d()));
 
   const auto target_velocity = calcSlowDownTargetVel(lateral_deviation);
 
   // TODO: This is very simple logic. The output should be the same as the existing logic.
   Trajectory limited_trajectory = trajectory;
-  for (size_t i = collision.trajectory_index; i < limited_trajectory.points.size(); ++i) {
+  for (size_t i = collision.segment_index; i < limited_trajectory.points.size(); ++i) {
     limited_trajectory.points.at(i).twist.linear.x = target_velocity;
   }
 
@@ -299,11 +305,11 @@ Trajectory ObstacleStopPlanner::slowDown(const Trajectory & trajectory, const Co
 //   stop_index
 // Output
 //   output trajectory
-Trajectory ObstacleStopPlanner::obstacleStop(const Trajectory & trajectory, const Collision & collision)
+Trajectory ObstacleStopPlanner::planObstacleStop(const Trajectory & trajectory, const Collision & collision)
 {
   // TODO: This is very simple logic. The output should be the same as the existing logic.
   Trajectory limited_trajectory = trajectory;
-  for (size_t i = collision.trajectory_index; i < limited_trajectory.points.size(); ++i) {
+  for (size_t i = collision.segment_index; i < limited_trajectory.points.size(); ++i) {
     limited_trajectory.points.at(i).twist.linear.x = 0.0;
   }
 
@@ -647,7 +653,7 @@ autoware_planning_msgs::msg::Trajectory ObstacleStopPlanner::insertStopPoint(
     {
       const auto stop_point =
         point_helper.searchInsertPoint(
-        i, base_path, trajectory_vec, collision_point_vec, stop_param_);
+        i, base_path, trajectory_vec, collision_point_vec, *stop_param_);
       if (stop_point.index <= output_msg.points.size()) {
         autoware_planning_msgs::msg::TrajectoryPoint trajectory_point;
         std::tie(trajectory_point, output_msg) =
@@ -678,7 +684,7 @@ autoware_planning_msgs::msg::Trajectory ObstacleStopPlanner::insertSlowDownVeloc
       slow_down_target_vel,
       std::sqrt(
         std::max(
-          slow_down_vel * slow_down_vel - 2 * slow_down_param_.max_deceleration * dist,
+          slow_down_vel * slow_down_vel - 2 * slow_down_param_->max_deceleration * dist,
           0.0)));
     if (!is_slow_down_end && slow_down_vel <= slow_down_target_vel) {
       slow_down_end_trajectory_point = output_path.points.at(j + 1);
