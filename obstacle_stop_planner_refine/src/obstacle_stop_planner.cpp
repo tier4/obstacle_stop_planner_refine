@@ -96,25 +96,25 @@ Output ObstacleStopPlanner::processTrajectory(const Input & input)
   Output output;
 
   // Limit trajectory for adaptive cruise control
-  if (nearest_collision.has_value()) {
-    const auto acc_trajectory = planAdaptiveCruise(input, nearest_collision.value());
-
-    if (acc_trajectory.has_value()) {
-      // Set adaptive cruise trajectory as output
-      output.output_trajectory = acc_trajectory.value();
-      return output;
-    } else {
-      // Slow down if obstacle is in the detection area
-      const auto slowdown_trajectory = planSlowDown(input.input_trajectory, nearest_collision.value());
-      // Stop if obstacle is in the detection area
-      output.output_trajectory = planObstacleStop(slowdown_trajectory, nearest_collision.value());
-      return output;
-    }
-  } else {
+  if (!nearest_collision.has_value()) {
     // Set input trajectory as output
     output.output_trajectory = input.input_trajectory;
     return output;
   }
+
+  const auto acc_trajectory = planAdaptiveCruise(input, nearest_collision.value());
+
+  if (acc_trajectory.has_value()) {
+    // Set adaptive cruise trajectory as output
+    output.output_trajectory = acc_trajectory.value();
+    return output;
+  }
+
+  // Slow down if obstacle is in the detection area
+  const auto slowdown_trajectory = planSlowDown(input.input_trajectory, nearest_collision.value(), obstacles);
+  // Stop if obstacle is in the detection area
+  output.output_trajectory = planObstacleStop(slowdown_trajectory, nearest_collision.value());
+  return output;
 }
 
 // search obstacle candidate pointcloud to reduce calculation cost
@@ -250,15 +250,14 @@ boost::optional<Point3d> ObstacleStopPlanner::findCollisionParticle(const Polygo
   return collision_points.at(min_idx);
 }
 
-// Create adaptive cruise trajectory
-//   Follow front vehicle adaptively
-// Input
-//   input trajectory
-//   collision
-//   object array
-//   vehicle's current velocity
-// Output
-//   output trajectory
+/**
+* @fn
+* @brief Create adaptive cruise trajectory
+* Follow front vehicle adaptively
+* @param input trajectory
+* @param collision collision point and index
+* @return Trajectory
+*/
 boost::optional<Trajectory> ObstacleStopPlanner::planAdaptiveCruise(const Input & input, const Collision & collision)
 {
   adaptive_cruise_controller::Input acc_input {
@@ -274,37 +273,71 @@ boost::optional<Trajectory> ObstacleStopPlanner::planAdaptiveCruise(const Input 
   return acc_controller_->insertAdaptiveCruiseVelocity(acc_input);
 }
 
-// Create Stop trajectory
-//   All velocity in trajectory set to minimum velcity after slow_down_index.
-// Input
-//   input trajectory
-//   slow_down_index
-// Output
-//   output trajectory
-Trajectory ObstacleStopPlanner::planSlowDown(const Trajectory & trajectory, const Collision & collision)
+/**
+* @fn
+* @brief Create slow down trajectory
+* All velocity in trajectory set to minimum velcity after slow_down_index.
+* @param input trajectory
+* @param collision collision point and index
+* @param obstacles associated points from pointcloud
+* @return Trajectory
+*/
+Trajectory ObstacleStopPlanner::planSlowDown(const Trajectory & trajectory, const Collision & collision, const std::vector<Point3d> & obstacles)
 {
+  // End of slow down point index
+  size_t resume_index = trajectory.points.size() - 1;
+
+  // loop trajectory point from end to segment_index
+  for (size_t i = trajectory.points.size() - 1; i > collision.segment_index; --i) {
+    const auto & p = trajectory.points.at(i);
+    // // if obstacle is closed to point
+    // const auto closed_obstacles = getClosedObstacles(p, obstacles, slow_down_param_->slow_down_search_radius);
+
+    // if obstacle is not in front of point, resume speed
+    if (!findFrontObstacles(p, obstacles)) {
+      resume_index = i;
+      break;
+    }
+  }
+
   // get lateral deviation
-  // TODO: use candidate_pointcloud instead of collision point
   const auto lateral_deviation = autoware_utils::calcLateralDeviation(trajectory.points.at(collision.segment_index).pose, autoware_utils::toMsg(collision.obstacle_point.to_3d()));
 
   const auto target_velocity = calcSlowDownTargetVel(lateral_deviation);
 
-  // TODO: This is very simple logic. The output should be the same as the existing logic.
+  // Create slow down trajectory
   Trajectory limited_trajectory = trajectory;
-  for (size_t i = collision.segment_index; i < limited_trajectory.points.size(); ++i) {
+  for (size_t i = collision.segment_index; i <= resume_index; ++i) {
     limited_trajectory.points.at(i).twist.linear.x = target_velocity;
   }
 
   return limited_trajectory;
 }
 
-// Create Stop trajectory
-//   All velocity in trajectory set to 0 after stop_index.
-// Input
-//   input trajectory
-//   stop_index
-// Output
-//   output trajectory
+// Return true if obstacle is in front side of point
+bool ObstacleStopPlanner::findFrontObstacles(const autoware_planning_msgs::msg::TrajectoryPoint & point, const std::vector<Point3d> & obstacles)
+{
+  for (const auto obstacle : obstacles) {
+    const auto p = autoware_utils::fromMsg(point.pose.position);
+    const auto diff_vec = obstacle - p;
+    const auto inner_product = diff_vec.dot(p);
+
+    // If object is in front of point
+    // This means inner product value is positive
+    if (inner_product > 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * @brief Create Stop trajectory
+ * All velocity in trajectory set to 0 after stop_index.
+ * @param trajectory input trajectory
+ * @param collision collision point and index
+ * @return Trajectory
+ */
 Trajectory ObstacleStopPlanner::planObstacleStop(const Trajectory & trajectory, const Collision & collision)
 {
   // TODO: This is very simple logic. The output should be the same as the existing logic.

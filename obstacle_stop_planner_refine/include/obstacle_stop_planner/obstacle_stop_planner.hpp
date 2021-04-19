@@ -111,7 +111,9 @@ public:
 
   boost::optional<Trajectory> planAdaptiveCruise(const Input & input, const Collision & collision);
 
-  Trajectory planSlowDown(const Trajectory & trajectory, const Collision & collision);
+  Trajectory planSlowDown(const Trajectory & trajectory, const Collision & collision, const std::vector<Point3d> & obstacles);
+
+  bool findFrontObstacles(const autoware_planning_msgs::msg::TrajectoryPoint & point, const std::vector<Point3d> & obstacles);
 
   Trajectory planObstacleStop(const Trajectory & trajectory, const Collision & collision);
 

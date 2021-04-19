@@ -105,40 +105,44 @@ public:
 
 TEST_F(ObstacleStopPlannerTest, searchCandidateObstacle)
 {
-  std::vector<Point3d> points;
-  points.emplace_back(0.0, 0.0, 0.0);
-  points.emplace_back(10.0, 0.0, 0.0);
-  points.emplace_back(20.0, 0.0, 0.0);
-  points.emplace_back(30.0, 0.0, 0.0);
-  points.emplace_back(40.0, 0.0, 0.0);
-  points.emplace_back(50.0, 0.0, 0.0);
+  std::vector<Point3d> points{
+    {0.0, 0.0, 0.0},
+    {10.0, 0.0, 0.0},
+    {20.0, 0.0, 0.0},
+    {30.0, 0.0, 0.0},
+    {40.0, 0.0, 0.0},
+    {50.0, 0.0, 0.0},
+  };
   auto trajectory = convertPointsToTrajectoryWithYaw2(points);
 
-  std::vector<Point3d> obstacles;
-  obstacles.emplace_back(30.1, 0.0, 0.0);
-  obstacles.emplace_back(30.2, 0.0, 0.0);
-  obstacles.emplace_back(30.3, 0.0, 0.0);
+  std::vector<Point3d> obstacles{
+    {30.1, 0.0, 0.0},
+    {30.2, 0.0, 0.0},
+    {30.3, 0.0, 0.0},
+  };
 
   const auto candidate_obstacles = planner_->searchCandidateObstacle(trajectory, obstacles);
 
-  ASSERT_EQ(candidate_obstacles.size(), 3);
+  ASSERT_EQ(candidate_obstacles.size(), 3U);
 }
 
 TEST_F(ObstacleStopPlannerTest, findCollisionPoint_nothing)
 {
-  std::vector<Point3d> points;
-  points.emplace_back(0.0, 0.0, 0.0);
-  points.emplace_back(10.0, 0.0, 0.0);
-  points.emplace_back(20.0, 0.0, 0.0);
-  points.emplace_back(30.0, 0.0, 0.0);
-  points.emplace_back(40.0, 0.0, 0.0);
-  points.emplace_back(50.0, 0.0, 0.0);
+  std::vector<Point3d> points{
+    {0.0, 0.0, 0.0},
+    {10.0, 0.0, 0.0},
+    {20.0, 0.0, 0.0},
+    {30.0, 0.0, 0.0},
+    {40.0, 0.0, 0.0},
+    {50.0, 0.0, 0.0},
+  };
   auto trajectory = convertPointsToTrajectoryWithYaw2(points);
 
-  std::vector<Point3d> obstacles;
-  obstacles.emplace_back(30.1, 50.0, 0.0);
-  obstacles.emplace_back(30.2, 50.0, 0.0);
-  obstacles.emplace_back(30.3, 50.0, 0.0);
+  std::vector<Point3d> obstacles{
+    {30.1, 50.0, 0.0},
+    {30.2, 50.0, 0.0},
+    {30.3, 50.0, 0.0},
+  };
 
   const auto candidate_obstacles = planner_->findCollisionPoint(trajectory, obstacles);
 
@@ -147,19 +151,21 @@ TEST_F(ObstacleStopPlannerTest, findCollisionPoint_nothing)
 
 TEST_F(ObstacleStopPlannerTest, findCollisionPoint_has_value)
 {
-  std::vector<Point3d> points;
-  points.emplace_back(0.0, 0.0, 0.0);
-  points.emplace_back(10.0, 0.0, 0.0);
-  points.emplace_back(20.0, 0.0, 0.0);
-  points.emplace_back(30.0, 0.0, 0.0);
-  points.emplace_back(40.0, 0.0, 0.0);
-  points.emplace_back(50.0, 0.0, 0.0);
+  std::vector<Point3d> points{
+    {0.0, 0.0, 0.0},
+    {10.0, 0.0, 0.0},
+    {20.0, 0.0, 0.0},
+    {30.0, 0.0, 0.0},
+    {40.0, 0.0, 0.0},
+    {50.0, 0.0, 0.0},
+  };
   auto trajectory = convertPointsToTrajectoryWithYaw2(points);
 
-  std::vector<Point3d> obstacles;
-  obstacles.emplace_back(30.1, 0.0, 0.0);
-  obstacles.emplace_back(30.2, 0.0, 0.0);
-  obstacles.emplace_back(30.3, 0.0, 0.0);
+  std::vector<Point3d> obstacles{
+    {30.1, 0.0, 0.0},
+    {30.2, 0.0, 0.0},
+    {30.3, 0.0, 0.0},
+  };
 
   const auto candidate_obstacles = planner_->findCollisionPoint(trajectory, obstacles);
 
@@ -169,18 +175,19 @@ TEST_F(ObstacleStopPlannerTest, findCollisionPoint_has_value)
 
 TEST_F(ObstacleStopPlannerTest, planSlowDown)
 {
-  std::vector<Point3d> points;
-  points.emplace_back(0.0, 0.0, 0.0);
-  points.emplace_back(10.0, 0.0, 0.0);
-  points.emplace_back(20.0, 0.0, 0.0);
-  points.emplace_back(30.0, 0.0, 0.0);
-  points.emplace_back(40.0, 0.0, 0.0);
-  points.emplace_back(50.0, 0.0, 0.0);
+  std::vector<Point3d> points{
+    {0.0, 0.0, 0.0},
+    {10.0, 0.0, 0.0},
+    {20.0, 0.0, 0.0},
+    {30.0, 0.0, 0.0},
+    {40.0, 0.0, 0.0},
+    {50.0, 0.0, 0.0},
+  };
   auto trajectory = convertPointsToTrajectoryWithYaw2(points);
 
   // Add velocity
   for (size_t i = 0; i < trajectory.points.size(); ++i) {
-    trajectory.points.at(i).twist.linear.x = static_cast<double>(i);
+    trajectory.points.at(i).twist.linear.x = 5.0;
   }
 
   // Set parameter
@@ -196,16 +203,20 @@ TEST_F(ObstacleStopPlannerTest, planSlowDown)
   collision.segment_index = 3;
   collision.obstacle_point = Point2d{35.0, 0.0};
 
-  const auto processed_trajectory = planner_->planSlowDown(trajectory, collision);
+  std::vector<Point3d> obstacles {
+    collision.obstacle_point.to_3d(),
+  };
+
+  const auto processed_trajectory = planner_->planSlowDown(trajectory, collision, obstacles);
 
   // Get expected velocity
   const auto lateral_deviation = autoware_utils::calcLateralDeviation(trajectory.points.at(3).pose, autoware_utils::toMsg(collision.obstacle_point.to_3d()));
 
   const auto target_velocity = planner_->calcSlowDownTargetVel(lateral_deviation);
 
-  ASSERT_EQ(processed_trajectory.points.at(0).twist.linear.x, 0.0);
-  ASSERT_EQ(processed_trajectory.points.at(1).twist.linear.x, 1.0);
-  ASSERT_EQ(processed_trajectory.points.at(2).twist.linear.x, 2.0);
+  ASSERT_EQ(processed_trajectory.points.at(0).twist.linear.x, 5.0);
+  ASSERT_EQ(processed_trajectory.points.at(1).twist.linear.x, 5.0);
+  ASSERT_EQ(processed_trajectory.points.at(2).twist.linear.x, 5.0);
   ASSERT_EQ(processed_trajectory.points.at(3).twist.linear.x, target_velocity);
   ASSERT_EQ(processed_trajectory.points.at(4).twist.linear.x, target_velocity);
   ASSERT_EQ(processed_trajectory.points.at(5).twist.linear.x, target_velocity);
@@ -213,18 +224,19 @@ TEST_F(ObstacleStopPlannerTest, planSlowDown)
 
 TEST_F(ObstacleStopPlannerTest, planObstacleStop)
 {
-  std::vector<Point3d> points;
-  points.emplace_back(0.0, 0.0, 0.0);
-  points.emplace_back(10.0, 0.0, 0.0);
-  points.emplace_back(20.0, 0.0, 0.0);
-  points.emplace_back(30.0, 0.0, 0.0);
-  points.emplace_back(40.0, 0.0, 0.0);
-  points.emplace_back(50.0, 0.0, 0.0);
+  std::vector<Point3d> points{
+    {0.0, 0.0, 0.0},
+    {10.0, 0.0, 0.0},
+    {20.0, 0.0, 0.0},
+    {30.0, 0.0, 0.0},
+    {40.0, 0.0, 0.0},
+    {50.0, 0.0, 0.0},
+  };
   auto trajectory = convertPointsToTrajectoryWithYaw2(points);
 
   // Add velocity
   for (size_t i = 0; i < trajectory.points.size(); ++i) {
-    trajectory.points.at(i).twist.linear.x = static_cast<double>(i);
+    trajectory.points.at(i).twist.linear.x = 5.0;
   }
 
   obstacle_stop_planner::Collision collision;
@@ -233,10 +245,54 @@ TEST_F(ObstacleStopPlannerTest, planObstacleStop)
 
   const auto processed_trajectory = planner_->planObstacleStop(trajectory, collision);
 
-  ASSERT_EQ(processed_trajectory.points.at(0).twist.linear.x, 0.0);
-  ASSERT_EQ(processed_trajectory.points.at(1).twist.linear.x, 1.0);
-  ASSERT_EQ(processed_trajectory.points.at(2).twist.linear.x, 2.0);
+  ASSERT_EQ(processed_trajectory.points.at(0).twist.linear.x, 5.0);
+  ASSERT_EQ(processed_trajectory.points.at(1).twist.linear.x, 5.0);
+  ASSERT_EQ(processed_trajectory.points.at(2).twist.linear.x, 5.0);
   ASSERT_EQ(processed_trajectory.points.at(3).twist.linear.x, 0.0);
   ASSERT_EQ(processed_trajectory.points.at(4).twist.linear.x, 0.0);
   ASSERT_EQ(processed_trajectory.points.at(5).twist.linear.x, 0.0);
+}
+
+TEST_F(ObstacleStopPlannerTest, findFrontObstacles_found)
+{
+  std::vector<Point3d> points{
+    {0.0, 0.0, 0.0},
+    {10.0, 0.0, 0.0},
+    {20.0, 0.0, 0.0},
+  };
+  auto trajectory = convertPointsToTrajectoryWithYaw2(points);
+
+  std::vector<Point3d> obstacles {
+    {15.0, 0.0, 0.0}
+  };
+
+  slow_down_param_->slow_down_search_radius = 5.0;
+
+  planner_->updateParameters(stop_param_, slow_down_param_, acc_param_);
+
+  const auto ret = planner_->findFrontObstacles(trajectory.points.at(1), obstacles);
+
+  ASSERT_TRUE(ret);
+}
+
+TEST_F(ObstacleStopPlannerTest, findFrontObstacles_not_found)
+{
+  std::vector<Point3d> points{
+    {0.0, 0.0, 0.0},
+    {10.0, 0.0, 0.0},
+    {20.0, 0.0, 0.0},
+  };
+  auto trajectory = convertPointsToTrajectoryWithYaw2(points);
+
+  std::vector<Point3d> obstacles {
+    {6.0, 0.0, 0.0}
+  };
+
+  slow_down_param_->slow_down_search_radius = 5.0;
+
+  planner_->updateParameters(stop_param_, slow_down_param_, acc_param_);
+
+  const auto ret = planner_->findFrontObstacles(trajectory.points.at(1), obstacles);
+
+  ASSERT_FALSE(ret);
 }
