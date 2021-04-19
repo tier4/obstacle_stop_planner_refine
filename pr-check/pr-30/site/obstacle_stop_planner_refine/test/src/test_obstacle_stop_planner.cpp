@@ -219,7 +219,7 @@ TEST_F(ObstacleStopPlannerTest, planSlowDown)
   ASSERT_EQ(processed_trajectory.points.at(2).twist.linear.x, 5.0);
   ASSERT_EQ(processed_trajectory.points.at(3).twist.linear.x, target_velocity);
   ASSERT_EQ(processed_trajectory.points.at(4).twist.linear.x, target_velocity);
-  ASSERT_EQ(processed_trajectory.points.at(5).twist.linear.x, target_velocity);
+  ASSERT_EQ(processed_trajectory.points.at(5).twist.linear.x, 5.0);
 }
 
 TEST_F(ObstacleStopPlannerTest, planObstacleStop)
