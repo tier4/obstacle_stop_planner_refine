@@ -118,10 +118,6 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
   slow_down_param_ = std::make_shared<SlowDownControlParameter>(createSlowDownParameter(parameter_interface));
   acc_param_ = std::make_shared<AdaptiveCruiseControlParameter>(createAccParameter(parameter_interface));
 
-  // Parameter Callback
-  set_param_res_ =
-    add_on_set_parameters_callback(std::bind(&ObstacleStopPlannerNode::onParameter, this, std::placeholders::_1));
-
   // Vehicle Info
   const auto vehicle_info = std::make_shared<vehicle_info_util::VehicleInfo>(vehicle_info_util::VehicleInfo::create(*this));
 
@@ -152,6 +148,10 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
   sub_trajectory_ = create_subscription<Trajectory>(
     "~/input/trajectory", 1,
     std::bind(&ObstacleStopPlannerNode::onTrajectory, this, std::placeholders::_1));
+
+  // Parameter Callback
+  set_param_res_ =
+    add_on_set_parameters_callback(std::bind(&ObstacleStopPlannerNode::onParameter, this, std::placeholders::_1));
 }
 
 bool ObstacleStopPlannerNode::isDataReady()
@@ -251,8 +251,6 @@ rcl_interfaces::msg::SetParametersResult ObstacleStopPlannerNode::onParameter(
   const std::vector<rclcpp::Parameter> & parameters)
 {
   rcl_interfaces::msg::SetParametersResult result;
-  result.successful = true;
-  result.reason = "success";
 
   try {
     update_parameter(parameters, "stop_planner.stop_margin", stop_param_->stop_margin);
@@ -303,10 +301,10 @@ rcl_interfaces::msg::SetParametersResult ObstacleStopPlannerNode::onParameter(
     update_parameter(parameters, acc_ns + "use_rough_velocity_estimation", acc_param_->use_rough_est_vel);
     update_parameter(parameters, acc_ns + "rough_velocity_rate", acc_param_->rough_velocity_rate);
 
-    if (planner_) {
-      planner_->updateParameters(stop_param_, slow_down_param_, acc_param_);
-    }
+    planner_->updateParameters(stop_param_, slow_down_param_, acc_param_);
 
+    result.successful = true;
+    result.reason = "success";
   } catch (const rclcpp::exceptions::InvalidParameterTypeException & e) {
     result.successful = false;
     result.reason = e.what();
