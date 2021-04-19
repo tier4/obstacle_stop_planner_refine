@@ -284,33 +284,21 @@ boost::optional<Trajectory> ObstacleStopPlanner::planAdaptiveCruise(const Input 
 */
 Trajectory ObstacleStopPlanner::planSlowDown(const Trajectory & trajectory, const Collision & collision, const std::vector<Point3d> & obstacles)
 {
-  // End of slow down point index
-  size_t resume_index = trajectory.points.size() - 1;
-
-  // loop trajectory point from end to segment_index
-  for (size_t i = trajectory.points.size() - 1; i > collision.segment_index; --i) {
-    const auto & p = trajectory.points.at(i);
-    // // if obstacle is closed to point
-    // const auto closed_obstacles = getClosedObstacles(p, obstacles, slow_down_param_->slow_down_search_radius);
-
-    // if obstacle is not in front of point, resume speed
-    if (!findFrontObstacles(p, obstacles)) {
-      resume_index = i;
-      break;
-    }
-  }
-
   // get lateral deviation
   const auto lateral_deviation = autoware_utils::calcLateralDeviation(trajectory.points.at(collision.segment_index).pose, autoware_utils::toMsg(collision.obstacle_point.to_3d()));
 
   const auto target_velocity = calcSlowDownTargetVel(lateral_deviation);
 
-  // Create slow down trajectory
+  // loop trajectory point from segment_index to end
   Trajectory limited_trajectory = trajectory;
-  for (size_t i = collision.segment_index; i <= resume_index; ++i) {
-    limited_trajectory.points.at(i).twist.linear.x = target_velocity;
-  }
+  for (auto && itr = limited_trajectory.points.begin() + collision.segment_index; itr != limited_trajectory.points.end(); ++itr) {
+    itr->twist.linear.x = target_velocity;
 
+    // if obstacle is not in front of point, resume speed
+    if (!findFrontObstacles(*itr, obstacles)) {
+      break;
+    }
+  }
   return limited_trajectory;
 }
 
