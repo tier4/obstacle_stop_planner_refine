@@ -93,13 +93,22 @@ private:
   std::shared_ptr<AdaptiveCruiseControlParameter> acc_param_;
 
 public:
+  double search_radius_ = 0.0;
+
   std::vector<Point3d> searchCandidateObstacle(
     const Trajectory & trajectory, const std::vector<Point3d> & obstacle_pointcloud);
 
   boost::optional<Collision> findCollisionPoint(
     const Trajectory & trajectory, const std::vector<Point3d> & obstacle_points);
 
-  std::vector<LinearRing2d> createVehicleFootprints(const Trajectory & trajectory);
+  boost::optional<Collision> findSlowDownPoint(
+    const Trajectory & trajectory, const std::vector<Point3d> & obstacle_points);
+
+  std::vector<LinearRing2d> createStopFootprints(const Trajectory & trajectory);
+
+  std::vector<LinearRing2d> createSlowDownFootprints(const Trajectory & trajectory);
+
+  std::vector<LinearRing2d> createVehicleFootprints(const Trajectory & trajectory, const double margin);
 
   std::vector<Polygon2d> createVehiclePassingAreas(
   const std::vector<LinearRing2d> & vehicle_footprints);

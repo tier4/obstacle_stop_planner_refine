@@ -266,9 +266,7 @@ TEST_F(ObstacleStopPlannerTest, findFrontObstacles_found)
     {15.0, 0.0, 0.0}
   };
 
-  slow_down_param_->slow_down_search_radius = 5.0;
-
-  planner_->updateParameters(stop_param_, slow_down_param_, acc_param_);
+  planner_->search_radius_ = 5.0;
 
   const auto ret = planner_->findFrontObstacles(trajectory.points.at(1), obstacles);
 
@@ -288,9 +286,7 @@ TEST_F(ObstacleStopPlannerTest, findFrontObstacles_not_found)
     {6.0, 0.0, 0.0}
   };
 
-  slow_down_param_->slow_down_search_radius = 5.0;
-
-  planner_->updateParameters(stop_param_, slow_down_param_, acc_param_);
+  planner_->search_radius_ = 5.0;
 
   const auto ret = planner_->findFrontObstacles(trajectory.points.at(1), obstacles);
 
