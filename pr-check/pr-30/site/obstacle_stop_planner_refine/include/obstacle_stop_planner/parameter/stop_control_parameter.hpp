@@ -26,7 +26,6 @@ struct OBSTACLE_STOP_PLANNER_PUBLIC StopControlParameter
   double step_length;
   double extend_distance;
   double expand_stop_range;
-  double stop_search_radius;
 };
 }  // namespace obstacle_stop_planner
 

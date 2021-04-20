@@ -74,12 +74,15 @@ void ObstacleStopPlanner::updateParameters(
     stop_param_->min_behavior_stop_margin +=
       i.wheel_base_m_ + i.front_overhang_m_;
     slow_down_param_->slow_down_margin += i.wheel_base_m_ + i.front_overhang_m_;
-    stop_param_->stop_search_radius = stop_param->step_length + std::hypot(
-      i.vehicle_width_m_ / 2.0 + stop_param->expand_stop_range,
-      i.vehicle_length_m_ / 2.0);
-    slow_down_param_->slow_down_search_radius = stop_param->step_length + std::hypot(
-      i.vehicle_width_m_ / 2.0 + slow_down_param->expand_slow_down_range,
-      i.vehicle_length_m_ / 2.0);
+    if (slow_down_param_->enable_slow_down) {
+      search_radius_ = stop_param->step_length + std::hypot(
+        i.vehicle_width_m_ / 2.0 + slow_down_param->expand_slow_down_range,
+        i.vehicle_length_m_ / 2.0);
+    } else {
+      search_radius_ = stop_param->step_length + std::hypot(
+        i.vehicle_width_m_ / 2.0 + stop_param->expand_stop_range,
+        i.vehicle_length_m_ / 2.0);
+    }
   }
 
   acc_controller_->updateParameter(acc_param_);
@@ -93,27 +96,37 @@ Output ObstacleStopPlanner::processTrajectory(const Input & input)
   // Find collision point
   const auto nearest_collision = findCollisionPoint(input.input_trajectory, obstacles);
 
+  // Find nearest point inside slow down detection area
+  const auto nearest_slow_down = findSlowDownPoint(input.input_trajectory, obstacles);
+
   Output output;
 
   // Limit trajectory for adaptive cruise control
-  if (!nearest_collision.has_value()) {
-    // Set input trajectory as output
-    output.output_trajectory = input.input_trajectory;
-    return output;
+  if (nearest_collision.has_value()) {
+    const auto acc_trajectory = planAdaptiveCruise(input, nearest_collision.value());
+
+    if (acc_trajectory.has_value()) {
+      // Set adaptive cruise trajectory as output
+      output.output_trajectory = acc_trajectory.value();
+      return output;
+    }
   }
 
-  const auto acc_trajectory = planAdaptiveCruise(input, nearest_collision.value());
-
-  if (acc_trajectory.has_value()) {
-    // Set adaptive cruise trajectory as output
-    output.output_trajectory = acc_trajectory.value();
-    return output;
-  }
-
+  auto tmp_trajectory = input.input_trajectory;
+  
   // Slow down if obstacle is in the detection area
-  const auto slowdown_trajectory = planSlowDown(input.input_trajectory, nearest_collision.value(), obstacles);
+  if (nearest_slow_down.has_value()) {
+    tmp_trajectory = planSlowDown(tmp_trajectory, nearest_slow_down.value(), obstacles);
+  }
+
   // Stop if obstacle is in the detection area
-  output.output_trajectory = planObstacleStop(slowdown_trajectory, nearest_collision.value());
+  if (nearest_collision.has_value()) {
+    tmp_trajectory = planObstacleStop(tmp_trajectory, nearest_collision.value());
+  }
+
+  // Set output
+  output.output_trajectory = tmp_trajectory;
+
   return output;
 }
 
@@ -122,8 +135,6 @@ std::vector<Point3d> ObstacleStopPlanner::searchCandidateObstacle(
   const Trajectory & trajectory, const std::vector<Point3d> & obstacle_pointcloud)
 {
   std::vector<Point3d> filtered_points;
-  const auto search_radius = slow_down_param_->enable_slow_down ?
-    slow_down_param_->slow_down_search_radius : stop_param_->stop_search_radius;
 
   for (const auto & trajectory_point : trajectory.points) {
     const auto center_pose = getVehicleCenterFromBase(
@@ -135,7 +146,7 @@ std::vector<Point3d> ObstacleStopPlanner::searchCandidateObstacle(
     for (const auto & point : obstacle_pointcloud) {
       const auto diff = center_point - point;
       const double distance = std::hypot(diff.x(), diff.y());
-      if (distance < search_radius) {
+      if (distance < search_radius_) {
         filtered_points.emplace_back(point);
       }
     }
@@ -148,7 +159,7 @@ boost::optional<Collision> ObstacleStopPlanner::findCollisionPoint(
   const Trajectory & trajectory, const std::vector<Point3d> & obstacle_points)
 {
   // Create footprint vector
-  const auto footprints = createVehicleFootprints(trajectory);
+  const auto footprints = createStopFootprints(trajectory);
   const auto passing_areas = createVehiclePassingAreas(footprints);
 
   // Loop for each trajectory point and areas
@@ -172,11 +183,49 @@ boost::optional<Collision> ObstacleStopPlanner::findCollisionPoint(
   return {};
 }
 
-std::vector<LinearRing2d> ObstacleStopPlanner::createVehicleFootprints(const Trajectory & trajectory)
+boost::optional<Collision> ObstacleStopPlanner::findSlowDownPoint(
+  const Trajectory & trajectory, const std::vector<Point3d> & obstacle_points)
+{
+  // Create footprint vector
+  const auto footprints = createSlowDownFootprints(trajectory);
+  const auto passing_areas = createVehiclePassingAreas(footprints);
+
+  // Loop for each trajectory point and areas
+  //  passing_area.size() is trajectory.size() - 1
+  for (size_t i = 0; i < passing_areas.size(); ++i) {
+    // Check whether obstacle is inside passing area
+    const auto base_point = autoware_utils::fromMsg(
+      autoware_utils::getPoint(trajectory.points.at(i)));
+
+    const auto collision_particle = findCollisionParticle(
+      passing_areas.at(i),
+      obstacle_points,
+      base_point.to_2d());
+    if (collision_particle.has_value()) {
+      Collision collision;
+      collision.segment_index = i;
+      collision.obstacle_point = collision_particle.value().to_2d();
+      return collision;
+    }
+  }
+  return {};
+}
+
+std::vector<LinearRing2d> ObstacleStopPlanner::createStopFootprints(const Trajectory & trajectory)
+{
+  return createVehicleFootprints(trajectory, stop_param_->expand_stop_range);
+}
+
+std::vector<LinearRing2d> ObstacleStopPlanner::createSlowDownFootprints(const Trajectory & trajectory)
+{
+  return createVehicleFootprints(trajectory, slow_down_param_->expand_slow_down_range);
+}
+
+std::vector<LinearRing2d> ObstacleStopPlanner::createVehicleFootprints(const Trajectory & trajectory, const double margin)
 {
   // Create vehicle footprint in base_link coordinate
   const auto local_vehicle_footprint =
-    createVehicleFootprint(*vehicle_info_, 0.0, stop_param_->expand_stop_range);
+    createVehicleFootprint(*vehicle_info_, 0.0, margin);
 
   // Create vehicle footprint on each TrajectoryPoint
   std::vector<LinearRing2d> vehicle_footprints;
