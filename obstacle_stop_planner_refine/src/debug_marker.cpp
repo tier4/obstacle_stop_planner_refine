@@ -21,13 +21,9 @@
 namespace obstacle_stop_planner
 {
 ObstacleStopPlannerDebugNode::ObstacleStopPlannerDebugNode(
-  rclcpp::Node * node, const double base_link2front)
-: node_(node), base_link2front_(base_link2front)
+  const rclcpp::node_interfaces::NodeClockInterface::SharedPtr & node_clock, const double base_link2front)
+: node_clock_(node_clock), base_link2front_(base_link2front)
 {
-  debug_viz_pub_ = node_->create_publisher<visualization_msgs::msg::MarkerArray>(
-    "~/debug/marker", 1);
-  stop_reason_pub_ = node_->create_publisher<autoware_planning_msgs::msg::StopReasonArray>(
-    "~/output/stop_reasons", 1);
 }
 
 bool ObstacleStopPlannerDebugNode::pushPolygon(
@@ -38,6 +34,14 @@ bool ObstacleStopPlannerDebugNode::pushPolygon(
     polygon3d.outer().emplace_back(point.to_3d(z));
   }
   return pushPolygon(polygon3d, type);
+}
+
+void ObstacleStopPlannerDebugNode::pushPolygons(
+  const std::vector<Polygon2d> & polygons, const std::vector<double> & z, const PolygonType & type)
+{
+  for (size_t i = 0; i < polygons.size(); ++i) {
+    pushPolygon(polygons.at(i), z.at(i), type);
+  }
 }
 
 bool ObstacleStopPlannerDebugNode::pushPolygon(
@@ -101,32 +105,10 @@ bool ObstacleStopPlannerDebugNode::pushObstaclePoint(
   return pushObstaclePoint(autoware_utils::toMsg(obstacle_point), type);
 }
 
-void ObstacleStopPlannerDebugNode::publish()
-{
-  /* publish debug marker for rviz */
-  const auto visualization_msg = makeVisualizationMarker();
-  debug_viz_pub_->publish(visualization_msg);
-
-  /* publish stop reason for autoware api */
-  const auto stop_reason_msg = makeStopReasonArray();
-  stop_reason_pub_->publish(stop_reason_msg);
-
-  /* reset variables */
-  vehicle_polygons_.clear();
-  collision_polygons_.clear();
-  slow_down_range_polygons_.clear();
-  slow_down_polygons_.clear();
-  stop_pose_ptr_ = nullptr;
-  slow_down_start_pose_ptr_ = nullptr;
-  slow_down_end_pose_ptr_ = nullptr;
-  stop_obstacle_point_ptr_ = nullptr;
-  slow_down_obstacle_point_ptr_ = nullptr;
-}
-
 visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualizationMarker()
 {
   visualization_msgs::msg::MarkerArray msg;
-  rclcpp::Time current_time = node_->now();
+  rclcpp::Time current_time = node_clock_->get_clock()->now();
   tf2::Transform tf_base_link2front(
     tf2::Quaternion(0.0, 0.0, 0.0, 1.0), tf2::Vector3(base_link2front_, 0.0, 0.0));
 
@@ -408,7 +390,7 @@ autoware_planning_msgs::msg::StopReasonArray ObstacleStopPlannerDebugNode::makeS
   // create header
   std_msgs::msg::Header header;
   header.frame_id = "map";
-  header.stamp = node_->now();
+  header.stamp = node_clock_->get_clock()->now();
 
   // create stop reason stamped
   autoware_planning_msgs::msg::StopReason stop_reason_msg;

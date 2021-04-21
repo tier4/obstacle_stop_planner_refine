@@ -88,7 +88,10 @@ public:
     slow_down_param_ = std::make_shared<obstacle_stop_planner::SlowDownControlParameter>();
     acc_param_ = std::make_shared<obstacle_stop_planner::AdaptiveCruiseControlParameter>();
 
-    planner_ = std::make_shared<obstacle_stop_planner::ObstacleStopPlanner>(fake_node_.get(), vehicle_info, stop_param_, slow_down_param_, acc_param_);
+    planner_ = std::make_shared<obstacle_stop_planner::ObstacleStopPlanner>(
+      fake_node_->get_node_logging_interface(),
+      fake_node_->get_node_clock_interface(),
+      vehicle_info, stop_param_, slow_down_param_, acc_param_);
   }
 
   void TearDown() override

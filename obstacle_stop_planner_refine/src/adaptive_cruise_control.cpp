@@ -32,18 +32,16 @@
 namespace obstacle_stop_planner
 {
 AdaptiveCruiseController::AdaptiveCruiseController(
-  rclcpp::Node * node,
+  const rclcpp::node_interfaces::NodeLoggingInterface::ConstSharedPtr node_logging,
+  const rclcpp::node_interfaces::NodeClockInterface::SharedPtr node_clock,
   const std::shared_ptr<vehicle_info_util::VehicleInfo> & vehicle_info,
   const std::shared_ptr<AdaptiveCruiseControlParameter> & acc_param)
-: node_(node),
+: node_logging_(node_logging),
+  node_clock_(node_clock),
   vehicle_info_(vehicle_info),
   param_(acc_param),
   prev_collision_point_(0.0, 0.0)
 {
-  /* publisher */
-  pub_debug_ = node_->create_publisher<autoware_debug_msgs::msg::Float32MultiArrayStamped>(
-    "~/debug_values",
-    1);
 }
 
 void AdaptiveCruiseController::updateParameter(const std::shared_ptr<AdaptiveCruiseControlParameter> & acc_param)
@@ -100,23 +98,21 @@ AdaptiveCruiseController::insertAdaptiveCruiseVelocity(const adaptive_cruise_con
   if (!success_estm_vel) {
     // if failed to estimate velocity, need to stop
     RCLCPP_DEBUG_THROTTLE(
-      node_->get_logger(), *node_->get_clock(), std::chrono::milliseconds(1000).count(),
+      node_logging_->get_logger(), *node_clock_->get_clock(), std::chrono::milliseconds(1000).count(),
       "Failed to estimate velocity of forward vehicle. Insert stop line.");
     prev_upper_velocity_ = current_velocity;  // reset prev_upper_velocity
     prev_target_velocity_ = 0.0;
-    pub_debug_->publish(debug_values_);
     return boost::none;
   }
 
   // calculate max(target) velocity of self
   const double upper_velocity =
     calcUpperVelocity(col_point_distance, point_velocity, current_velocity);
-  pub_debug_->publish(debug_values_);
 
   if (upper_velocity <= param_->thresh_vel_to_stop) {
     // if upper velocity is too low, need to stop
     RCLCPP_DEBUG_THROTTLE(
-      node_->get_logger(), *node_->get_clock(), std::chrono::milliseconds(1000).count(),
+      node_logging_->get_logger(), *node_clock_->get_clock(), std::chrono::milliseconds(1000).count(),
       "Upper velocity is too low. Insert stop line.");
     return boost::none;
   }
@@ -136,7 +132,7 @@ double AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
   double distance = 0.0;
   if (trajectory.points.empty()) {
     RCLCPP_DEBUG_THROTTLE(
-      node_->get_logger(), *node_->get_clock(), std::chrono::milliseconds(1000).count(),
+      node_logging_->get_logger(), *node_clock_->get_clock(), std::chrono::milliseconds(1000).count(),
       "input path is too short(size=0)");
     return 0;
   }
@@ -274,7 +270,7 @@ optional<double> AdaptiveCruiseController::estimatePointVelocityFromPcl(
 
 double AdaptiveCruiseController::estimateRoughPointVelocity(const double current_vel)
 {
-  const double p_dt = node_->now().seconds() - prev_collision_point_time_.seconds();
+  const double p_dt = node_clock_->get_clock()->now().seconds() - prev_collision_point_time_.seconds();
   if (param_->valid_est_vel_diff_time >= p_dt) {
     // use previous estimated velocity
     return prev_target_velocity_;
@@ -291,7 +287,7 @@ double AdaptiveCruiseController::calcUpperVelocity(
   if (obj_vel < param_->obstacle_stop_velocity_thresh) {
     // stop by static obstacle
     RCLCPP_DEBUG_THROTTLE(
-      node_->get_logger(), *node_->get_clock(), std::chrono::milliseconds(1000).count(),
+      node_logging_->get_logger(), *node_clock_->get_clock(), std::chrono::milliseconds(1000).count(),
       "The velocity of forward vehicle is too low. Insert stop line.");
     return 0.0;
   }
@@ -300,7 +296,7 @@ double AdaptiveCruiseController::calcUpperVelocity(
   if (thresh_dist >= dist_to_col) {
     // emergency stop
     RCLCPP_DEBUG_THROTTLE(
-      node_->get_logger(), *node_->get_clock(), std::chrono::milliseconds(1000).count(),
+      node_logging_->get_logger(), *node_clock_->get_clock(), std::chrono::milliseconds(1000).count(),
       "Forward vehicle is too close. Insert stop line.");
     return 0.0;
   }
@@ -369,7 +365,7 @@ double AdaptiveCruiseController::calcTargetVelocity_I(
 double AdaptiveCruiseController::calcTargetVelocity_D(
   const double target_dist, const double current_dist)
 {
-  if (node_->now().seconds() - prev_target_vehicle_time_ >=
+  if (node_clock_->get_clock()->now().seconds() - prev_target_vehicle_time_ >=
     param_->d_coeff_valid_time)
   {
     // invalid time(prev is too old)
@@ -377,7 +373,7 @@ double AdaptiveCruiseController::calcTargetVelocity_D(
   }
 
   double diff_vel = (target_dist - prev_target_vehicle_dist_) /
-    (node_->now().seconds() - prev_target_vehicle_time_);
+    (node_clock_->get_clock()->now().seconds() - prev_target_vehicle_time_);
 
   if (std::fabs(diff_vel) >= param_->d_coeff_valid_diff_vel) {
     // invalid(discontinuous) diff_vel
@@ -394,7 +390,7 @@ double AdaptiveCruiseController::calcTargetVelocity_D(
 
   // add buffer
   prev_target_vehicle_dist_ = current_dist;
-  prev_target_vehicle_time_ = node_->now().seconds();
+  prev_target_vehicle_time_ = node_clock_->get_clock()->now().seconds();
 
   return add_vel_d;
 }
@@ -403,7 +399,7 @@ double AdaptiveCruiseController::calcTargetVelocityByPID(
   const double current_vel, const double current_dist, const double obj_vel)
 {
   const double target_dist = calcBaseDistToForwardObstacle(current_vel, obj_vel);
-  RCLCPP_DEBUG_STREAM(node_->get_logger(), "[adaptive cruise control] target_dist" << target_dist);
+  RCLCPP_DEBUG_STREAM(node_logging_->get_logger(), "[adaptive cruise control] target_dist" << target_dist);
 
   const double add_vel_p = calcTargetVelocity_P(target_dist, current_dist);
   //** I is not implemented **
@@ -477,7 +473,7 @@ void AdaptiveCruiseController::registerQueToVelocity(
   std::vector<int> delete_idxs;
   for (size_t i = 0; i < est_vel_que_.size(); i++) {
     if (
-      node_->now().seconds() - est_vel_que_.at(i).header.stamp.sec >
+      node_clock_->get_clock()->now().seconds() - est_vel_que_.at(i).header.stamp.sec >
       param_->valid_vel_que_time)
     {
       delete_idxs.push_back(i);
@@ -499,7 +495,7 @@ double AdaptiveCruiseController::getMedianVel(
   const std::vector<geometry_msgs::msg::TwistStamped> & vel_que)
 {
   if (vel_que.empty()) {
-    RCLCPP_WARN_STREAM(node_->get_logger(), "size of vel que is 0. Something has wrong.");
+    RCLCPP_WARN_STREAM(node_logging_->get_logger(), "size of vel que is 0. Something has wrong.");
     return 0.0;
   }
 

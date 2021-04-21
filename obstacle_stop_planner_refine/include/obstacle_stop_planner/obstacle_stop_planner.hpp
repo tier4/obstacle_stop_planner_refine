@@ -65,7 +65,8 @@ class OBSTACLE_STOP_PLANNER_PUBLIC ObstacleStopPlanner
 {
 public:
   ObstacleStopPlanner(
-    rclcpp::Node * node,
+    const rclcpp::node_interfaces::NodeLoggingInterface::ConstSharedPtr node_logging,
+    const rclcpp::node_interfaces::NodeClockInterface::SharedPtr node_clock,
     const std::shared_ptr<vehicle_info_util::VehicleInfo> & vehicle_info,
     const std::shared_ptr<StopControlParameter> & stop_param,
     const std::shared_ptr<SlowDownControlParameter> & slow_down_param,
@@ -80,7 +81,7 @@ public:
   Output processTrajectory(const Input & input);
 
 private:
-  rclcpp::Node * node_;
+  rclcpp::node_interfaces::NodeClockInterface::SharedPtr node_clock_;
   std::shared_ptr<ObstacleStopPlannerDebugNode> debug_ptr_;
   std::unique_ptr<obstacle_stop_planner::AdaptiveCruiseController> acc_controller_;
 
@@ -126,45 +127,7 @@ public:
 
   Trajectory planObstacleStop(const Trajectory & trajectory, const Collision & collision);
 
-
-
-  geometry_msgs::msg::Pose getSelfPose(
-    const std_msgs::msg::Header & header, const tf2_ros::Buffer & tf_buffer);
-  autoware_planning_msgs::msg::Trajectory insertSlowDownVelocity(
-    const size_t slow_down_start_point_idx,
-    const double slow_down_target_vel,
-    const double slow_down_vel,
-    const autoware_planning_msgs::msg::Trajectory & input_path);
   double calcSlowDownTargetVel(const double lateral_deviation) const;
-  static std::tuple<bool, pcl::PointCloud<pcl::PointXYZ>::Ptr> getSlowDownPointcloud(
-    const bool is_slow_down, const bool enable_slow_down,
-    const pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_candidate_pointcloud,
-    const Point2d & prev_center_point,
-    const Point2d & next_center_point,
-    const double search_radius,
-    const Polygon2d & one_step_polygon,
-    const pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud,
-    const bool candidate_slow_down);
-  std::tuple<bool, pcl::PointCloud<pcl::PointXYZ>::Ptr> getCollisionPointcloud(
-    const pcl::PointCloud<pcl::PointXYZ>::Ptr slow_down_pointcloud,
-    const Point2d & prev_center_point,
-    const Point2d & next_center_point,
-    const double search_radius, const Polygon2d & one_step_polygon,
-    const autoware_planning_msgs::msg::TrajectoryPoint & trajectory_point,
-    const pcl::PointCloud<pcl::PointXYZ>::Ptr collision_pointcloud,
-    const bool is_collision);
-  autoware_planning_msgs::msg::Trajectory insertStopPoint(
-    const size_t search_start_index,
-    const autoware_planning_msgs::msg::Trajectory & base_path,
-    const Point2d & nearest_collision_point,
-    const autoware_planning_msgs::msg::Trajectory & input_msg);
-  // autoware_planning_msgs::msg::Trajectory insertSlowDownPoint(
-  //   const size_t search_start_index,
-  //   const autoware_planning_msgs::msg::Trajectory & base_path,
-  //   const Point2d & nearest_slow_down_point,
-  //   const double slow_down_target_vel,
-  //   const double slow_down_margin,
-  //   const autoware_planning_msgs::msg::Trajectory & input_msg);
 };
 }  // namespace obstacle_stop_planner
 

@@ -55,7 +55,8 @@ class AdaptiveCruiseController
 {
 public:
   AdaptiveCruiseController(
-    rclcpp::Node * node,
+    const rclcpp::node_interfaces::NodeLoggingInterface::ConstSharedPtr node_logging,
+    const rclcpp::node_interfaces::NodeClockInterface::SharedPtr node_clock,
     const std::shared_ptr<vehicle_info_util::VehicleInfo> & vehicle_info,
     const std::shared_ptr<AdaptiveCruiseControlParameter> & acc_param);
 
@@ -64,10 +65,14 @@ public:
   boost::optional<autoware_planning_msgs::msg::Trajectory> insertAdaptiveCruiseVelocity(
     const adaptive_cruise_controller::Input & input);
 
-private:
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr pub_debug_;
+  autoware_debug_msgs::msg::Float32MultiArrayStamped getDebugMsg() { return debug_values_; }
 
-  rclcpp::Node * node_;
+private:
+  // rclcpp::Publisher<autoware_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr pub_debug_;
+
+  rclcpp::node_interfaces::NodeLoggingInterface::ConstSharedPtr node_logging_;
+  rclcpp::node_interfaces::NodeClockInterface::SharedPtr node_clock_;
+
   /*
    * Parameter
    */
@@ -120,7 +125,7 @@ private:
   void registerQueToVelocity(const double vel, const rclcpp::Time & vel_time);
 
   /* Debug */
-  mutable autoware_debug_msgs::msg::Float32MultiArrayStamped debug_values_;
+  autoware_debug_msgs::msg::Float32MultiArrayStamped debug_values_;
   enum DBGVAL
   {
     ESTIMATED_VEL_PCL = 0,
