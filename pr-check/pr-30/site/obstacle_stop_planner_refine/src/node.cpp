@@ -122,7 +122,8 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
   const auto vehicle_info = std::make_shared<vehicle_info_util::VehicleInfo>(vehicle_info_util::VehicleInfo::create(*this));
 
   planner_ = std::make_unique<obstacle_stop_planner::ObstacleStopPlanner>(
-    this,
+    this->get_node_logging_interface(),
+    this->get_node_clock_interface(),
     vehicle_info,
     stop_param_,
     slow_down_param_,

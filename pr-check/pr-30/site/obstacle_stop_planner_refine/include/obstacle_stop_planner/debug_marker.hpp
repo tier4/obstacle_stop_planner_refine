@@ -34,10 +34,12 @@ enum class PoseType : int8_t { Stop = 0, SlowDownStart, SlowDownEnd };
 class ObstacleStopPlannerDebugNode
 {
 public:
-  explicit ObstacleStopPlannerDebugNode(rclcpp::Node * node, const double base_link2front);
+  explicit ObstacleStopPlannerDebugNode(const rclcpp::node_interfaces::NodeClockInterface::SharedPtr & node_clock, const double base_link2front);
   ~ObstacleStopPlannerDebugNode() {}
   bool pushPolygon(
     const Polygon2d & polygon, const double z, const PolygonType & type);
+  void pushPolygons(
+    const std::vector<Polygon2d> & polygons, const std::vector<double> & z, const PolygonType & type);
   bool pushPolygon(const Polygon3d & polygon, const PolygonType & type);
   bool pushPose(const geometry_msgs::msg::Pose & pose, const PoseType & type);
   bool pushObstaclePoint(const geometry_msgs::msg::Point & obstacle_point, const PointType & type);
@@ -45,12 +47,10 @@ public:
   visualization_msgs::msg::MarkerArray makeVisualizationMarker();
   autoware_planning_msgs::msg::StopReasonArray makeStopReasonArray();
 
-  void publish();
-
 private:
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_viz_pub_;
   rclcpp::Publisher<autoware_planning_msgs::msg::StopReasonArray>::SharedPtr stop_reason_pub_;
-  rclcpp::Node * node_;
+  rclcpp::node_interfaces::NodeClockInterface::SharedPtr node_clock_;
   double base_link2front_;
 
   std::shared_ptr<geometry_msgs::msg::Pose> stop_pose_ptr_;

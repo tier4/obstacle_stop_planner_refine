@@ -53,31 +53,6 @@ inline sensor_msgs::msg::PointCloud2::ConstSharedPtr updatePointCloud(
   return obstacle_ros_pointcloud_ptr;
 }
 
-// inline static pcl::PointCloud<pcl::PointXYZ>::Ptr searchPointcloudNearTrajectory(
-//   const autoware_planning_msgs::msg::Trajectory & trajectory,
-//   const pcl::PointCloud<pcl::PointXYZ>::Ptr input_pointcloud_ptr,
-//   const double search_radius,
-//   const vehicle_info_util::VehicleInfo & param)
-// {
-//   pcl::PointCloud<pcl::PointXYZ>::Ptr output_pointcloud_ptr(
-//     new pcl::PointCloud<pcl::PointXYZ>);
-//   const double squared_radius = search_radius * search_radius;
-//   for (const auto & trajectory_point : trajectory.points) {
-//     const auto center_pose = getVehicleCenterFromBase(
-//       trajectory_point.pose,
-//       param.vehicle_length_m_,
-//       param.rear_overhang_m_);
-
-//     for (const auto & point : input_pointcloud_ptr->points) {
-//       const double x = center_pose.position.x - point.x;
-//       const double y = center_pose.position.y - point.y;
-//       const double squared_distance = x * x + y * y;
-//       if (squared_distance < squared_radius) {output_pointcloud_ptr->points.push_back(point);}
-//     }
-//   }
-//   return output_pointcloud_ptr;
-// }
-
 inline pcl::PointCloud<pcl::PointXYZ>::Ptr transformObstacle(
   const sensor_msgs::msg::PointCloud2::ConstSharedPtr & obstacle_ros_pointcloud_ptr,
   const geometry_msgs::msg::TransformStamped & transform_stamped)
