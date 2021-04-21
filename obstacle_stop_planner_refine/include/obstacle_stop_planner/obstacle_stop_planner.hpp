@@ -111,21 +111,30 @@ public:
 
   std::vector<LinearRing2d> createSlowDownFootprints(const Trajectory & trajectory);
 
-  std::vector<LinearRing2d> createVehicleFootprints(const Trajectory & trajectory, const double margin);
+  std::vector<LinearRing2d> createVehicleFootprints(
+    const Trajectory & trajectory,
+    const double margin);
 
   std::vector<Polygon2d> createVehiclePassingAreas(
-  const std::vector<LinearRing2d> & vehicle_footprints);
+    const std::vector<LinearRing2d> & vehicle_footprints);
 
   Polygon2d createHullFromFootprints(
-  const LinearRing2d & area1, const LinearRing2d & area2);
+    const LinearRing2d & area1, const LinearRing2d & area2);
 
-  boost::optional<Point3d> findCollisionParticle(const Polygon2d & area, const std::vector<Point3d> & obstacle_points, const Point2d & base_point);
+  boost::optional<Point3d> findCollisionParticle(
+    const Polygon2d & area,
+    const std::vector<Point3d> & obstacle_points,
+    const Point2d & base_point);
 
   boost::optional<Trajectory> planAdaptiveCruise(const Input & input, const Collision & collision);
 
-  Trajectory planSlowDown(const Trajectory & trajectory, const Collision & collision, const std::vector<Point3d> & obstacles);
+  Trajectory planSlowDown(
+    const Trajectory & trajectory, const Collision & collision,
+    const std::vector<Point3d> & obstacles);
 
-  bool findFrontObstacles(const autoware_planning_msgs::msg::TrajectoryPoint & point, const std::vector<Point3d> & obstacles);
+  bool findFrontObstacles(
+    const autoware_planning_msgs::msg::TrajectoryPoint & point,
+    const std::vector<Point3d> & obstacles);
 
   Trajectory planObstacleStop(const Trajectory & trajectory, const Collision & collision);
 

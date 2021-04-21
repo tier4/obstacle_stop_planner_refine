@@ -34,12 +34,15 @@ enum class PoseType : int8_t { Stop = 0, SlowDownStart, SlowDownEnd };
 class ObstacleStopPlannerDebugNode
 {
 public:
-  explicit ObstacleStopPlannerDebugNode(const rclcpp::node_interfaces::NodeClockInterface::SharedPtr & node_clock, const double base_link2front);
+  explicit ObstacleStopPlannerDebugNode(
+    const rclcpp::node_interfaces::NodeClockInterface::SharedPtr & node_clock,
+    const double base_link2front);
   ~ObstacleStopPlannerDebugNode() {}
   bool pushPolygon(
     const Polygon2d & polygon, const double z, const PolygonType & type);
   void pushPolygons(
-    const std::vector<Polygon2d> & polygons, const std::vector<double> & z, const PolygonType & type);
+    const std::vector<Polygon2d> & polygons, const std::vector<double> & z,
+    const PolygonType & type);
   bool pushPolygon(const Polygon3d & polygon, const PolygonType & type);
   bool pushPose(const geometry_msgs::msg::Pose & pose, const PoseType & type);
   bool pushObstaclePoint(const geometry_msgs::msg::Point & obstacle_point, const PointType & type);

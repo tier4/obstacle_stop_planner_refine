@@ -21,7 +21,8 @@
 namespace obstacle_stop_planner
 {
 ObstacleStopPlannerDebugNode::ObstacleStopPlannerDebugNode(
-  const rclcpp::node_interfaces::NodeClockInterface::SharedPtr & node_clock, const double base_link2front)
+  const rclcpp::node_interfaces::NodeClockInterface::SharedPtr & node_clock,
+  const double base_link2front)
 : node_clock_(node_clock), base_link2front_(base_link2front)
 {
 }

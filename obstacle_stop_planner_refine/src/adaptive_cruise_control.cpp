@@ -17,6 +17,7 @@
 #include <vector>
 #include <string>
 #include <tuple>
+#include <memory>
 
 #include "boost/algorithm/clamp.hpp"
 #include "boost/assert.hpp"
@@ -44,13 +45,15 @@ AdaptiveCruiseController::AdaptiveCruiseController(
 {
 }
 
-void AdaptiveCruiseController::updateParameter(const std::shared_ptr<AdaptiveCruiseControlParameter> & acc_param)
+void AdaptiveCruiseController::updateParameter(
+  const std::shared_ptr<AdaptiveCruiseControlParameter> & acc_param)
 {
   param_ = acc_param;
 }
 
 boost::optional<autoware_planning_msgs::msg::Trajectory>
-AdaptiveCruiseController::insertAdaptiveCruiseVelocity(const adaptive_cruise_controller::Input & input)
+AdaptiveCruiseController::insertAdaptiveCruiseVelocity(
+  const adaptive_cruise_controller::Input & input)
 {
   debug_values_.data.clear();
   debug_values_.data.resize(num_debug_values_, 0.0);
@@ -63,7 +66,8 @@ AdaptiveCruiseController::insertAdaptiveCruiseVelocity(const adaptive_cruise_con
   * calc distance to collision point
   */
   double col_point_distance = calcDistanceToNearestPointOnPath(
-    input.trajectory, input.nearest_collision_point_idx, input.self_pose, input.nearest_collision_point,
+    input.trajectory, input.nearest_collision_point_idx, input.self_pose,
+    input.nearest_collision_point,
     input.nearest_collision_point_time);
 
   /*
@@ -98,7 +102,8 @@ AdaptiveCruiseController::insertAdaptiveCruiseVelocity(const adaptive_cruise_con
   if (!success_estm_vel) {
     // if failed to estimate velocity, need to stop
     RCLCPP_DEBUG_THROTTLE(
-      node_logging_->get_logger(), *node_clock_->get_clock(), std::chrono::milliseconds(1000).count(),
+      node_logging_->get_logger(), *node_clock_->get_clock(), std::chrono::milliseconds(
+        1000).count(),
       "Failed to estimate velocity of forward vehicle. Insert stop line.");
     prev_upper_velocity_ = current_velocity;  // reset prev_upper_velocity
     prev_target_velocity_ = 0.0;
@@ -112,7 +117,8 @@ AdaptiveCruiseController::insertAdaptiveCruiseVelocity(const adaptive_cruise_con
   if (upper_velocity <= param_->thresh_vel_to_stop) {
     // if upper velocity is too low, need to stop
     RCLCPP_DEBUG_THROTTLE(
-      node_logging_->get_logger(), *node_clock_->get_clock(), std::chrono::milliseconds(1000).count(),
+      node_logging_->get_logger(), *node_clock_->get_clock(), std::chrono::milliseconds(
+        1000).count(),
       "Upper velocity is too low. Insert stop line.");
     return boost::none;
   }
@@ -132,7 +138,8 @@ double AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
   double distance = 0.0;
   if (trajectory.points.empty()) {
     RCLCPP_DEBUG_THROTTLE(
-      node_logging_->get_logger(), *node_clock_->get_clock(), std::chrono::milliseconds(1000).count(),
+      node_logging_->get_logger(), *node_clock_->get_clock(), std::chrono::milliseconds(
+        1000).count(),
       "input path is too short(size=0)");
     return 0;
   }
@@ -270,7 +277,8 @@ optional<double> AdaptiveCruiseController::estimatePointVelocityFromPcl(
 
 double AdaptiveCruiseController::estimateRoughPointVelocity(const double current_vel)
 {
-  const double p_dt = node_clock_->get_clock()->now().seconds() - prev_collision_point_time_.seconds();
+  const double p_dt = node_clock_->get_clock()->now().seconds() -
+    prev_collision_point_time_.seconds();
   if (param_->valid_est_vel_diff_time >= p_dt) {
     // use previous estimated velocity
     return prev_target_velocity_;
@@ -287,7 +295,8 @@ double AdaptiveCruiseController::calcUpperVelocity(
   if (obj_vel < param_->obstacle_stop_velocity_thresh) {
     // stop by static obstacle
     RCLCPP_DEBUG_THROTTLE(
-      node_logging_->get_logger(), *node_clock_->get_clock(), std::chrono::milliseconds(1000).count(),
+      node_logging_->get_logger(), *node_clock_->get_clock(), std::chrono::milliseconds(
+        1000).count(),
       "The velocity of forward vehicle is too low. Insert stop line.");
     return 0.0;
   }
@@ -296,7 +305,8 @@ double AdaptiveCruiseController::calcUpperVelocity(
   if (thresh_dist >= dist_to_col) {
     // emergency stop
     RCLCPP_DEBUG_THROTTLE(
-      node_logging_->get_logger(), *node_clock_->get_clock(), std::chrono::milliseconds(1000).count(),
+      node_logging_->get_logger(), *node_clock_->get_clock(), std::chrono::milliseconds(
+        1000).count(),
       "Forward vehicle is too close. Insert stop line.");
     return 0.0;
   }
@@ -399,7 +409,8 @@ double AdaptiveCruiseController::calcTargetVelocityByPID(
   const double current_vel, const double current_dist, const double obj_vel)
 {
   const double target_dist = calcBaseDistToForwardObstacle(current_vel, obj_vel);
-  RCLCPP_DEBUG_STREAM(node_logging_->get_logger(), "[adaptive cruise control] target_dist" << target_dist);
+  RCLCPP_DEBUG_STREAM(
+    node_logging_->get_logger(), "[adaptive cruise control] target_dist" << target_dist);
 
   const double add_vel_p = calcTargetVelocity_P(target_dist, current_dist);
   //** I is not implemented **
