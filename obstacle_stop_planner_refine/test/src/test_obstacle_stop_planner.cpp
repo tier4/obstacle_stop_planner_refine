@@ -197,7 +197,6 @@ TEST_F(ObstacleStopPlannerTest, planSlowDown)
   slow_down_param_->enable_slow_down = true;
   slow_down_param_->min_slow_down_vel = 2.0;
   slow_down_param_->max_slow_down_vel = 3.0;
-  slow_down_param_->max_deceleration = 1.0;
   slow_down_param_->expand_slow_down_range = 1.0;
 
   planner_->updateParameters(stop_param_, slow_down_param_, acc_param_);

@@ -17,9 +17,6 @@
 
 #include "obstacle_stop_planner/node.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
-#include "obstacle_stop_planner/parameter/stop_control_parameter.hpp"
-#include "obstacle_stop_planner/parameter/slow_down_control_parameter.hpp"
-#include "obstacle_stop_planner/parameter/adaptive_cruise_control_parameter.hpp"
 #include "obstacle_stop_planner/obstacle_point_cloud.hpp"
 
 namespace {
@@ -43,7 +40,6 @@ namespace {
       declare_parameter(node, "slow_down_planner.expand_slow_down_range", 1.0);
     slow_down_param.max_slow_down_vel = declare_parameter(node, "slow_down_planner.max_slow_down_vel", 4.0);
     slow_down_param.min_slow_down_vel = declare_parameter(node, "slow_down_planner.min_slow_down_vel", 2.0);
-    slow_down_param.max_deceleration = declare_parameter(node, "slow_down_planner.max_deceleration", 2.0);
     slow_down_param.enable_slow_down = declare_parameter(node, "enable_slow_down", false);
 
     return slow_down_param;
@@ -264,7 +260,6 @@ rcl_interfaces::msg::SetParametersResult ObstacleStopPlannerNode::onParameter(
     update_parameter(parameters, "slow_down_planner.expand_slow_down_range", slow_down_param_->expand_slow_down_range);
     update_parameter(parameters, "slow_down_planner.max_slow_down_vel", slow_down_param_->max_slow_down_vel);
     update_parameter(parameters, "slow_down_planner.min_slow_down_vel", slow_down_param_->min_slow_down_vel);
-    update_parameter(parameters, "slow_down_planner.max_deceleration", slow_down_param_->max_deceleration);
     update_parameter(parameters, "enable_slow_down", slow_down_param_->enable_slow_down);
 
     const std::string acc_ns = "adaptive_cruise_control.";

@@ -31,7 +31,6 @@
 #include "obstacle_stop_planner/obstacle_stop_planner.hpp"
 #include "obstacle_stop_planner/util.hpp"
 #include "obstacle_stop_planner/one_step_polygon.hpp"
-#include "obstacle_stop_planner/trajectory.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
 
 

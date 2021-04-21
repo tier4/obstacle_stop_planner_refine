@@ -29,8 +29,10 @@
 #include "obstacle_stop_planner/adaptive_cruise_control.hpp"
 #include "obstacle_stop_planner/debug_marker.hpp"
 #include "obstacle_stop_planner/obstacle_point_cloud.hpp"
-#include "obstacle_stop_planner/point_helper.hpp"
 #include "obstacle_stop_planner/util.hpp"
+#include "obstacle_stop_planner/parameter/stop_control_parameter.hpp"
+#include "obstacle_stop_planner/parameter/slow_down_control_parameter.hpp"
+#include "obstacle_stop_planner/parameter/adaptive_cruise_control_parameter.hpp"
 
 namespace obstacle_stop_planner
 {
