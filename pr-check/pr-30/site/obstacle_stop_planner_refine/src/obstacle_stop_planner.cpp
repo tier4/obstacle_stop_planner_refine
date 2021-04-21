@@ -31,7 +31,6 @@
 #include "obstacle_stop_planner/obstacle_stop_planner.hpp"
 #include "obstacle_stop_planner/util.hpp"
 #include "obstacle_stop_planner/one_step_polygon.hpp"
-#include "obstacle_stop_planner/trajectory.hpp"
 #include "vehicle_info_util/vehicle_info.hpp"
 
 
@@ -50,6 +49,11 @@ ObstacleStopPlanner::ObstacleStopPlanner(
   // Initializer
   acc_controller_ = std::make_unique<obstacle_stop_planner::AdaptiveCruiseController>(
     node_logging, node_clock, vehicle_info, acc_param);
+
+  debug_ptr_ = std::make_shared<ObstacleStopPlannerDebugNode>(
+    node_clock,
+    vehicle_info_->wheel_base_m_ +
+    vehicle_info_->front_overhang_m_);
 
   updateParameters(stop_param, slow_down_param, acc_param);
 }
@@ -115,7 +119,7 @@ Output ObstacleStopPlanner::processTrajectory(const Input & input)
   }
 
   auto tmp_trajectory = input.input_trajectory;
-  
+
   // Slow down if obstacle is in the detection area
   if (nearest_slow_down.has_value()) {
     tmp_trajectory = planSlowDown(tmp_trajectory, nearest_slow_down.value(), obstacles);
@@ -170,11 +174,11 @@ boost::optional<Collision> ObstacleStopPlanner::findCollisionPoint(
   // For debugging
   std::vector<double> z;
   std::transform(
-  trajectory.points.cbegin(), trajectory.points.cend(),
-  std::back_inserter(z),
-  [&](const auto & p) {
-    return p.pose.position.z;
-  });
+    trajectory.points.cbegin(), trajectory.points.cend(),
+    std::back_inserter(z),
+    [&](const auto & p) {
+      return p.pose.position.z;
+    });
   debug_ptr_->pushPolygons(passing_areas, z, PolygonType::Vehicle);
 
 
@@ -217,11 +221,11 @@ boost::optional<Collision> ObstacleStopPlanner::findSlowDownPoint(
   // For debugging
   std::vector<double> z;
   std::transform(
-  trajectory.points.cbegin(), trajectory.points.cend(),
-  std::back_inserter(z),
-  [&](const auto & p) {
-    return p.pose.position.z;
-  });
+    trajectory.points.cbegin(), trajectory.points.cend(),
+    std::back_inserter(z),
+    [&](const auto & p) {
+      return p.pose.position.z;
+    });
   debug_ptr_->pushPolygons(passing_areas, z, PolygonType::SlowDownRange);
 
   // Loop for each trajectory point and areas
@@ -239,7 +243,7 @@ boost::optional<Collision> ObstacleStopPlanner::findSlowDownPoint(
       Collision collision;
       collision.segment_index = i;
       collision.obstacle_point = collision_particle.value().to_2d();
-      
+
       // For debugging
       debug_ptr_->pushPolygon(
         passing_areas.at(i), trajectory.points.at(i).pose.position.z,
@@ -258,12 +262,14 @@ std::vector<LinearRing2d> ObstacleStopPlanner::createStopFootprints(const Trajec
   return createVehicleFootprints(trajectory, stop_param_->expand_stop_range);
 }
 
-std::vector<LinearRing2d> ObstacleStopPlanner::createSlowDownFootprints(const Trajectory & trajectory)
+std::vector<LinearRing2d> ObstacleStopPlanner::createSlowDownFootprints(
+  const Trajectory & trajectory)
 {
   return createVehicleFootprints(trajectory, slow_down_param_->expand_slow_down_range);
 }
 
-std::vector<LinearRing2d> ObstacleStopPlanner::createVehicleFootprints(const Trajectory & trajectory, const double margin)
+std::vector<LinearRing2d> ObstacleStopPlanner::createVehicleFootprints(
+  const Trajectory & trajectory, const double margin)
 {
   // Create vehicle footprint in base_link coordinate
   const auto local_vehicle_footprint =
@@ -312,7 +318,9 @@ Polygon2d ObstacleStopPlanner::createHullFromFootprints(
   return hull;
 }
 
-boost::optional<Point3d> ObstacleStopPlanner::findCollisionParticle(const Polygon2d & area, const std::vector<Point3d> & obstacle_points, const Point2d & base_point)
+boost::optional<Point3d> ObstacleStopPlanner::findCollisionParticle(
+  const Polygon2d & area,
+  const std::vector<Point3d> & obstacle_points, const Point2d & base_point)
 {
   // Search all obstacle inside area
   std::vector<Point3d> collision_points;
@@ -349,7 +357,9 @@ boost::optional<Point3d> ObstacleStopPlanner::findCollisionParticle(const Polygo
 * @param collision collision point and index
 * @return Trajectory
 */
-boost::optional<Trajectory> ObstacleStopPlanner::planAdaptiveCruise(const Input & input, const Collision & collision)
+boost::optional<Trajectory> ObstacleStopPlanner::planAdaptiveCruise(
+  const Input & input,
+  const Collision & collision)
 {
   adaptive_cruise_controller::Input acc_input {
     input.input_trajectory,
@@ -373,16 +383,24 @@ boost::optional<Trajectory> ObstacleStopPlanner::planAdaptiveCruise(const Input 
 * @param obstacles associated points from pointcloud
 * @return Trajectory
 */
-Trajectory ObstacleStopPlanner::planSlowDown(const Trajectory & trajectory, const Collision & collision, const std::vector<Point3d> & obstacles)
+Trajectory ObstacleStopPlanner::planSlowDown(
+  const Trajectory & trajectory,
+  const Collision & collision,
+  const std::vector<Point3d> & obstacles)
 {
   // get lateral deviation
-  const auto lateral_deviation = autoware_utils::calcLateralDeviation(trajectory.points.at(collision.segment_index).pose, autoware_utils::toMsg(collision.obstacle_point.to_3d()));
+  const auto lateral_deviation =
+    autoware_utils::calcLateralDeviation(
+    trajectory.points.at(
+      collision.segment_index).pose, autoware_utils::toMsg(collision.obstacle_point.to_3d()));
 
   const auto target_velocity = calcSlowDownTargetVel(lateral_deviation);
 
   // loop trajectory point from segment_index to end
   Trajectory limited_trajectory = trajectory;
-  for (auto && itr = limited_trajectory.points.begin() + collision.segment_index; itr != limited_trajectory.points.end(); ++itr) {
+  for (auto && itr = limited_trajectory.points.begin() + collision.segment_index;
+    itr != limited_trajectory.points.end(); ++itr)
+  {
     itr->twist.linear.x = target_velocity;
 
     // if obstacle is not in front of point, resume speed
@@ -396,7 +414,9 @@ Trajectory ObstacleStopPlanner::planSlowDown(const Trajectory & trajectory, cons
 }
 
 // Return true if obstacle is in front side of point
-bool ObstacleStopPlanner::findFrontObstacles(const autoware_planning_msgs::msg::TrajectoryPoint & point, const std::vector<Point3d> & obstacles)
+bool ObstacleStopPlanner::findFrontObstacles(
+  const autoware_planning_msgs::msg::TrajectoryPoint & point,
+  const std::vector<Point3d> & obstacles)
 {
   for (const auto obstacle : obstacles) {
     const auto p = autoware_utils::fromMsg(point.pose.position);
@@ -419,9 +439,11 @@ bool ObstacleStopPlanner::findFrontObstacles(const autoware_planning_msgs::msg::
  * @param collision collision point and index
  * @return Trajectory
  */
-Trajectory ObstacleStopPlanner::planObstacleStop(const Trajectory & trajectory, const Collision & collision)
+Trajectory ObstacleStopPlanner::planObstacleStop(
+  const Trajectory & trajectory,
+  const Collision & collision)
 {
-  // TODO: This is very simple logic. The output should be the same as the existing logic.
+  // TODO(K.Shima): This is very simple logic. The output should be the same as the existing logic.
   Trajectory limited_trajectory = trajectory;
   for (size_t i = collision.segment_index; i < limited_trajectory.points.size(); ++i) {
     limited_trajectory.points.at(i).twist.linear.x = 0.0;

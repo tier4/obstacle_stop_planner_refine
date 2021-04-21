@@ -17,6 +17,7 @@
 
 #include <vector>
 #include <tuple>
+#include <memory>
 
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -40,7 +41,8 @@ using boost::optional;
 
 namespace adaptive_cruise_controller
 {
-struct Input {
+struct Input
+{
   autoware_planning_msgs::msg::Trajectory trajectory;
   size_t nearest_collision_point_idx;
   geometry_msgs::msg::Pose self_pose;
@@ -65,7 +67,7 @@ public:
   boost::optional<autoware_planning_msgs::msg::Trajectory> insertAdaptiveCruiseVelocity(
     const adaptive_cruise_controller::Input & input);
 
-  autoware_debug_msgs::msg::Float32MultiArrayStamped getDebugMsg() { return debug_values_; }
+  autoware_debug_msgs::msg::Float32MultiArrayStamped getDebugMsg() {return debug_values_;}
 
 private:
   // rclcpp::Publisher<autoware_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr pub_debug_;

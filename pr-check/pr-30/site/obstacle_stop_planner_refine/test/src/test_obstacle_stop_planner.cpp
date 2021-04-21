@@ -82,7 +82,9 @@ public:
 
     fake_node_ = std::make_shared<rclcpp::Node>("fake_node", node_options);
 
-    const auto vehicle_info = std::make_shared<vehicle_info_util::VehicleInfo>(vehicle_info_util::VehicleInfo::create(*fake_node_));
+    const auto vehicle_info = std::make_shared<vehicle_info_util::VehicleInfo>(
+      vehicle_info_util::VehicleInfo::create(
+        *fake_node_));
 
     stop_param_ = std::make_shared<obstacle_stop_planner::StopControlParameter>();
     slow_down_param_ = std::make_shared<obstacle_stop_planner::SlowDownControlParameter>();
@@ -197,7 +199,6 @@ TEST_F(ObstacleStopPlannerTest, planSlowDown)
   slow_down_param_->enable_slow_down = true;
   slow_down_param_->min_slow_down_vel = 2.0;
   slow_down_param_->max_slow_down_vel = 3.0;
-  slow_down_param_->max_deceleration = 1.0;
   slow_down_param_->expand_slow_down_range = 1.0;
 
   planner_->updateParameters(stop_param_, slow_down_param_, acc_param_);
@@ -213,7 +214,9 @@ TEST_F(ObstacleStopPlannerTest, planSlowDown)
   const auto processed_trajectory = planner_->planSlowDown(trajectory, collision, obstacles);
 
   // Get expected velocity
-  const auto lateral_deviation = autoware_utils::calcLateralDeviation(trajectory.points.at(3).pose, autoware_utils::toMsg(collision.obstacle_point.to_3d()));
+  const auto lateral_deviation = autoware_utils::calcLateralDeviation(
+    trajectory.points.at(
+      3).pose, autoware_utils::toMsg(collision.obstacle_point.to_3d()));
 
   const auto target_velocity = planner_->calcSlowDownTargetVel(lateral_deviation);
 

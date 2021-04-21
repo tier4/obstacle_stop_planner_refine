@@ -15,6 +15,7 @@
 #define OBSTACLE_STOP_PLANNER__NODE_HPP_
 
 #include <memory>
+#include <vector>
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -58,7 +59,7 @@ private:
   // Parameter callback
   OnSetParametersCallbackHandle::SharedPtr set_param_res_;
   rcl_interfaces::msg::SetParametersResult onParameter(
-  const std::vector<rclcpp::Parameter> & parameters);
+    const std::vector<rclcpp::Parameter> & parameters);
 
   // Parameter
   std::shared_ptr<StopControlParameter> stop_param_;

@@ -29,8 +29,10 @@
 #include "obstacle_stop_planner/adaptive_cruise_control.hpp"
 #include "obstacle_stop_planner/debug_marker.hpp"
 #include "obstacle_stop_planner/obstacle_point_cloud.hpp"
-#include "obstacle_stop_planner/point_helper.hpp"
 #include "obstacle_stop_planner/util.hpp"
+#include "obstacle_stop_planner/parameter/stop_control_parameter.hpp"
+#include "obstacle_stop_planner/parameter/slow_down_control_parameter.hpp"
+#include "obstacle_stop_planner/parameter/adaptive_cruise_control_parameter.hpp"
 
 namespace obstacle_stop_planner
 {
@@ -109,21 +111,30 @@ public:
 
   std::vector<LinearRing2d> createSlowDownFootprints(const Trajectory & trajectory);
 
-  std::vector<LinearRing2d> createVehicleFootprints(const Trajectory & trajectory, const double margin);
+  std::vector<LinearRing2d> createVehicleFootprints(
+    const Trajectory & trajectory,
+    const double margin);
 
   std::vector<Polygon2d> createVehiclePassingAreas(
-  const std::vector<LinearRing2d> & vehicle_footprints);
+    const std::vector<LinearRing2d> & vehicle_footprints);
 
   Polygon2d createHullFromFootprints(
-  const LinearRing2d & area1, const LinearRing2d & area2);
+    const LinearRing2d & area1, const LinearRing2d & area2);
 
-  boost::optional<Point3d> findCollisionParticle(const Polygon2d & area, const std::vector<Point3d> & obstacle_points, const Point2d & base_point);
+  boost::optional<Point3d> findCollisionParticle(
+    const Polygon2d & area,
+    const std::vector<Point3d> & obstacle_points,
+    const Point2d & base_point);
 
   boost::optional<Trajectory> planAdaptiveCruise(const Input & input, const Collision & collision);
 
-  Trajectory planSlowDown(const Trajectory & trajectory, const Collision & collision, const std::vector<Point3d> & obstacles);
+  Trajectory planSlowDown(
+    const Trajectory & trajectory, const Collision & collision,
+    const std::vector<Point3d> & obstacles);
 
-  bool findFrontObstacles(const autoware_planning_msgs::msg::TrajectoryPoint & point, const std::vector<Point3d> & obstacles);
+  bool findFrontObstacles(
+    const autoware_planning_msgs::msg::TrajectoryPoint & point,
+    const std::vector<Point3d> & obstacles);
 
   Trajectory planObstacleStop(const Trajectory & trajectory, const Collision & collision);
 
