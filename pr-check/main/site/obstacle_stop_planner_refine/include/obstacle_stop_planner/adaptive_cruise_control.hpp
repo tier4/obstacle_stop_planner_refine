@@ -28,6 +28,7 @@
 #include "autoware_planning_msgs/msg/trajectory.hpp"
 #include "autoware_utils/autoware_utils.hpp"
 #include "obstacle_stop_planner/parameter/adaptive_cruise_control_parameter.hpp"
+#include "vehicle_info_util/vehicle_info.hpp"
 
 namespace obstacle_stop_planner
 {
@@ -42,7 +43,7 @@ class AdaptiveCruiseController
 public:
   AdaptiveCruiseController(
     rclcpp::Node * node,
-    const VehicleInfo & vehicle_info,
+    const vehicle_info_util::VehicleInfo & vehicle_info,
     const AdaptiveCruiseControlParameter & acc_param);
 
   std::tuple<bool, autoware_planning_msgs::msg::Trajectory> insertAdaptiveCruiseVelocity(
@@ -61,7 +62,7 @@ private:
   /*
    * Parameter
    */
-  VehicleInfo vehicle_info_;
+  vehicle_info_util::VehicleInfo vehicle_info_;
   AdaptiveCruiseControlParameter param_;
 
   rclcpp::Time prev_collision_point_time_;

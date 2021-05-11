@@ -16,7 +16,7 @@
 #include <string>
 
 #include "obstacle_stop_planner/node.hpp"
-#include "vehicle_info_util/vehicle_info.hpp"
+#include "vehicle_info_util/vehicle_info_util.hpp"
 #include "obstacle_stop_planner/parameter/stop_control_parameter.hpp"
 #include "obstacle_stop_planner/parameter/slow_down_control_parameter.hpp"
 #include "obstacle_stop_planner/parameter/adaptive_cruise_control_parameter.hpp"
@@ -30,27 +30,6 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
   pointcloud_received_(false),
   current_velocity_reveived_(false)
 {
-  // Vehicle Info
-  VehicleInfo vehicle_info;
-  auto i = vehicle_info_util::VehicleInfo::create(*this);
-  vehicle_info.wheel_radius = i.wheel_radius_m_;
-  vehicle_info.wheel_width = i.wheel_width_m_;
-  vehicle_info.wheel_base = i.wheel_base_m_;
-  vehicle_info.wheel_tread = i.wheel_tread_m_;
-  vehicle_info.front_overhang = i.front_overhang_m_;
-  vehicle_info.rear_overhang = i.rear_overhang_m_;
-  vehicle_info.left_overhang = i.left_overhang_m_;
-  vehicle_info.right_overhang = i.right_overhang_m_;
-  vehicle_info.vehicle_height = i.vehicle_height_m_;
-  vehicle_info.vehicle_length = i.vehicle_length_m_;
-  vehicle_info.vehicle_width = i.vehicle_width_m_;
-  vehicle_info.min_longitudinal_offset = i.min_longitudinal_offset_m_;
-  vehicle_info.max_longitudinal_offset = i.max_longitudinal_offset_m_;
-  vehicle_info.min_lateral_offset = i.min_lateral_offset_m_;
-  vehicle_info.max_lateral_offset = i.max_lateral_offset_m_;
-  vehicle_info.min_height_offset = i.min_height_offset_m_;
-  vehicle_info.max_height_offset = i.max_height_offset_m_;
-
   // Parameters
   obstacle_stop_planner::StopControlParameter stop_param;
   stop_param.stop_margin = declare_parameter("stop_planner.stop_margin", 5.0);
@@ -68,17 +47,6 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
   slow_down_param.min_slow_down_vel = declare_parameter("slow_down_planner.min_slow_down_vel", 2.0);
   slow_down_param.max_deceleration = declare_parameter("slow_down_planner.max_deceleration", 2.0);
   slow_down_param.enable_slow_down = declare_parameter("enable_slow_down", false);
-
-  stop_param.stop_margin += vehicle_info.wheel_base + vehicle_info.front_overhang;
-  stop_param.min_behavior_stop_margin +=
-    vehicle_info.wheel_base + vehicle_info.front_overhang;
-  slow_down_param.slow_down_margin += vehicle_info.wheel_base + vehicle_info.front_overhang;
-  stop_param.stop_search_radius = stop_param.step_length + std::hypot(
-    vehicle_info.vehicle_width / 2.0 + stop_param.expand_stop_range,
-    vehicle_info.vehicle_length / 2.0);
-  slow_down_param.slow_down_search_radius = stop_param.step_length + std::hypot(
-    vehicle_info.vehicle_width / 2.0 + slow_down_param.expand_slow_down_range,
-    vehicle_info.vehicle_length / 2.0);
 
   // Parameters for adaptive_cruise_control
   obstacle_stop_planner::AdaptiveCruiseControlParameter acc_param;
@@ -130,6 +98,22 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
   acc_param.use_rough_est_vel =
     declare_parameter(acc_ns + "use_rough_velocity_estimation", false);
   acc_param.rough_velocity_rate = declare_parameter(acc_ns + "rough_velocity_rate", 0.9);
+
+  // Vehicle Info
+  const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
+  {
+    const auto & i = vehicle_info;
+    stop_param.stop_margin += i.wheel_base_m + i.front_overhang_m;
+    stop_param.min_behavior_stop_margin +=
+      i.wheel_base_m + i.front_overhang_m;
+    slow_down_param.slow_down_margin += i.wheel_base_m + i.front_overhang_m;
+    stop_param.stop_search_radius = stop_param.step_length + std::hypot(
+      i.vehicle_width_m / 2.0 + stop_param.expand_stop_range,
+      i.vehicle_length_m / 2.0);
+    slow_down_param.slow_down_search_radius = stop_param.step_length + std::hypot(
+      i.vehicle_width_m / 2.0 + slow_down_param.expand_slow_down_range,
+      i.vehicle_length_m / 2.0);
+  }
 
   planner_ = std::make_unique<obstacle_stop_planner::ObstacleStopPlanner>(
     this,
