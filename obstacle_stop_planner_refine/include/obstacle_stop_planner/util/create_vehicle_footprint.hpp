@@ -16,7 +16,7 @@
 #define OBSTACLE_STOP_PLANNER__UTIL__CREATE_VEHICLE_FOOTPRINT_HPP_
 
 #include "autoware_utils/autoware_utils.hpp"
-#include "vehicle_info_util/vehicle_info.hpp"
+#include "vehicle_info_util/vehicle_info_util.hpp"
 
 namespace obstacle_stop_planner
 {

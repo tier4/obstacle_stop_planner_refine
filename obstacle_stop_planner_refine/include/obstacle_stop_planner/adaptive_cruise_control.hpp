@@ -29,7 +29,7 @@
 #include "autoware_planning_msgs/msg/trajectory.hpp"
 #include "autoware_utils/autoware_utils.hpp"
 #include "obstacle_stop_planner/parameter/adaptive_cruise_control_parameter.hpp"
-#include "vehicle_info_util/vehicle_info.hpp"
+#include "vehicle_info_util/vehicle_info_util.hpp"
 
 namespace obstacle_stop_planner
 {

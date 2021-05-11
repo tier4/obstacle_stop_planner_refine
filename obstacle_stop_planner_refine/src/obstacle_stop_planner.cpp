@@ -52,8 +52,8 @@ ObstacleStopPlanner::ObstacleStopPlanner(
 
   debug_ptr_ = std::make_shared<ObstacleStopPlannerDebugNode>(
     node_clock,
-    vehicle_info_->wheel_base_m_ +
-    vehicle_info_->front_overhang_m_);
+    vehicle_info_->wheel_base_m +
+    vehicle_info_->front_overhang_m);
 
   updateParameters(stop_param, slow_down_param, acc_param);
 }
@@ -70,18 +70,18 @@ void ObstacleStopPlanner::updateParameters(
   {
     const auto & i = *vehicle_info_;
 
-    stop_param_->stop_margin += i.wheel_base_m_ + i.front_overhang_m_;
+    stop_param_->stop_margin += i.wheel_base_m + i.front_overhang_m;
     stop_param_->min_behavior_stop_margin +=
-      i.wheel_base_m_ + i.front_overhang_m_;
-    slow_down_param_->slow_down_margin += i.wheel_base_m_ + i.front_overhang_m_;
+      i.wheel_base_m + i.front_overhang_m;
+    slow_down_param_->slow_down_margin += i.wheel_base_m + i.front_overhang_m;
     if (slow_down_param_->enable_slow_down) {
       search_radius_ = stop_param->step_length + std::hypot(
-        i.vehicle_width_m_ / 2.0 + slow_down_param->expand_slow_down_range,
-        i.vehicle_length_m_ / 2.0);
+        i.vehicle_width_m / 2.0 + slow_down_param->expand_slow_down_range,
+        i.vehicle_length_m / 2.0);
     } else {
       search_radius_ = stop_param->step_length + std::hypot(
-        i.vehicle_width_m_ / 2.0 + stop_param->expand_stop_range,
-        i.vehicle_length_m_ / 2.0);
+        i.vehicle_width_m / 2.0 + stop_param->expand_stop_range,
+        i.vehicle_length_m / 2.0);
     }
   }
 
@@ -93,8 +93,8 @@ Output ObstacleStopPlanner::processTrajectory(const Input & input)
   // Create debug instance
   debug_ptr_ = std::make_shared<ObstacleStopPlannerDebugNode>(
     node_clock_,
-    vehicle_info_->wheel_base_m_ +
-    vehicle_info_->front_overhang_m_);
+    vehicle_info_->wheel_base_m +
+    vehicle_info_->front_overhang_m);
 
   // Search obstacles near vehicle
   const auto obstacles = searchCandidateObstacle(input.input_trajectory, input.obstacle_pointcloud);
@@ -148,8 +148,8 @@ std::vector<Point3d> ObstacleStopPlanner::searchCandidateObstacle(
   for (const auto & trajectory_point : trajectory.points) {
     const auto center_pose = getVehicleCenterFromBase(
       trajectory_point.pose,
-      vehicle_info_->vehicle_length_m_,
-      vehicle_info_->rear_overhang_m_);
+      vehicle_info_->vehicle_length_m,
+      vehicle_info_->rear_overhang_m);
     const auto center_point = autoware_utils::fromMsg(center_pose.position);
 
     for (const auto & point : obstacle_pointcloud) {
@@ -454,10 +454,10 @@ Trajectory ObstacleStopPlanner::planObstacleStop(
 
 double ObstacleStopPlanner::calcSlowDownTargetVel(const double lateral_deviation) const
 {
-  return slow_down_param_.min_slow_down_vel +
-         (slow_down_param_.max_slow_down_vel - slow_down_param_.min_slow_down_vel) *
-         std::max(lateral_deviation - vehicle_info_.vehicle_width_m / 2, 0.0) /
-         slow_down_param_.expand_slow_down_range;
+  return slow_down_param_->min_slow_down_vel +
+         (slow_down_param_->max_slow_down_vel - slow_down_param_->min_slow_down_vel) *
+         std::max(lateral_deviation - vehicle_info_->vehicle_width_m / 2, 0.0) /
+         slow_down_param_->expand_slow_down_range;
 }
 
 }  // namespace obstacle_stop_planner
