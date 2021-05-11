@@ -33,7 +33,7 @@ namespace obstacle_stop_planner
 {
 AdaptiveCruiseController::AdaptiveCruiseController(
   rclcpp::Node * node,
-  const VehicleInfo & vehicle_info,
+  const vehicle_info_util::VehicleInfo & vehicle_info,
   const AdaptiveCruiseControlParameter & acc_param)
 : node_(node),
   vehicle_info_(vehicle_info),
@@ -146,10 +146,10 @@ double AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
 
   // get self polygon
   geometry_msgs::msg::Vector3 self_size;
-  self_size.x = vehicle_info_.vehicle_length;
-  self_size.y = vehicle_info_.vehicle_width;
-  double self_offset = (vehicle_info_.wheel_base + vehicle_info_.front_overhang) -
-    vehicle_info_.vehicle_length / 2.0;
+  self_size.x = vehicle_info_.vehicle_length_m;
+  self_size.y = vehicle_info_.vehicle_width_m;
+  double self_offset = (vehicle_info_.wheel_base_m + vehicle_info_.front_overhang_m) -
+    vehicle_info_.vehicle_length_m / 2.0;
   const auto self_poly = getPolygon(self_pose, self_size, self_offset);
 
   // get nearest point

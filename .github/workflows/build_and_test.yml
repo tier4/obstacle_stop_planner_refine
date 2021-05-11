@@ -24,15 +24,16 @@ jobs:
 
       - name: Concat build_depends.repos
         run: |
-          curl -sSL https://raw.githubusercontent.com/tier4/AutowareArchitectureProposal.iv/ros2/build_depends.repos | sed '1d' >> build_depends.repos
+          curl -sSL -H "Authorization: token ${{ secrets.REPO_TOKEN }}" https://raw.githubusercontent.com/tier4/autoware.iv/main/build_depends.repos | sed '1d' >> build_depends.repos
 
       - name: Run action-ros-ci
         id: action_ros_ci_step
-        uses: ros-tooling/action-ros-ci@v0.2
+        uses: ros-tooling/action-ros-ci@add-private-repo-test
         with:
           package-name: obstacle_stop_planner_refine
           target-ros2-distro: foxy
           vcs-repo-file-url: build_depends.repos
+          import-token: ${{ secrets.REPO_TOKEN }}
           colcon-defaults: |
             {
               "build": {
