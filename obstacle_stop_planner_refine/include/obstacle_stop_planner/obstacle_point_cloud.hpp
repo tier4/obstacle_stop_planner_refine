@@ -43,7 +43,7 @@ inline sensor_msgs::msg::PointCloud2::ConstSharedPtr updatePointCloud(
   pcl::fromROSMsg(*msg, *pointcloud_ptr);
 
   for (const auto & point : pointcloud_ptr->points) {
-    no_height_pointcloud_ptr->push_back(pcl::PointXYZ(point.x, point.y, 0.0));
+    no_height_pointcloud_ptr->emplace_back(point.x, point.y, 0.0);
   }
   filter.setInputCloud(no_height_pointcloud_ptr);
   filter.setLeafSize(0.05F, 0.05F, 100000.0F);

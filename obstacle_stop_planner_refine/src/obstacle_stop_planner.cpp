@@ -156,7 +156,7 @@ std::vector<Point3d> ObstacleStopPlanner::searchCandidateObstacle(
       const auto diff = center_point - point;
       const double distance = std::hypot(diff.x(), diff.y());
       if (distance < search_radius_) {
-        filtered_points.emplace_back(point);
+        filtered_points.push_back(point);
       }
     }
   }
@@ -278,7 +278,7 @@ std::vector<LinearRing2d> ObstacleStopPlanner::createVehicleFootprints(
   // Create vehicle footprint on each TrajectoryPoint
   std::vector<LinearRing2d> vehicle_footprints;
   for (const auto & p : trajectory.points) {
-    vehicle_footprints.emplace_back(
+    vehicle_footprints.push_back(
       transformVector(local_vehicle_footprint, autoware_utils::pose2transform(p.pose)));
   }
 
@@ -294,7 +294,7 @@ std::vector<Polygon2d> ObstacleStopPlanner::createVehiclePassingAreas(
   for (size_t i = 0; i < vehicle_footprints.size() - 1; ++i) {
     const auto & footprint1 = vehicle_footprints.at(i);
     const auto & footprint2 = vehicle_footprints.at(i + 1);
-    areas.emplace_back(createHullFromFootprints(footprint1, footprint2));
+    areas.push_back(createHullFromFootprints(footprint1, footprint2));
   }
 
   return areas;
@@ -306,10 +306,10 @@ Polygon2d ObstacleStopPlanner::createHullFromFootprints(
   autoware_utils::MultiPoint2d combined;
   combined.reserve(area1.size() + area2.size());
   for (const auto & p : area1) {
-    combined.emplace_back(p);
+    combined.push_back(p);
   }
   for (const auto & p : area2) {
-    combined.emplace_back(p);
+    combined.push_back(p);
   }
 
   Polygon2d hull;
@@ -326,7 +326,7 @@ boost::optional<Point3d> ObstacleStopPlanner::findCollisionParticle(
   std::vector<Point3d> collision_points;
   for (const auto & point : obstacle_points) {
     if (boost::geometry::within(point.to_2d(), area)) {
-      collision_points.emplace_back(point);
+      collision_points.push_back(point);
     }
   }
   if (collision_points.empty()) {

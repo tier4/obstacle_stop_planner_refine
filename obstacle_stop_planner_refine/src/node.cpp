@@ -246,7 +246,7 @@ Input ObstacleStopPlannerNode::createInputData(const Trajectory & trajectory)
   const auto transformed_pointcloud = transformObstacle(pointcloud, *transform);
   input.obstacle_pointcloud.reserve(transformed_pointcloud->points.size());
   for (const auto & point : transformed_pointcloud->points) {
-    input.obstacle_pointcloud.emplace_back(Point3d {point.x, point.y, point.z});
+    input.obstacle_pointcloud.emplace_back(point.x, point.y, point.z);
   }
 
   return input;

@@ -182,13 +182,15 @@ TEST_F(ObstacleStopPlannerNodeTest, plan_simple_trajectory)
   executor.spin_some();
 
   // create trajectory
-  std::vector<Point3d> points;
-  points.emplace_back(0.0, 0.0, 0.0);
-  points.emplace_back(1.0, 0.0, 0.0);
-  points.emplace_back(2.0, 0.0, 0.0);
-  points.emplace_back(3.0, 0.0, 0.0);
-  points.emplace_back(4.0, 0.0, 0.0);
-  points.emplace_back(5.0, 0.0, 0.0);
+  const std::vector<Point3d> points{
+    {0.0, 0.0, 0.0},
+    {1.0, 0.0, 0.0},
+    {2.0, 0.0, 0.0},
+    {3.0, 0.0, 0.0},
+    {4.0, 0.0, 0.0},
+    {5.0, 0.0, 0.0}
+  };
+
   auto trajectory = convertPointsToTrajectoryWithYaw(points);
   trajectory.header.frame_id = "map";
   trajectory.header.stamp = current_time;

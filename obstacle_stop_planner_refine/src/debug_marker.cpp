@@ -32,7 +32,7 @@ bool ObstacleStopPlannerDebugNode::pushPolygon(
 {
   Polygon3d polygon3d;
   for (const auto & point : polygon.outer()) {
-    polygon3d.outer().emplace_back(point.to_3d(z));
+    polygon3d.outer().push_back(point.to_3d(z));
   }
   return pushPolygon(polygon3d, type);
 }
@@ -50,16 +50,16 @@ bool ObstacleStopPlannerDebugNode::pushPolygon(
 {
   switch (type) {
     case PolygonType::Vehicle:
-      if (!polygon.outer().empty()) {vehicle_polygons_.emplace_back(polygon);}
+      if (!polygon.outer().empty()) {vehicle_polygons_.push_back(polygon);}
       return true;
     case PolygonType::Collision:
-      if (!polygon.outer().empty()) {collision_polygons_.emplace_back(polygon);}
+      if (!polygon.outer().empty()) {collision_polygons_.push_back(polygon);}
       return true;
     case PolygonType::SlowDownRange:
-      if (!polygon.outer().empty()) {slow_down_range_polygons_.emplace_back(polygon);}
+      if (!polygon.outer().empty()) {slow_down_range_polygons_.push_back(polygon);}
       return true;
     case PolygonType::SlowDown:
-      if (!polygon.outer().empty()) {slow_down_polygons_.emplace_back(polygon);}
+      if (!polygon.outer().empty()) {slow_down_polygons_.push_back(polygon);}
       return true;
     default:
       return false;
@@ -401,15 +401,15 @@ autoware_planning_msgs::msg::StopReasonArray ObstacleStopPlannerDebugNode::makeS
   if (stop_pose_ptr_ != nullptr) {
     stop_factor.stop_pose = *stop_pose_ptr_;
     if (stop_obstacle_point_ptr_ != nullptr) {
-      stop_factor.stop_factor_points.emplace_back(*stop_obstacle_point_ptr_);
+      stop_factor.stop_factor_points.push_back(*stop_obstacle_point_ptr_);
     }
-    stop_reason_msg.stop_factors.emplace_back(stop_factor);
+    stop_reason_msg.stop_factors.push_back(stop_factor);
   }
 
   // create stop reason array
   autoware_planning_msgs::msg::StopReasonArray stop_reason_array;
   stop_reason_array.header = header;
-  stop_reason_array.stop_reasons.emplace_back(stop_reason_msg);
+  stop_reason_array.stop_reasons.push_back(stop_reason_msg);
   return stop_reason_array;
 }
 
