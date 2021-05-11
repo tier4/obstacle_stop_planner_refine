@@ -16,7 +16,7 @@
 #include <string>
 
 #include "obstacle_stop_planner/node.hpp"
-#include "vehicle_info_util/vehicle_info.hpp"
+#include "vehicle_info_util/vehicle_info_util.hpp"
 #include "obstacle_stop_planner/parameter/stop_control_parameter.hpp"
 #include "obstacle_stop_planner/parameter/slow_down_control_parameter.hpp"
 #include "obstacle_stop_planner/parameter/adaptive_cruise_control_parameter.hpp"
@@ -100,19 +100,19 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
   acc_param.rough_velocity_rate = declare_parameter(acc_ns + "rough_velocity_rate", 0.9);
 
   // Vehicle Info
-  const auto vehicle_info = vehicle_info_util::VehicleInfo::create(*this);
+  const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
   {
     const auto & i = vehicle_info;
-    stop_param.stop_margin += i.wheel_base_m_ + i.front_overhang_m_;
+    stop_param.stop_margin += i.wheel_base_m + i.front_overhang_m;
     stop_param.min_behavior_stop_margin +=
-      i.wheel_base_m_ + i.front_overhang_m_;
-    slow_down_param.slow_down_margin += i.wheel_base_m_ + i.front_overhang_m_;
+      i.wheel_base_m + i.front_overhang_m;
+    slow_down_param.slow_down_margin += i.wheel_base_m + i.front_overhang_m;
     stop_param.stop_search_radius = stop_param.step_length + std::hypot(
-      i.vehicle_width_m_ / 2.0 + stop_param.expand_stop_range,
-      i.vehicle_length_m_ / 2.0);
+      i.vehicle_width_m / 2.0 + stop_param.expand_stop_range,
+      i.vehicle_length_m / 2.0);
     slow_down_param.slow_down_search_radius = stop_param.step_length + std::hypot(
-      i.vehicle_width_m_ / 2.0 + slow_down_param.expand_slow_down_range,
-      i.vehicle_length_m_ / 2.0);
+      i.vehicle_width_m / 2.0 + slow_down_param.expand_slow_down_range,
+      i.vehicle_length_m / 2.0);
   }
 
   planner_ = std::make_unique<obstacle_stop_planner::ObstacleStopPlanner>(

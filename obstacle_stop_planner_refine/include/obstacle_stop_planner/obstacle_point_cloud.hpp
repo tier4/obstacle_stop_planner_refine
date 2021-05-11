@@ -65,8 +65,8 @@ inline static pcl::PointCloud<pcl::PointXYZ>::Ptr searchPointcloudNearTrajectory
   for (const auto & trajectory_point : trajectory.points) {
     const auto center_pose = getVehicleCenterFromBase(
       trajectory_point.pose,
-      param.vehicle_length_m_,
-      param.rear_overhang_m_);
+      param.vehicle_length_m,
+      param.rear_overhang_m);
 
     for (const auto & point : input_pointcloud_ptr->points) {
       const double x = center_pose.position.x - point.x;
