@@ -118,9 +118,7 @@ obstacle_stop_planner::AdaptiveCruiseControlParameter createAccParameter(
 namespace obstacle_stop_planner
 {
 ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & node_options)
-: Node{"obstacle_stop_planner", node_options},
-  self_pose_listener_(this),
-  transform_listener_(this)
+: Node{"obstacle_stop_planner", node_options}
 {
   // Parameters
   auto parameter_interface = this->get_node_parameters_interface();
