@@ -146,10 +146,10 @@ double AdaptiveCruiseController::calcDistanceToNearestPointOnPath(
 
   // get self polygon
   geometry_msgs::msg::Vector3 self_size;
-  self_size.x = vehicle_info_.vehicle_length_m_;
-  self_size.y = vehicle_info_.vehicle_width_m_;
-  double self_offset = (vehicle_info_.wheel_base_m_ + vehicle_info_.front_overhang_m_) -
-    vehicle_info_.vehicle_length_m_ / 2.0;
+  self_size.x = vehicle_info_.vehicle_length_m;
+  self_size.y = vehicle_info_.vehicle_width_m;
+  double self_offset = (vehicle_info_.wheel_base_m + vehicle_info_.front_overhang_m) -
+    vehicle_info_.vehicle_length_m / 2.0;
   const auto self_poly = getPolygon(self_pose, self_size, self_offset);
 
   // get nearest point
