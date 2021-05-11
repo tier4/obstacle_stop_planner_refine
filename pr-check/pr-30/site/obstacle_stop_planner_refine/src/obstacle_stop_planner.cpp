@@ -349,14 +349,6 @@ boost::optional<Point3d> ObstacleStopPlanner::findCollisionParticle(
   return collision_points.at(min_idx);
 }
 
-/**
-* @fn
-* @brief Create adaptive cruise trajectory
-* Follow front vehicle adaptively
-* @param input trajectory
-* @param collision collision point and index
-* @return Trajectory
-*/
 boost::optional<Trajectory> ObstacleStopPlanner::planAdaptiveCruise(
   const Input & input,
   const Collision & collision)
@@ -374,15 +366,6 @@ boost::optional<Trajectory> ObstacleStopPlanner::planAdaptiveCruise(
   return acc_controller_->insertAdaptiveCruiseVelocity(acc_input);
 }
 
-/**
-* @fn
-* @brief Create slow down trajectory
-* All velocity in trajectory set to minimum velcity after slow_down_index.
-* @param input trajectory
-* @param collision collision point and index
-* @param obstacles associated points from pointcloud
-* @return Trajectory
-*/
 Trajectory ObstacleStopPlanner::planSlowDown(
   const Trajectory & trajectory,
   const Collision & collision,
@@ -432,13 +415,7 @@ bool ObstacleStopPlanner::findFrontObstacles(
   return false;
 }
 
-/**
- * @brief Create Stop trajectory
- * All velocity in trajectory set to 0 after stop_index.
- * @param trajectory input trajectory
- * @param collision collision point and index
- * @return Trajectory
- */
+
 Trajectory ObstacleStopPlanner::planObstacleStop(
   const Trajectory & trajectory,
   const Collision & collision)
