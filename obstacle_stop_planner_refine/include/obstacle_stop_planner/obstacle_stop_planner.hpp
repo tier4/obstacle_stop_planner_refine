@@ -126,8 +126,25 @@ public:
     const std::vector<Point3d> & obstacle_points,
     const Point2d & base_point);
 
+  /**
+  * @fn
+  * @brief Create adaptive cruise trajectory
+  * Follow front vehicle adaptively
+  * @param input trajectory
+  * @param collision collision point and index
+  * @return Trajectory
+  */
   boost::optional<Trajectory> planAdaptiveCruise(const Input & input, const Collision & collision);
 
+  /**
+  * @fn
+  * @brief Create slow down trajectory
+  * All velocity in trajectory set to minimum velcity after slow_down_index.
+  * @param input trajectory
+  * @param collision collision point and index
+  * @param obstacles associated points from pointcloud
+  * @return Trajectory
+  */
   Trajectory planSlowDown(
     const Trajectory & trajectory, const Collision & collision,
     const std::vector<Point3d> & obstacles);
@@ -136,6 +153,13 @@ public:
     const autoware_planning_msgs::msg::TrajectoryPoint & point,
     const std::vector<Point3d> & obstacles);
 
+  /**
+  * @brief Create Stop trajectory
+  * All velocity in trajectory set to 0 after stop_index.
+  * @param trajectory input trajectory
+  * @param collision collision point and index
+  * @return Trajectory
+  */
   Trajectory planObstacleStop(const Trajectory & trajectory, const Collision & collision);
 
   double calcSlowDownTargetVel(const double lateral_deviation) const;
