@@ -67,7 +67,7 @@ private:
   std::shared_ptr<AdaptiveCruiseControlParameter> acc_param_;
 
   autoware_utils::SelfPoseListener self_pose_listener_ {this};
-  autoware_utils::TransformListener transform_listener_;
+  autoware_utils::TransformListener transform_listener_{this};
 
   PointCloud2::ConstSharedPtr obstacle_pointcloud_;
   TwistStamped::ConstSharedPtr current_velocity_;

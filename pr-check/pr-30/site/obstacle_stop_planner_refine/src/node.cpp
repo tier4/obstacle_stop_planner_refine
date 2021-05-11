@@ -118,9 +118,7 @@ obstacle_stop_planner::AdaptiveCruiseControlParameter createAccParameter(
 namespace obstacle_stop_planner
 {
 ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & node_options)
-: Node{"obstacle_stop_planner", node_options},
-  self_pose_listener_(this),
-  transform_listener_(this)
+: Node{"obstacle_stop_planner", node_options}
 {
   // Parameters
   auto parameter_interface = this->get_node_parameters_interface();
@@ -248,7 +246,7 @@ Input ObstacleStopPlannerNode::createInputData(const Trajectory & trajectory)
   const auto transformed_pointcloud = transformObstacle(pointcloud, *transform);
   input.obstacle_pointcloud.reserve(transformed_pointcloud->points.size());
   for (const auto & point : transformed_pointcloud->points) {
-    input.obstacle_pointcloud.emplace_back(Point3d {point.x, point.y, point.z});
+    input.obstacle_pointcloud.emplace_back(point.x, point.y, point.z);
   }
 
   return input;
@@ -281,96 +279,109 @@ rcl_interfaces::msg::SetParametersResult ObstacleStopPlannerNode::onParameter(
   rcl_interfaces::msg::SetParametersResult result;
 
   try {
-    update_parameter(parameters, "stop_planner.stop_margin", stop_param_->stop_margin);
-    update_parameter(
-      parameters, "stop_planner.min_behavior_stop_margin",
-      stop_param_->min_behavior_stop_margin);
-    update_parameter(parameters, "stop_planner.step_length", stop_param_->step_length);
-    update_parameter(parameters, "stop_planner.extend_distance", stop_param_->extend_distance);
-    update_parameter(parameters, "stop_planner.expand_stop_range", stop_param_->expand_stop_range);
+    // stop_planner
+    {
+      const std::string ns = "stop_planner.";
+      update_parameter(parameters, "stop_planner.stop_margin", stop_param_->stop_margin);
+      update_parameter(
+        parameters, "stop_planner.min_behavior_stop_margin",
+        stop_param_->min_behavior_stop_margin);
+      update_parameter(parameters, "stop_planner.step_length", stop_param_->step_length);
+      update_parameter(parameters, "stop_planner.extend_distance", stop_param_->extend_distance);
+      update_parameter(
+        parameters, "stop_planner.expand_stop_range",
+        stop_param_->expand_stop_range);
+    }
 
-    update_parameter(
-      parameters, "slow_down_planner.slow_down_margin",
-      slow_down_param_->slow_down_margin);
-    update_parameter(
-      parameters, "slow_down_planner.expand_slow_down_range",
-      slow_down_param_->expand_slow_down_range);
-    update_parameter(
-      parameters, "slow_down_planner.max_slow_down_vel",
-      slow_down_param_->max_slow_down_vel);
-    update_parameter(
-      parameters, "slow_down_planner.min_slow_down_vel",
-      slow_down_param_->min_slow_down_vel);
-    update_parameter(parameters, "enable_slow_down", slow_down_param_->enable_slow_down);
+    // slow_down_planner
+    {
+      const std::string ns = "slow_down_planner.";
+      update_parameter(
+        parameters, "slow_down_planner.slow_down_margin",
+        slow_down_param_->slow_down_margin);
+      update_parameter(
+        parameters, "slow_down_planner.expand_slow_down_range",
+        slow_down_param_->expand_slow_down_range);
+      update_parameter(
+        parameters, "slow_down_planner.max_slow_down_vel",
+        slow_down_param_->max_slow_down_vel);
+      update_parameter(
+        parameters, "slow_down_planner.min_slow_down_vel",
+        slow_down_param_->min_slow_down_vel);
+      update_parameter(parameters, "enable_slow_down", slow_down_param_->enable_slow_down);
+    }
 
-    const std::string acc_ns = "adaptive_cruise_control.";
-    update_parameter(
-      parameters, acc_ns + "use_object_to_estimate_vel",
-      acc_param_->use_object_to_est_vel);
-    update_parameter(
-      parameters, acc_ns + "use_pcl_to_estimate_vel",
-      acc_param_->use_pcl_to_est_vel);
-    update_parameter(
-      parameters, acc_ns + "consider_obj_velocity",
-      acc_param_->consider_obj_velocity);
-    update_parameter(
-      parameters, acc_ns + "obstacle_stop_velocity_thresh",
-      acc_param_->obstacle_stop_velocity_thresh);
-    update_parameter(
-      parameters, acc_ns + "emergency_stop_acceleration",
-      acc_param_->emergency_stop_acceleration);
-    update_parameter(
-      parameters, acc_ns + "obstacle_emergency_stop_acceleration",
-      acc_param_->obstacle_emergency_stop_acceleration);
-    update_parameter(
-      parameters, acc_ns + "emergency_stop_idling_time",
-      acc_param_->emergency_stop_idling_time);
-    update_parameter(parameters, acc_ns + "min_dist_stop", acc_param_->min_dist_stop);
-    update_parameter(
-      parameters, acc_ns + "max_standard_acceleration",
-      acc_param_->max_standard_acceleration);
-    update_parameter(
-      parameters, acc_ns + "min_standard_acceleration",
-      acc_param_->min_standard_acceleration);
-    update_parameter(parameters, acc_ns + "standard_idling_time", acc_param_->standard_idling_time);
-    update_parameter(parameters, acc_ns + "min_dist_standard", acc_param_->min_dist_standard);
-    update_parameter(
-      parameters, acc_ns + "obstacle_min_standard_acceleration",
-      acc_param_->obstacle_min_standard_acceleration);
-    update_parameter(
-      parameters, acc_ns + "margin_rate_to_change_vel",
-      acc_param_->margin_rate_to_change_vel);
-    update_parameter(
-      parameters, acc_ns + "use_time_compensation_to_calc_distance",
-      acc_param_->use_time_compensation_to_dist);
-    update_parameter(
-      parameters, acc_ns + "lowpass_gain_of_upper_velocity",
-      acc_param_->lowpass_gain_);
+    // adaptive_cruise_control
+    {
+      const std::string ns = "adaptive_cruise_control.";
+      update_parameter(
+        parameters, ns + "use_object_to_estimate_vel",
+        acc_param_->use_object_to_est_vel);
+      update_parameter(
+        parameters, ns + "use_pcl_to_estimate_vel",
+        acc_param_->use_pcl_to_est_vel);
+      update_parameter(
+        parameters, ns + "consider_obj_velocity",
+        acc_param_->consider_obj_velocity);
+      update_parameter(
+        parameters, ns + "obstacle_stop_velocity_thresh",
+        acc_param_->obstacle_stop_velocity_thresh);
+      update_parameter(
+        parameters, ns + "emergency_stop_acceleration",
+        acc_param_->emergency_stop_acceleration);
+      update_parameter(
+        parameters, ns + "obstacle_emergency_stop_acceleration",
+        acc_param_->obstacle_emergency_stop_acceleration);
+      update_parameter(
+        parameters, ns + "emergency_stop_idling_time",
+        acc_param_->emergency_stop_idling_time);
+      update_parameter(parameters, ns + "min_dist_stop", acc_param_->min_dist_stop);
+      update_parameter(
+        parameters, ns + "max_standard_acceleration",
+        acc_param_->max_standard_acceleration);
+      update_parameter(
+        parameters, ns + "min_standard_acceleration",
+        acc_param_->min_standard_acceleration);
+      update_parameter(parameters, ns + "standard_idling_time", acc_param_->standard_idling_time);
+      update_parameter(parameters, ns + "min_dist_standard", acc_param_->min_dist_standard);
+      update_parameter(
+        parameters, ns + "obstacle_min_standard_acceleration",
+        acc_param_->obstacle_min_standard_acceleration);
+      update_parameter(
+        parameters, ns + "margin_rate_to_change_vel",
+        acc_param_->margin_rate_to_change_vel);
+      update_parameter(
+        parameters, ns + "use_time_compensation_to_calc_distance",
+        acc_param_->use_time_compensation_to_dist);
+      update_parameter(
+        parameters, ns + "lowpass_gain_of_upper_velocity",
+        acc_param_->lowpass_gain_);
 
-    /* parameter for pid in acc */
-    update_parameter(parameters, acc_ns + "p_coefficient_positive", acc_param_->p_coeff_pos);
-    update_parameter(parameters, acc_ns + "p_coefficient_negative", acc_param_->p_coeff_neg);
-    update_parameter(parameters, acc_ns + "d_coefficient_positive", acc_param_->d_coeff_pos);
-    update_parameter(parameters, acc_ns + "d_coefficient_negative", acc_param_->d_coeff_neg);
+      // parameter for pid in acc
+      update_parameter(parameters, ns + "p_coefficient_positive", acc_param_->p_coeff_pos);
+      update_parameter(parameters, ns + "p_coefficient_negative", acc_param_->p_coeff_neg);
+      update_parameter(parameters, ns + "d_coefficient_positive", acc_param_->d_coeff_pos);
+      update_parameter(parameters, ns + "d_coefficient_negative", acc_param_->d_coeff_neg);
 
-    /* parameter for speed estimation of obstacle */
-    update_parameter(
-      parameters, acc_ns + "object_polygon_length_margin",
-      acc_param_->object_polygon_length_margin);
-    update_parameter(
-      parameters, acc_ns + "object_polygon_width_margin",
-      acc_param_->object_polygon_width_margin);
-    update_parameter(
-      parameters, acc_ns + "valid_estimated_vel_diff_time",
-      acc_param_->valid_est_vel_diff_time);
-    update_parameter(parameters, acc_ns + "valid_vel_que_time", acc_param_->valid_vel_que_time);
-    update_parameter(parameters, acc_ns + "valid_estimated_vel_max", acc_param_->valid_est_vel_max);
-    update_parameter(parameters, acc_ns + "valid_estimated_vel_min", acc_param_->valid_est_vel_min);
-    update_parameter(parameters, acc_ns + "thresh_vel_to_stop", acc_param_->thresh_vel_to_stop);
-    update_parameter(
-      parameters, acc_ns + "use_rough_velocity_estimation",
-      acc_param_->use_rough_est_vel);
-    update_parameter(parameters, acc_ns + "rough_velocity_rate", acc_param_->rough_velocity_rate);
+      // parameter for speed estimation of obstacle
+      update_parameter(
+        parameters, ns + "object_polygon_length_margin",
+        acc_param_->object_polygon_length_margin);
+      update_parameter(
+        parameters, ns + "object_polygon_width_margin",
+        acc_param_->object_polygon_width_margin);
+      update_parameter(
+        parameters, ns + "valid_estimated_vel_diff_time",
+        acc_param_->valid_est_vel_diff_time);
+      update_parameter(parameters, ns + "valid_vel_que_time", acc_param_->valid_vel_que_time);
+      update_parameter(parameters, ns + "valid_estimated_vel_max", acc_param_->valid_est_vel_max);
+      update_parameter(parameters, ns + "valid_estimated_vel_min", acc_param_->valid_est_vel_min);
+      update_parameter(parameters, ns + "thresh_vel_to_stop", acc_param_->thresh_vel_to_stop);
+      update_parameter(
+        parameters, ns + "use_rough_velocity_estimation",
+        acc_param_->use_rough_est_vel);
+      update_parameter(parameters, ns + "rough_velocity_rate", acc_param_->rough_velocity_rate);
+    }
 
     planner_->updateParameters(stop_param_, slow_down_param_, acc_param_);
 

@@ -107,7 +107,7 @@ AdaptiveCruiseController::insertAdaptiveCruiseVelocity(
       "Failed to estimate velocity of forward vehicle. Insert stop line.");
     prev_upper_velocity_ = current_velocity;  // reset prev_upper_velocity
     prev_target_velocity_ = 0.0;
-    return boost::none;
+    return {};
   }
 
   // calculate max(target) velocity of self
@@ -120,7 +120,7 @@ AdaptiveCruiseController::insertAdaptiveCruiseVelocity(
       node_logging_->get_logger(), *node_clock_->get_clock(), std::chrono::milliseconds(
         1000).count(),
       "Upper velocity is too low. Insert stop line.");
-    return boost::none;
+    return {};
   }
 
   /*
@@ -226,7 +226,7 @@ optional<double> AdaptiveCruiseController::estimatePointVelocityFromObject(
     debug_values_.data.at(DBGVAL::ESTIMATED_VEL_OBJ) = velocity;
     return velocity;
   }
-  return boost::none;
+  return {};
 }
 
 optional<double> AdaptiveCruiseController::estimatePointVelocityFromPcl(
@@ -244,7 +244,7 @@ optional<double> AdaptiveCruiseController::estimatePointVelocityFromPcl(
       prev_collision_point_time_ = nearest_collision_point_time;
       prev_collision_point_ = nearest_collision_point;
       prev_collision_point_valid_ = true;
-      return boost::none;
+      return {};
     }
     const double p_dist = boost::geometry::distance(nearest_collision_point, prev_collision_point_);
     const auto p_diff = nearest_collision_point - prev_collision_point_;
@@ -257,7 +257,7 @@ optional<double> AdaptiveCruiseController::estimatePointVelocityFromPcl(
       prev_collision_point_ = nearest_collision_point;
       prev_collision_point_valid_ = true;
       est_vel_que_.clear();
-      return boost::none;
+      return {};
     }
 
     // append new velocity and remove old velocity from que

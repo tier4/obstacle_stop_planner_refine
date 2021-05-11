@@ -60,7 +60,7 @@ inline Polygon2d createOneStepPolygon(
     autoware_utils::LinearRing2d transformed_footprint;
     boost::geometry::transform(rotate_footprint, transformed_footprint, translate);
     for (const auto & item : transformed_footprint) {
-      one_step_move_vehicle_corner_points.outer().emplace_back(item);
+      one_step_move_vehicle_corner_points.outer().push_back(item);
     }
   }
 
