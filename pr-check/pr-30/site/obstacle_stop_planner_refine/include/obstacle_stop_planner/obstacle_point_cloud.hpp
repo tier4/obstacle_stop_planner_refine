@@ -26,7 +26,7 @@
 #include "rclcpp/logger.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
-#include "vehicle_info_util/vehicle_info.hpp"
+#include "vehicle_info_util/vehicle_info_util.hpp"
 
 namespace obstacle_stop_planner
 {

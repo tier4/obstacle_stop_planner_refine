@@ -17,7 +17,7 @@
 #include <vector>
 
 #include "obstacle_stop_planner/node.hpp"
-#include "vehicle_info_util/vehicle_info.hpp"
+#include "vehicle_info_util/vehicle_info_util.hpp"
 #include "obstacle_stop_planner/obstacle_point_cloud.hpp"
 
 namespace
@@ -132,8 +132,7 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
 
   // Vehicle Info
   const auto vehicle_info = std::make_shared<vehicle_info_util::VehicleInfo>(
-    vehicle_info_util::VehicleInfo::create(
-      *this));
+    vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo());
 
   planner_ = std::make_unique<obstacle_stop_planner::ObstacleStopPlanner>(
     this->get_node_logging_interface(),

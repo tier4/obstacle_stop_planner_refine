@@ -16,7 +16,7 @@
 #define OBSTACLE_STOP_PLANNER__UTIL__CREATE_VEHICLE_FOOTPRINT_HPP_
 
 #include "autoware_utils/autoware_utils.hpp"
-#include "vehicle_info_util/vehicle_info.hpp"
+#include "vehicle_info_util/vehicle_info_util.hpp"
 
 namespace obstacle_stop_planner
 {
@@ -29,10 +29,10 @@ inline autoware_utils::LinearRing2d createVehicleFootprint(
 
   const auto & i = vehicle_info;
 
-  const double x_front = i.front_overhang_m_ + i.wheel_base_m_ + top_margin;
-  const double x_rear = -(i.rear_overhang_m_ + top_margin);
-  const double y_left = i.wheel_tread_m_ / 2.0 + i.left_overhang_m_ + side_margin;
-  const double y_right = -(i.wheel_tread_m_ / 2.0 + i.right_overhang_m_ + side_margin);
+  const double x_front = i.front_overhang_m + i.wheel_base_m + top_margin;
+  const double x_rear = -(i.rear_overhang_m + top_margin);
+  const double y_left = i.wheel_tread_m / 2.0 + i.left_overhang_m + side_margin;
+  const double y_right = -(i.wheel_tread_m / 2.0 + i.right_overhang_m + side_margin);
 
   LinearRing2d footprint;
   footprint.push_back(Point2d{x_front, y_left});

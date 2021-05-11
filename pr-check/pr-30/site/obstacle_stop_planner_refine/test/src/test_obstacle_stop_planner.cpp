@@ -83,8 +83,7 @@ public:
     fake_node_ = std::make_shared<rclcpp::Node>("fake_node", node_options);
 
     const auto vehicle_info = std::make_shared<vehicle_info_util::VehicleInfo>(
-      vehicle_info_util::VehicleInfo::create(
-        *fake_node_));
+      vehicle_info_util::VehicleInfoUtil(*fake_node_).getVehicleInfo());
 
     stop_param_ = std::make_shared<obstacle_stop_planner::StopControlParameter>();
     slow_down_param_ = std::make_shared<obstacle_stop_planner::SlowDownControlParameter>();
