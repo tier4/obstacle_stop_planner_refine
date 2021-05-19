@@ -190,7 +190,6 @@ Output:
 | `expand_slow_down_range` | double | offset from vehicle side edge for expanding the search area of the surrounding point cloud [m] |
 | `max_slow_down_vel`      | double | max slow down velocity [m/s]                                                                   |
 | `min_slow_down_vel`      | double | min slow down velocity [m/s]                                                                   |
-| `max_deceleration`       | double | max slow down deceleration [m/s2]                                                              |
 
 ### adaptive_cruise_planner
 

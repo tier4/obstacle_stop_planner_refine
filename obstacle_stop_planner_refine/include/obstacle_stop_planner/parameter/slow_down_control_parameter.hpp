@@ -25,9 +25,7 @@ struct OBSTACLE_STOP_PLANNER_PUBLIC SlowDownControlParameter
   double expand_slow_down_range;
   double max_slow_down_vel;
   double min_slow_down_vel;
-  double max_deceleration;
   bool enable_slow_down;
-  double slow_down_search_radius;
 };
 }  // namespace obstacle_stop_planner
 

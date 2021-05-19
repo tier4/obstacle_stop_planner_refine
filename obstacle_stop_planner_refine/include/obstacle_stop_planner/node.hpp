@@ -15,61 +15,70 @@
 #define OBSTACLE_STOP_PLANNER__NODE_HPP_
 
 #include <memory>
+#include <vector>
 
 #include "rclcpp/rclcpp.hpp"
 
 #include "obstacle_stop_planner/visibility_control.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
-#include "autoware_planning_msgs/msg/expand_stop_range.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "autoware_perception_msgs/msg/dynamic_object_array.hpp"
 #include "obstacle_stop_planner/obstacle_stop_planner.hpp"
+#include "obstacle_stop_planner/util/parameter_helper.hpp"
 
 namespace obstacle_stop_planner
 {
+using PointCloud2 = sensor_msgs::msg::PointCloud2;
+using Trajectory = autoware_planning_msgs::msg::Trajectory;
+using TwistStamped = geometry_msgs::msg::TwistStamped;
+using DynamicObjectArray = autoware_perception_msgs::msg::DynamicObjectArray;
+using MarkerArray = visualization_msgs::msg::MarkerArray;
+using StopReasonArray = autoware_planning_msgs::msg::StopReasonArray;
+using Float32MultiArrayStamped = autoware_debug_msgs::msg::Float32MultiArrayStamped;
+using Point3d = autoware_utils::Point3d;
+
 class OBSTACLE_STOP_PLANNER_PUBLIC ObstacleStopPlannerNode : public rclcpp::Node
 {
 public:
   explicit ObstacleStopPlannerNode(const rclcpp::NodeOptions & options);
 
 private:
-  /*
-   * ROS
-   */
-  // publisher and subscriber
-  rclcpp::Subscription<autoware_planning_msgs::msg::Trajectory>::SharedPtr path_sub_;
-  rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr obstacle_pointcloud_sub_;
-  rclcpp::Subscription<geometry_msgs::msg::TwistStamped>::SharedPtr current_velocity_sub_;
-  rclcpp::Subscription<autoware_perception_msgs::msg::DynamicObjectArray>::SharedPtr
-    dynamic_object_sub_;
-  rclcpp::Subscription<autoware_planning_msgs::msg::ExpandStopRange>::SharedPtr
-    expand_stop_range_sub_;
-  rclcpp::Publisher<autoware_planning_msgs::msg::Trajectory>::SharedPtr path_pub_;
+  // Publisher
+  rclcpp::Publisher<Trajectory>::SharedPtr pub_trajectory_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr pub_debug_marker_array_;
+  rclcpp::Publisher<StopReasonArray>::SharedPtr pub_stop_reason_;
+  rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr pub_debug_acc_;
 
-  tf2_ros::Buffer tf_buffer_;
-  tf2_ros::TransformListener tf_listener_;
-  sensor_msgs::msg::PointCloud2::ConstSharedPtr obstacle_pointcloud_ptr_;
+  // Subscriber
+  rclcpp::Subscription<Trajectory>::SharedPtr sub_trajectory_;
+  rclcpp::Subscription<PointCloud2>::SharedPtr sub_obstacle_pointcloud_;
+  rclcpp::Subscription<TwistStamped>::SharedPtr sub_current_velocity_;
+  rclcpp::Subscription<DynamicObjectArray>::SharedPtr sub_dynamic_object_;
 
-  /*
-   * Parameter
-   */
-  geometry_msgs::msg::TwistStamped::ConstSharedPtr current_velocity_ptr_;
-  autoware_perception_msgs::msg::DynamicObjectArray::ConstSharedPtr object_ptr_;
-  rclcpp::Time prev_col_point_time_;
-  pcl::PointXYZ prev_col_point_;
-  bool pointcloud_received_;
-  bool current_velocity_reveived_;
+  // Parameter callback
+  OnSetParametersCallbackHandle::SharedPtr set_param_res_;
+  rcl_interfaces::msg::SetParametersResult onParameter(
+    const std::vector<rclcpp::Parameter> & parameters);
+
+  // Parameter
+  std::shared_ptr<StopControlParameter> stop_param_;
+  std::shared_ptr<SlowDownControlParameter> slow_down_param_;
+  std::shared_ptr<AdaptiveCruiseControlParameter> acc_param_;
+
+  autoware_utils::SelfPoseListener self_pose_listener_ {this};
+  autoware_utils::TransformListener transform_listener_{this};
+
+  PointCloud2::ConstSharedPtr obstacle_pointcloud_;
+  TwistStamped::ConstSharedPtr current_velocity_;
+  DynamicObjectArray::ConstSharedPtr object_array_;
 
   std::unique_ptr<obstacle_stop_planner::ObstacleStopPlanner> planner_;
 
-  void obstaclePointcloudCallback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr input_msg);
-  void pathCallback(const autoware_planning_msgs::msg::Trajectory::ConstSharedPtr input_msg);
-  void dynamicObjectCallback(
-    const autoware_perception_msgs::msg::DynamicObjectArray::ConstSharedPtr input_msg);
-  void currentVelocityCallback(const geometry_msgs::msg::TwistStamped::ConstSharedPtr input_msg);
-  void externalExpandStopRangeCallback(
-    const autoware_planning_msgs::msg::ExpandStopRange::ConstSharedPtr input_msg);
+  bool isDataReady();
+  bool isTransformReady(const Trajectory & trajectory);
+  Input createInputData(const Trajectory & trajectory);
+  void onTrajectory(const Trajectory::ConstSharedPtr input_msg);
 };
 }  // namespace obstacle_stop_planner
 

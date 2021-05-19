@@ -26,7 +26,7 @@
 #include "rclcpp/logger.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "autoware_planning_msgs/msg/trajectory.hpp"
-#include "vehicle_info_util/vehicle_info.hpp"
+#include "vehicle_info_util/vehicle_info_util.hpp"
 
 namespace obstacle_stop_planner
 {
@@ -43,7 +43,7 @@ inline sensor_msgs::msg::PointCloud2::ConstSharedPtr updatePointCloud(
   pcl::fromROSMsg(*msg, *pointcloud_ptr);
 
   for (const auto & point : pointcloud_ptr->points) {
-    no_height_pointcloud_ptr->push_back(pcl::PointXYZ(point.x, point.y, 0.0));
+    no_height_pointcloud_ptr->emplace_back(point.x, point.y, 0.0);
   }
   filter.setInputCloud(no_height_pointcloud_ptr);
   filter.setLeafSize(0.05F, 0.05F, 100000.0F);
@@ -53,54 +53,10 @@ inline sensor_msgs::msg::PointCloud2::ConstSharedPtr updatePointCloud(
   return obstacle_ros_pointcloud_ptr;
 }
 
-inline static pcl::PointCloud<pcl::PointXYZ>::Ptr searchPointcloudNearTrajectory(
-  const autoware_planning_msgs::msg::Trajectory & trajectory,
-  const pcl::PointCloud<pcl::PointXYZ>::Ptr input_pointcloud_ptr,
-  const double search_radius,
-  const vehicle_info_util::VehicleInfo & param)
-{
-  pcl::PointCloud<pcl::PointXYZ>::Ptr output_pointcloud_ptr(
-    new pcl::PointCloud<pcl::PointXYZ>);
-  const double squared_radius = search_radius * search_radius;
-  for (const auto & trajectory_point : trajectory.points) {
-    const auto center_pose = getVehicleCenterFromBase(
-      trajectory_point.pose,
-      param.vehicle_length_m,
-      param.rear_overhang_m);
-
-    for (const auto & point : input_pointcloud_ptr->points) {
-      const double x = center_pose.position.x - point.x;
-      const double y = center_pose.position.y - point.y;
-      const double squared_distance = x * x + y * y;
-      if (squared_distance < squared_radius) {output_pointcloud_ptr->points.push_back(point);}
-    }
-  }
-  return output_pointcloud_ptr;
-}
-
-inline pcl::PointCloud<pcl::PointXYZ>::Ptr searchCandidateObstacle(
+inline pcl::PointCloud<pcl::PointXYZ>::Ptr transformObstacle(
   const sensor_msgs::msg::PointCloud2::ConstSharedPtr & obstacle_ros_pointcloud_ptr,
-  const tf2_ros::Buffer & tf_buffer,
-  const autoware_planning_msgs::msg::Trajectory & trajectory,
-  const double search_radius,
-  const vehicle_info_util::VehicleInfo & param,
-  const rclcpp::Logger & logger)
+  const geometry_msgs::msg::TransformStamped & transform_stamped)
 {
-  // transform pointcloud
-  geometry_msgs::msg::TransformStamped transform_stamped;
-  try {
-    transform_stamped = tf_buffer.lookupTransform(
-      trajectory.header.frame_id, obstacle_ros_pointcloud_ptr->header.frame_id,
-      obstacle_ros_pointcloud_ptr->header.stamp, rclcpp::Duration::from_seconds(0.5));
-  } catch (tf2::TransformException & ex) {
-    RCLCPP_ERROR_STREAM(
-      logger,
-      "[obstacle_stop_planner] Failed to look up transform from " <<
-        trajectory.header.frame_id << " to " << obstacle_ros_pointcloud_ptr->header.frame_id);
-    // do not publish path
-    return nullptr;
-  }
-
   Eigen::Matrix4f affine_matrix =
     tf2::transformToEigen(transform_stamped.transform).matrix().cast<float>();
   pcl::PointCloud<pcl::PointXYZ>::Ptr obstacle_pointcloud_pcl_ptr(
@@ -113,13 +69,7 @@ inline pcl::PointCloud<pcl::PointXYZ>::Ptr searchCandidateObstacle(
     *transformed_obstacle_pointcloud_ptr,
     affine_matrix);
 
-  // search obstacle candidate pointcloud to reduce calculation cost
-  auto obstacle_candidate_pointcloud_ptr = searchPointcloudNearTrajectory(
-    trajectory, transformed_obstacle_pointcloud_ptr,
-    search_radius,
-    param);
-  obstacle_candidate_pointcloud_ptr->header = transformed_obstacle_pointcloud_ptr->header;
-  return obstacle_candidate_pointcloud_ptr;
+  return transformed_obstacle_pointcloud_ptr;
 }
 
 }  // namespace obstacle_stop_planner

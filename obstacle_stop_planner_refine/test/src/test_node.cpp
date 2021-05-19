@@ -22,6 +22,7 @@
 #include "gtest/gtest.h"
 #include "sensor_msgs/point_cloud2_iterator.hpp"
 #include "autoware_planning_msgs/msg/trajectory_point.hpp"
+#include "tf2_ros/transform_broadcaster.h"
 
 using sensor_msgs::msg::PointCloud2;
 using autoware_planning_msgs::msg::Trajectory;
@@ -85,6 +86,8 @@ public:
 
     fake_node_ = std::make_shared<rclcpp::Node>("fake_node");
 
+    tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(fake_node_);
+
     using PubAllocT = rclcpp::PublisherOptionsWithAllocator<std::allocator<void>>;
     dummy_pointcloud_pub_ =
       fake_node_->create_publisher<PointCloud2>(
@@ -123,6 +126,11 @@ public:
     planner_ = std::make_shared<obstacle_stop_planner::ObstacleStopPlannerNode>(node_options);
   }
 
+  void TearDown() override
+  {
+    rclcpp::shutdown();
+  }
+
   std::shared_ptr<obstacle_stop_planner::ObstacleStopPlannerNode> planner_;
   rclcpp::Node::SharedPtr fake_node_{nullptr};
   rclcpp::Publisher<PointCloud2>::SharedPtr dummy_pointcloud_pub_;
@@ -131,6 +139,7 @@ public:
   rclcpp::Publisher<autoware_perception_msgs::msg::DynamicObjectArray>::SharedPtr dummy_object_pub_;
   rclcpp::Subscription<Trajectory>::SharedPtr path_sub_;
   boost::optional<Trajectory> path_msg_;
+  std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 };
 
 TEST_F(ObstacleStopPlannerNodeTest, plan_simple_trajectory)
@@ -138,13 +147,31 @@ TEST_F(ObstacleStopPlannerNodeTest, plan_simple_trajectory)
   rclcpp::executors::SingleThreadedExecutor executor;
   executor.add_node(fake_node_);
   executor.add_node(planner_);
+  executor.spin_some();
+
+  auto current_time = fake_node_->now();
+
+  // create /tf
+  geometry_msgs::msg::TransformStamped tf;
+  tf.header.frame_id = "map";
+  tf.child_frame_id = "base_link";
+  tf.header.stamp = current_time;
+  tf.transform.translation.x = 0.0;
+  tf.transform.translation.y = 0.0;
+  tf.transform.translation.z = 0.0;
+  tf2::Quaternion q;
+  q.setRPY(0.0, 0.0, 0.0);
+  tf.transform.rotation.x = q.x();
+  tf.transform.rotation.y = q.y();
+  tf.transform.rotation.z = q.z();
+  tf.transform.rotation.w = q.w();
 
   // publish point cloud
   const uint32_t max_cloud_size = 10;
 
   sensor_msgs::msg::PointCloud2 test_msg;
   init_pcl_msg(test_msg, "base_link", max_cloud_size);
-  test_msg.header.stamp = fake_node_->now();
+  test_msg.header.stamp = current_time;
   dummy_pointcloud_pub_->publish(test_msg);
 
   // current velocity
@@ -155,21 +182,30 @@ TEST_F(ObstacleStopPlannerNodeTest, plan_simple_trajectory)
   executor.spin_some();
 
   // create trajectory
-  std::vector<Point3d> points;
-  points.emplace_back(0.0, 0.0, 0.0);
-  points.emplace_back(1.0, 0.0, 0.0);
-  points.emplace_back(2.0, 0.0, 0.0);
-  points.emplace_back(3.0, 0.0, 0.0);
-  points.emplace_back(4.0, 0.0, 0.0);
-  points.emplace_back(5.0, 0.0, 0.0);
+  const std::vector<Point3d> points{
+    {0.0, 0.0, 0.0},
+    {1.0, 0.0, 0.0},
+    {2.0, 0.0, 0.0},
+    {3.0, 0.0, 0.0},
+    {4.0, 0.0, 0.0},
+    {5.0, 0.0, 0.0}
+  };
+
   auto trajectory = convertPointsToTrajectoryWithYaw(points);
-  trajectory.header.frame_id = "base_link";
-  trajectory.header.stamp = fake_node_->now();
+  trajectory.header.frame_id = "map";
+  trajectory.header.stamp = current_time;
   dummy_path_pub_->publish(trajectory);
 
-  using namespace std::chrono_literals;
   rclcpp::WallRate rate(100ms);
   while (rclcpp::ok()) {
+    current_time = fake_node_->now();
+    tf.header.stamp = current_time;
+    tf_broadcaster_->sendTransform(tf);
+    test_msg.header.stamp = current_time;
+    dummy_pointcloud_pub_->publish(test_msg);
+    trajectory.header.stamp = current_time;
+    dummy_path_pub_->publish(trajectory);
+
     executor.spin_some();
     if (path_msg_.has_value()) {
       break;
@@ -178,7 +214,7 @@ TEST_F(ObstacleStopPlannerNodeTest, plan_simple_trajectory)
   }
 
   // Check data
-  for (size_t i = 1; i < path_msg_.get().points.size(); i++) {
-    ASSERT_EQ(trajectory.points[i - 1], path_msg_.get().points[i]);
+  for (size_t i = 0; i < path_msg_->points.size(); i++) {
+    ASSERT_EQ(trajectory.points[i], path_msg_->points[i]);
   }
 }

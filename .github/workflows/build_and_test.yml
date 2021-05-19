@@ -7,6 +7,9 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  BUILD_DEPEND_FILE: https://raw.githubusercontent.com/tier4/autoware.proj/main/autoware.proj.repos
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -22,13 +25,13 @@ jobs:
         with:
           required-ros-distributions: foxy
 
-      - name: Concat build_depends.repos
+      - name: Create build_depends.repos
         run: |
-          curl -sSL -H "Authorization: token ${{ secrets.REPO_TOKEN }}" https://raw.githubusercontent.com/tier4/autoware.iv/main/build_depends.repos | sed '1d' >> build_depends.repos
+          curl -sSL -H "Authorization: token ${{ secrets.REPO_TOKEN }}" ${{ env.BUILD_DEPEND_FILE }} | sed -e "s|git@github.com:|https://github.com/|g" > build_depends.repos
 
       - name: Run action-ros-ci
         id: action_ros_ci_step
-        uses: ros-tooling/action-ros-ci@add-private-repo-test
+        uses: ros-tooling/action-ros-ci@master
         with:
           package-name: obstacle_stop_planner_refine
           target-ros2-distro: foxy
