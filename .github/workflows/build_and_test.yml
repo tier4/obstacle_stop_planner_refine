@@ -25,7 +25,7 @@ jobs:
         with:
           required-ros-distributions: foxy
 
-      - name: Download build_depends.repos
+      - name: Create build_depends.repos
         run: |
           curl -sSL -H "Authorization: token ${{ secrets.REPO_TOKEN }}" ${{ env.BUILD_DEPEND_FILE }} | sed -e "s|git@github.com:|https://github.com/|g" > build_depends.repos
 
