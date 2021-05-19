@@ -27,7 +27,7 @@ jobs:
 
       - name: Download build_depends.repos
         run: |
-          curl -sSL -H "Authorization: token ${{ secrets.REPO_TOKEN }}" ${{ env.BUILD_DEPEND_FILE }} | sed '1d' > build_depends.repos
+          curl -sSL -H "Authorization: token ${{ secrets.REPO_TOKEN }}" ${{ env.BUILD_DEPEND_FILE }} > build_depends.repos
 
       - name: Run action-ros-ci
         id: action_ros_ci_step
