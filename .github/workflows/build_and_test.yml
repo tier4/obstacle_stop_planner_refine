@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  BUILD_DEPEND_FILE: https://raw.githubusercontent.com/tier4/autoware.iv/main/build_depends.repos
+  BUILD_DEPEND_FILE: https://raw.githubusercontent.com/tier4/autoware.proj/main/autoware.proj.repos
 
 jobs:
   build-and-test:
