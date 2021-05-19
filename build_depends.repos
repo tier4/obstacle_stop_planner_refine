@@ -1,5 +1,0 @@
-repositories:
-  autoware.iv:
-    type: git
-    url: https://github.com/tier4/autoware.iv.git
-    version: fix/fix-utils
