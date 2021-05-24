@@ -28,7 +28,7 @@ jobs:
 
       - name: Run action-ros-ci
         id: action_ros_ci_step
-        uses: ros-tooling/action-ros-ci@add-private-repo-test
+        uses: ros-tooling/action-ros-ci@master
         with:
           package-name: obstacle_stop_planner_refine
           target-ros2-distro: foxy
