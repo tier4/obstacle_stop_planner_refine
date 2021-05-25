@@ -43,6 +43,11 @@ jobs:
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
 
+      - name: Search packages in this repository
+        id: list_packages
+        run: |
+          echo ::set-output name=package_list::$(colcon list --names-only)
+
       - name: Concat build_depends.repos
         run: |
           curl -sSL -H "Authorization: token ${{ secrets.REPO_TOKEN }}" https://raw.githubusercontent.com/tier4/autoware.iv/main/build_depends.repos | sed '1d' >> build_depends.repos
@@ -51,7 +56,7 @@ jobs:
         id: action_ros_ci_step
         uses: ros-tooling/action-ros-ci@v0.2
         with:
-          package-name: obstacle_stop_planner_refine
+          package-name: ${{ steps.list_packages.outputs.package_list }}
           target-ros2-distro: ${{ matrix.ros_distribution }}
           vcs-repo-file-url: build_depends.repos
           import-token: ${{ secrets.REPO_TOKEN }}

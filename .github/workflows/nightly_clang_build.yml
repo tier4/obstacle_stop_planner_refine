@@ -41,11 +41,16 @@ jobs:
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
 
+      - name: Search packages in this repository
+        id: list_packages
+        run: |
+          echo ::set-output name=package_list::$(colcon list --names-only)
+
       - name: Run action-ros-ci
         id: action_ros_ci_step
         uses: ros-tooling/action-ros-ci@v0.2
         with:
-          package-name: obstacle_stop_planner_refine
+          package-name: ${{ steps.list_packages.outputs.package_list }}
           target-ros2-distro: ${{ matrix.ros_distribution }}
           vcs-repo-file-url: build_depends.repos
           import-token: ${{ secrets.REPO_TOKEN }}
