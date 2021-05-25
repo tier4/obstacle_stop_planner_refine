@@ -46,7 +46,7 @@ jobs:
 
       - name: Run action-ros-ci
         id: action_ros_ci_step
-        uses: ros-tooling/action-ros-ci@master
+        uses: ros-tooling/action-ros-ci@v0.2
         with:
           package-name: obstacle_stop_planner_refine
           target-ros2-distro: ${{ matrix.ros_distribution }}
