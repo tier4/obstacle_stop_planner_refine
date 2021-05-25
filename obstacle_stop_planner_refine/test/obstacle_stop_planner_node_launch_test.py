@@ -56,6 +56,10 @@ def generate_test_description():
 @launch_testing.post_shutdown_test()
 class TestProcessOutput(unittest.TestCase):
 
-    def test_exit_code(self, proc_output, proc_info, obstacle_stop_planner_node):
-        # Check that process exits with code -15 code: termination request, sent to the program
-        assertExitCodes(proc_info, [-15], process=obstacle_stop_planner_node)
+    def test_exit_code(self, proc_info, obstacle_stop_planner_node):
+        # Check that process exits with code -2 or -15 code: termination request, sent to the program
+        assertExitCodes(
+            proc_info,
+            [-2, -15],
+            obstacle_stop_planner_node,
+        )
