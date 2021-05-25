@@ -1,0 +1,41 @@
+<?xml version="1.0" ?>
+<package format="2">
+  <name>obstacle_stop_planner_refine</name>
+  <version>0.1.0</version>
+  <description>The obstacle_stop_planner_refine package</description>
+
+  <maintainer email="tier4@todo.todo">tier4</maintainer>
+
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+
+  <depend>autoware_debug_msgs</depend>
+  <depend>autoware_perception_msgs</depend>
+  <depend>autoware_planning_msgs</depend>
+  <depend>autoware_utils</depend>
+  <depend>vehicle_info_util</depend>
+  <depend>diagnostic_msgs</depend>
+  <depend>pcl_conversions</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_eigen</depend>
+  <depend>tf2_ros</depend>
+  <depend>visualization_msgs</depend>
+  <depend>pcl_ros</depend>
+
+  <test_depend>ament_cmake_auto_gtest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  <test_depend>ros_testing</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
+</package>
