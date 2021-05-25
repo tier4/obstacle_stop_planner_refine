@@ -11,11 +11,11 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         ros_distribution:
           - foxy
           - galactic
-          - rolling
 
         include:
           # Foxy Fitzroy (June 2020 - May 2023)
@@ -25,10 +25,6 @@ jobs:
           # Galactic Geochelone (May 2021 - November 2022)
           - docker_image: ubuntu:focal
             ros_distribution: galactic
-
-          # Rolling Ridley (June 2020 -)
-          - docker_image: ubuntu:focal
-            ros_distribution: rolling
 
     container:
       image: ${{ matrix.docker_image }}
