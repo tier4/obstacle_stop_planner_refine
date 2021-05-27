@@ -51,21 +51,28 @@ jobs:
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-    # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
-    # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v1
+    - name: Setup ROS environment
+      uses: ros-tooling/setup-ros@v0.2
+      with:
+        required-ros-distributions: foxy
 
-    # ℹ️ Command-line programs to run using the OS shell.
-    # 📚 https://git.io/JvXDl
+    - name: Search packages in this repository
+      id: list_packages
+      run: |
+        echo ::set-output name=package_list::$(colcon list --names-only)
 
-    # ✏️ If the Autobuild fails above, remove it and uncomment the following three lines
-    #    and modify them (or add more) to build your code if your project
-    #    uses a compiled language
+    - name: Concat build_depends.repos
+      run: |
+        curl -sSL -H "Authorization: token ${{ secrets.REPO_TOKEN }}" https://raw.githubusercontent.com/tier4/autoware.iv/main/build_depends.repos | sed '1d' >> build_depends.repos
 
-    #- run: |
-    #   make bootstrap
-    #   make release
+    - name: Run action-ros-ci
+      id: action_ros_ci_step
+      uses: ros-tooling/action-ros-ci@v0.2
+      with:
+        package-name: ${{ steps.list_packages.outputs.package_list }}
+        target-ros2-distro: foxy
+        vcs-repo-file-url: build_depends.repos
+        import-token: ${{ secrets.REPO_TOKEN }}
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
