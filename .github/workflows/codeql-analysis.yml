@@ -7,7 +7,7 @@ on:
     # The branches below must be a subset of the branches above
     branches: [ main ]
   schedule:
-    - cron: '17 23 * * 3'
+    - cron: '17 23 * * 3' # run at 08:17 AM Thursdays, JST
 
 jobs:
   analyze:
