@@ -1,0 +1,60 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ main ]
+  schedule:
+    - cron: '17 23 * * 3' # run at 08:17 AM Thursdays, JST
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'cpp', 'python' ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: ${{ matrix.language }}
+        config-file: ./.github/codeql/codeql-config.yml
+
+    - name: Setup ROS environment
+      uses: ros-tooling/setup-ros@v0.2
+      with:
+        required-ros-distributions: foxy
+
+    - name: Search packages in this repository
+      id: list_packages
+      run: |
+        echo ::set-output name=package_list::$(colcon list --names-only)
+
+    - name: Concat build_depends.repos
+      run: |
+        curl -sSL -H "Authorization: token ${{ secrets.REPO_TOKEN }}" https://raw.githubusercontent.com/tier4/autoware.iv/main/build_depends.repos | sed '1d' >> build_depends.repos
+
+    - name: Run action-ros-ci
+      id: action_ros_ci_step
+      uses: ros-tooling/action-ros-ci@v0.2
+      with:
+        package-name: ${{ steps.list_packages.outputs.package_list }}
+        target-ros2-distro: foxy
+        vcs-repo-file-url: build_depends.repos
+        import-token: ${{ secrets.REPO_TOKEN }}
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
